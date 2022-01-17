@@ -1,0 +1,13 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{A5A368BB-A25C-47A5-882E-C7140E84BA65}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "UnrealMasterThesis",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
