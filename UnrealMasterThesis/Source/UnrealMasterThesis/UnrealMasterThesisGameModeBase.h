@@ -10,8 +10,6 @@
  * 
  */
 UCLASS()
-class UNREALMASTERTHESIS_API AUnrealMasterThesisGameModeBase : public AGameModeBase
-{
+class UNREALMASTERTHESIS_API AUnrealMasterThesisGameModeBase : public AGameModeBase {
 	GENERATED_BODY()
-	
 };

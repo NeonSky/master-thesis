@@ -1,0 +1,65 @@
+#include "/Engine/Public/Platform.ush"
+
+struct Complex {
+  float re;
+  float im;
+};
+
+Complex newComplex(float re, float im) {
+  Complex c;
+  c.re = re;
+  c.im = im;
+  return c;
+}
+
+Complex mul(Complex c1, Complex c2) {
+  Complex c;
+  c.re = c1.re * c2.re - c1.im * c2.im;
+  c.im = c1.re * c2.im + c1.im * c2.re;
+  return c;
+}
+
+Complex add(Complex c1, Complex c2) {
+  Complex c;
+  c.re = c1.re + c2.re;
+  c.im = c1.im + c2.im;
+  return c;
+}
+
+int Stage;
+int IsVertical;
+
+Texture2D<float4> ButterflyTexture;
+RWTexture2D<float4> InputTexture;
+RWTexture2D<float4> OutputTexture;
+
+[numthreads(N_THREADS_X, N_THREADS_Y, 1)]
+void MainCompute(uint3 id : SV_DispatchThreadID) {
+
+    int tex_y_coord = id.x;
+    if (IsVertical == 1) {
+        tex_y_coord = id.y;
+    }
+
+    float4 data = ButterflyTexture[uint2(Stage, tex_y_coord)];
+
+    uint2 p_coord = uint2(data.z, id.y);
+    uint2 q_coord = uint2(data.w, id.y);
+    if (IsVertical == 1) {
+        p_coord = uint2(id.x, data.z);
+        q_coord = uint2(id.x, data.w);
+    }
+
+    float2 p_ = InputTexture[p_coord].rg;
+    float2 q_ = InputTexture[q_coord].rg;
+    float2 w_ = data.xy;
+
+    Complex p = newComplex(p_.x, p_.y);
+    Complex q = newComplex(q_.x, q_.y);
+    Complex w = newComplex(w_.x, w_.y);
+
+    Complex H = add(p, mul(w, q));
+    
+    OutputTexture[id.xy] = float4(H.re, H.im, 0.0, 1.0);
+
+}

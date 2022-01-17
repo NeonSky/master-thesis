@@ -1,0 +1,99 @@
+#include "/Engine/Public/Platform.ush"
+
+static const float PI = 3.1415926535897933;
+static const float gravity = 9.82;
+
+struct Complex {
+  float re;
+  float im;
+};
+
+Complex newComplex(float re, float im) {
+  Complex c;
+  c.re = re;
+  c.im = im;
+  return c;
+}
+
+Complex mul(Complex c1, Complex c2) {
+  Complex c;
+  c.re = c1.re * c2.re - c1.im * c2.im;
+  c.im = c1.re * c2.im + c1.im * c2.re;
+  return c;
+}
+
+Complex add(Complex c1, Complex c2) {
+  Complex c;
+  c.re = c1.re + c2.re;
+  c.im = c1.im + c2.im;
+  return c;
+}
+
+Complex conj(Complex c) {
+  c.im = -c.im;
+  return c;
+}
+
+int N;   // Resolution
+float L; // Side length of patch in meters
+float t; // Time (in seconds)
+
+Texture2D<float4> tilde_h0_k;
+Texture2D<float4> tilde_h0_neg_k;
+
+RWTexture2D<float4> tilde_hkt_dx;
+RWTexture2D<float4> tilde_hkt_dy;
+RWTexture2D<float4> tilde_hkt_dz;
+
+[numthreads(N_THREADS_X, N_THREADS_Y, 1)]
+void MainCompute(uint3 id : SV_DispatchThreadID) {
+
+  // Horizontal position
+  float2 x = float2(id.xy) - float(N) / 2.0;
+
+  // Wave vector
+  float2 k_vec = float2(
+    2.0 * PI * x.x / L,
+    2.0 * PI * x.y / L
+  );
+
+  // Wave number
+  float k = length(k_vec);
+  k = max(k, 0.00001);
+
+  float w = sqrt(gravity * k);
+
+  float2 tilde_h0_ks = tilde_h0_k[id.xy].rg;
+  Complex fourier_comp = newComplex(tilde_h0_ks.x, tilde_h0_ks.y);
+
+  float2 tilde_h0_neg_ks = tilde_h0_neg_k[id.xy].rg;
+  Complex fourier_comp_conj = newComplex(tilde_h0_neg_ks.x, tilde_h0_neg_ks.y);
+
+  float cos_w_t = cos(w * t);
+  float sin_w_t = sin(w * t);
+
+  Complex exp_iwt = newComplex(cos_w_t, sin_w_t);
+  Complex exp_iwt_inv = newComplex(cos_w_t, -sin_w_t);
+
+  // Tessendorf Equation 43
+  Complex hkt_dy = add(
+    mul(fourier_comp, exp_iwt),
+    mul(fourier_comp_conj, exp_iwt_inv)
+  );
+
+  Complex hkt_dx = mul(
+    newComplex(0.0, -k_vec.x / k),
+    hkt_dy
+  );
+
+  Complex hkt_dz = mul(
+    newComplex(0.0, -k_vec.y / k),
+    hkt_dy
+  );
+
+  // I don't think the imaginary parts need to be passed actually. They should all be zero.
+  tilde_hkt_dx[id.xy] = float4(hkt_dx.re, hkt_dx.im, 0.0, 1.0);
+  tilde_hkt_dy[id.xy] = float4(hkt_dy.re, hkt_dy.im, 0.0, 1.0);
+  tilde_hkt_dz[id.xy] = float4(hkt_dz.re, hkt_dz.im, 0.0, 1.0);
+
+}

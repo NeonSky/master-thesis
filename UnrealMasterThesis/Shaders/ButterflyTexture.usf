@@ -1,0 +1,85 @@
+#include "/Engine/Public/Platform.ush"
+
+static const float PI = 3.1415926535897933;
+
+struct Complex {
+  float re;
+  float im;
+};
+
+int N; // Resolution
+
+StructuredBuffer<uint> ReverseBits;
+RWTexture2D<float4> OutputTexture;
+
+[numthreads(N_THREADS_X, N_THREADS_Y, 1)]
+void MainCompute(uint3 id : SV_DispatchThreadID) {
+
+    float k = fmod(id.y * (float(N) / pow(2, id.x+1)), N);
+
+    Complex twiddle;
+    twiddle.re = cos(2.0 * PI * k / float(N));
+    twiddle.im = sin(2.0 * PI * k / float(N));
+
+    OutputTexture[id.xy] = float4(
+      twiddle.re,
+      twiddle.im,
+      ReverseBits[id.y],
+      ReverseBits[id.y + 1]
+    );
+
+    int span = int(pow(2, id.x));
+
+    int wing = 0;
+    if (fmod(id.y, pow(2, id.x + 1)) < pow(2, id.x)) {
+      wing = 1;
+    }
+
+    // Stage 1
+    if (id.x == 0) {
+
+      // Top wing
+      if (wing == 1) {
+        OutputTexture[id.xy] = float4(
+          twiddle.re,
+          twiddle.im,
+          ReverseBits[id.y],
+          ReverseBits[id.y + 1]
+        );
+      }
+      // Bottom wing
+      else {
+        OutputTexture[id.xy] = float4(
+          twiddle.re,
+          twiddle.im,
+          ReverseBits[id.y - 1],
+          ReverseBits[id.y]
+        );
+      }
+
+    }
+    // Stage >1
+    else {
+
+      // Top wing
+      if (wing == 1) {
+        OutputTexture[id.xy] = float4(
+          twiddle.re,
+          twiddle.im,
+          id.y,
+          id.y + span
+        );
+      }
+      // Bottom wing
+      else {
+        OutputTexture[id.xy] = float4(
+          twiddle.re,
+          twiddle.im,
+          id.y - span,
+          id.y
+        );
+      }
+
+    }
+
+}
