@@ -13199,7 +13199,13 @@ SOURCES += \
 	"$$unrealRootPath/Engine/Plugins/VirtualProduction/TimedDataMonitor/Source/TimedDataMonitorEditor/Private/TimedDataMonitorEditorModule.cpp" \
 	"$$unrealRootPath/Engine/Plugins/VirtualProduction/TimedDataMonitor/Source/TimedDataMonitorEditor/Private/TimedDataMonitorEditorStyle.cpp" \
 	"$$unrealRootPath/Engine/Plugins/XGEController/Source/Private/XGEControllerModule.cpp" \
-	"$$UnrealMasterThesisRootPath/Source/UnrealMasterThesis/UnrealMasterThesis.cpp" \
+	"$$UnrealMasterThesisRootPath/Source/ShaderModels/Private/Butterfly.cpp" \
+	"$$UnrealMasterThesisRootPath/Source/ShaderModels/Private/ButterflyPostProcess.cpp" \
+	"$$UnrealMasterThesisRootPath/Source/ShaderModels/Private/ButterflyTexture.cpp" \
+	"$$UnrealMasterThesisRootPath/Source/ShaderModels/Private/FourierComponents.cpp" \
+	"$$UnrealMasterThesisRootPath/Source/ShaderModels/Private/ShaderModels.cpp" \
 	"$$UnrealMasterThesisRootPath/Source/UnrealMasterThesis/UnrealMasterThesisGameModeBase.cpp" \
+	"$$UnrealMasterThesisRootPath/Source/UnrealMasterThesis/Private/OceanSurfaceSimulation.cpp" \
+	"$$UnrealMasterThesisRootPath/Source/UnrealMasterThesis/Private/UnrealMasterThesis.cpp" \
  
 

@@ -1,17 +1,16 @@
 INCLUDEPATH += \
 	/opt/unreal-engine/Engine/Source \
-	Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/UnrealMasterThesis \
-	Source \
-	/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/Core \
+	Source/UnrealMasterThesis/Private \
+	/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/Engine \
 	/opt/unreal-engine/Engine/Source/Runtime \
+	/opt/unreal-engine/Engine/Source/Runtime/Engine/Classes \
+	/opt/unreal-engine/Engine/Source/Runtime/Engine/Public \
+	/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/Core \
 	/opt/unreal-engine/Engine/Source/Runtime/TraceLog/Public \
 	/opt/unreal-engine/Engine/Source/Runtime/Core/Public \
 	/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/TraceLog \
 	/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/CoreUObject \
 	/opt/unreal-engine/Engine/Source/Runtime/CoreUObject/Public \
-	/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/Engine \
-	/opt/unreal-engine/Engine/Source/Runtime/Engine/Classes \
-	/opt/unreal-engine/Engine/Source/Runtime/Engine/Public \
 	/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/NetCore \
 	/opt/unreal-engine/Engine/Source/Runtime/Net \
 	/opt/unreal-engine/Engine/Source/Runtime/Net/Core/Classes \
@@ -238,6 +237,15 @@ INCLUDEPATH += \
 	/opt/unreal-engine/Engine/Source/Editor/Kismet/Public \
 	/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/ClothingSystemRuntimeInterface \
 	/opt/unreal-engine/Engine/Source/Runtime/ClothingSystemRuntimeInterface/Public \
+	/opt/unreal-engine/Engine/Plugins/Runtime/ProceduralMeshComponent/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/ProceduralMeshComponent \
+	/opt/unreal-engine/Engine/Plugins/Runtime/ProceduralMeshComponent/Source \
+	/opt/unreal-engine/Engine/Plugins/Runtime/ProceduralMeshComponent/Source/ProceduralMeshComponent/Public \
+	Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/UnrealMasterThesis \
+	Source \
+	Source/UnrealMasterThesis/Public \
+	Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/ShaderModels \
+	Source/ShaderModels/Public \
+	Source/ShaderModels/Private \
 	/opt/unreal-engine/Engine/Source/Runtime/Launch/Private \
 	/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/MoviePlayer \
 	/opt/unreal-engine/Engine/Source/Runtime/MoviePlayer/Public \
@@ -660,9 +668,6 @@ INCLUDEPATH += \
 	/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/MovieSceneCapture \
 	/opt/unreal-engine/Engine/Source/Runtime/MovieSceneCapture/Public \
 	/opt/unreal-engine/Engine/Plugins/Runtime/ProceduralMeshComponent/Source/ProceduralMeshComponent/Private \
-	/opt/unreal-engine/Engine/Plugins/Runtime/ProceduralMeshComponent/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/ProceduralMeshComponent \
-	/opt/unreal-engine/Engine/Plugins/Runtime/ProceduralMeshComponent/Source \
-	/opt/unreal-engine/Engine/Plugins/Runtime/ProceduralMeshComponent/Source/ProceduralMeshComponent/Public \
 	/opt/unreal-engine/Engine/Plugins/Runtime/ProceduralMeshComponent/Source/ProceduralMeshComponentEditor/Private \
 	/opt/unreal-engine/Engine/Plugins/Runtime/ProceduralMeshComponent/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/ProceduralMeshComponentEditor \
 	/opt/unreal-engine/Engine/Plugins/Runtime/ProceduralMeshComponent/Source/ProceduralMeshComponentEditor/Public \

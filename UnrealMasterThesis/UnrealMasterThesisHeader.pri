@@ -17595,7 +17595,13 @@ HEADERS += \
 	"$$unrealRootPath/Engine/Plugins/VirtualProduction/TimedDataMonitor/Source/TimedDataMonitorEditor/Private/TimedDataMonitorEditorSettings.h" \
 	"$$unrealRootPath/Engine/Plugins/VirtualProduction/TimedDataMonitor/Source/TimedDataMonitorEditor/Private/TimedDataMonitorEditorStyle.h" \
 	"$$unrealRootPath/Engine/Plugins/XGEController/Source/Public/XGEControllerModule.h" \
-	"$$UnrealMasterThesisRootPath/Source/UnrealMasterThesis/UnrealMasterThesis.h" \
+	"$$UnrealMasterThesisRootPath/Source/ShaderModels/Public/Butterfly.h" \
+	"$$UnrealMasterThesisRootPath/Source/ShaderModels/Public/ButterflyPostProcess.h" \
+	"$$UnrealMasterThesisRootPath/Source/ShaderModels/Public/ButterflyTexture.h" \
+	"$$UnrealMasterThesisRootPath/Source/ShaderModels/Public/FourierComponents.h" \
+	"$$UnrealMasterThesisRootPath/Source/ShaderModels/Public/ShaderModels.h" \
 	"$$UnrealMasterThesisRootPath/Source/UnrealMasterThesis/UnrealMasterThesisGameModeBase.h" \
+	"$$UnrealMasterThesisRootPath/Source/UnrealMasterThesis/Public/OceanSurfaceSimulation.h" \
+	"$$UnrealMasterThesisRootPath/Source/UnrealMasterThesis/Public/UnrealMasterThesis.h" \
  
 

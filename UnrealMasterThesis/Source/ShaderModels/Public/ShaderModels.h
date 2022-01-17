@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FourierComponents.h"
+
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
@@ -8,5 +10,16 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
-	void Test(float f);
+	void GenerateButterflyTexture(UTextureRenderTarget2D* output);
+	void FFT(UTextureRenderTarget2D* butterfly, UTextureRenderTarget2D* output);
+
+	void Buildh0Textures(int N, FourierComponentsSettings settings);
+
+	void ComputeFourierComponents(
+		float L,
+		UTextureRenderTarget2D* tilde_hkt_dx,
+		UTextureRenderTarget2D* tilde_hkt_dy,
+		UTextureRenderTarget2D* tilde_hkt_dz
+	);
+
 };

@@ -1087,6 +1087,7 @@ OTHER_FILES += \
 	"$$unrealRootPath/Engine/Plugins/VirtualProduction/TimedDataMonitor/Source/TimedDataMonitor/TimedDataMonitor.Build.cs" \
 	"$$unrealRootPath/Engine/Plugins/VirtualProduction/TimedDataMonitor/Source/TimedDataMonitorEditor/TimedDataMonitorEditor.build.cs" \
 	"$$unrealRootPath/Engine/Plugins/XGEController/Source/XGEController.Build.cs" \
+	"$$UnrealMasterThesisRootPath/Source/ShaderModels/ShaderModels.Build.cs" \
 	"$$UnrealMasterThesisRootPath/Source/UnrealMasterThesis/UnrealMasterThesis.Build.cs" \
  
 

@@ -2,18 +2,17 @@
 <CodeLite_Workspace Name="UnrealMasterThesis" SWTLW="Yes">
   <WorkspaceParserPaths>
     <Include Path="/opt/unreal-engine/Engine/Source" />
-    <Include Path="/home/neonsky/main/local/projects/master-thesis/UnrealMasterThesis/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/UnrealMasterThesis" />
-    <Include Path="/home/neonsky/main/local/projects/master-thesis/UnrealMasterThesis/Source" />
-    <Include Path="/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/Core" />
+    <Include Path="/home/neonsky/main/local/projects/master-thesis/UnrealMasterThesis/Source/UnrealMasterThesis/Private" />
+    <Include Path="/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/Engine" />
     <Include Path="/opt/unreal-engine/Engine/Source/Runtime" />
+    <Include Path="/opt/unreal-engine/Engine/Source/Runtime/Engine/Classes" />
+    <Include Path="/opt/unreal-engine/Engine/Source/Runtime/Engine/Public" />
+    <Include Path="/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/Core" />
     <Include Path="/opt/unreal-engine/Engine/Source/Runtime/TraceLog/Public" />
     <Include Path="/opt/unreal-engine/Engine/Source/Runtime/Core/Public" />
     <Include Path="/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/TraceLog" />
     <Include Path="/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/CoreUObject" />
     <Include Path="/opt/unreal-engine/Engine/Source/Runtime/CoreUObject/Public" />
-    <Include Path="/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/Engine" />
-    <Include Path="/opt/unreal-engine/Engine/Source/Runtime/Engine/Classes" />
-    <Include Path="/opt/unreal-engine/Engine/Source/Runtime/Engine/Public" />
     <Include Path="/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/NetCore" />
     <Include Path="/opt/unreal-engine/Engine/Source/Runtime/Net" />
     <Include Path="/opt/unreal-engine/Engine/Source/Runtime/Net/Core/Classes" />
@@ -240,6 +239,15 @@
     <Include Path="/opt/unreal-engine/Engine/Source/Editor/Kismet/Public" />
     <Include Path="/opt/unreal-engine/Engine/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/ClothingSystemRuntimeInterface" />
     <Include Path="/opt/unreal-engine/Engine/Source/Runtime/ClothingSystemRuntimeInterface/Public" />
+    <Include Path="/opt/unreal-engine/Engine/Plugins/Runtime/ProceduralMeshComponent/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/ProceduralMeshComponent" />
+    <Include Path="/opt/unreal-engine/Engine/Plugins/Runtime/ProceduralMeshComponent/Source" />
+    <Include Path="/opt/unreal-engine/Engine/Plugins/Runtime/ProceduralMeshComponent/Source/ProceduralMeshComponent/Public" />
+    <Include Path="/home/neonsky/main/local/projects/master-thesis/UnrealMasterThesis/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/UnrealMasterThesis" />
+    <Include Path="/home/neonsky/main/local/projects/master-thesis/UnrealMasterThesis/Source" />
+    <Include Path="/home/neonsky/main/local/projects/master-thesis/UnrealMasterThesis/Source/UnrealMasterThesis/Public" />
+    <Include Path="/home/neonsky/main/local/projects/master-thesis/UnrealMasterThesis/Intermediate/Build/Linux/B4D820EA/UE4Editor/Inc/ShaderModels" />
+    <Include Path="/home/neonsky/main/local/projects/master-thesis/UnrealMasterThesis/Source/ShaderModels/Public" />
+    <Include Path="/home/neonsky/main/local/projects/master-thesis/UnrealMasterThesis/Source/ShaderModels/Private" />
     <Include Path="/opt/unreal-engine/Engine/Source/ThirdParty/PhysX3/PxShared/include" />
     <Include Path="/opt/unreal-engine/Engine/Source/ThirdParty/PhysX3/PxShared/include/cudamanager" />
     <Include Path="/opt/unreal-engine/Engine/Source/ThirdParty/PhysX3/PxShared/include/filebuf" />

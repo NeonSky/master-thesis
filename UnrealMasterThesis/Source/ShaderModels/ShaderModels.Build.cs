@@ -6,17 +6,17 @@ public class ShaderModels : ModuleRules {
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
 		PublicDependencyModuleNames.AddRange(new string[] {
-      		"Core",
+      "Core",
 			"CoreUObject",
 			"Engine",
 			"InputCore",
 			"RHI",
 			"RenderCore",
-    	});
+    });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {
 			"Projects",
-    	});
+    });
 
 	}
 }
