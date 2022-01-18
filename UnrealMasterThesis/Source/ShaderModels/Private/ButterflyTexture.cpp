@@ -28,7 +28,7 @@ void ButterflyTextureShader::BuildAndExecuteGraph(
 
 	int n_stages = output->SizeX;
 	TArray<uint32> ReverseBits;
-	for (uint32 x = 0; x < output->SizeY; x++) {
+	for (uint32 x = 0; (int)x < output->SizeY; x++) {
 		ReverseBits.Add(reverse_bits(x, n_stages));
 		// UE_LOG(LogTemp, Warning, TEXT("%u -> %u"), x, reverse_bits(x, n_stages));
 	}
