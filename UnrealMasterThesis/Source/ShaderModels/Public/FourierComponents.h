@@ -50,6 +50,7 @@ public:
 
 	void BuildAndExecuteGraph(
     FRHICommandListImmediate &RHI_cmd_list,
+	float t,
     float L,
     UTextureRenderTarget2D* tilde_hkt_dx,
     UTextureRenderTarget2D* tilde_hkt_dy,

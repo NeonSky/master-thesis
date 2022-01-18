@@ -67,6 +67,7 @@ void ShaderModelsModule::Buildh0Textures(int N, FourierComponentsSettings settin
 }
 
 void ShaderModelsModule::ComputeFourierComponents(
+	float t,
 	float L,
 	UTextureRenderTarget2D* tilde_hkt_dx,
 	UTextureRenderTarget2D* tilde_hkt_dy,
@@ -79,9 +80,10 @@ void ShaderModelsModule::ComputeFourierComponents(
 	UTextureRenderTarget2D* tilde_hkt_dz_param = tilde_hkt_dz;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, L, tilde_hkt_dx_param, tilde_hkt_dy_param, tilde_hkt_dz_param](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, t, L, tilde_hkt_dx_param, tilde_hkt_dy_param, tilde_hkt_dz_param](FRHICommandListImmediate& RHI_cmd_list) {
 			shader->BuildAndExecuteGraph(
 				RHI_cmd_list,
+				t,
 				L,
 				tilde_hkt_dx_param,
 				tilde_hkt_dy_param,

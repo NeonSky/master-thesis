@@ -5,6 +5,7 @@
 #include "ImageUtils.h"
 #include "KismetProceduralMeshLibrary.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Kismet/GameplayStatics.h"
 
 static const float METERS_TO_UNREAL_UNITS = 100;
 
@@ -111,8 +112,9 @@ void AOceanSurfaceSimulation::create_mesh() {
 }
 
 void AOceanSurfaceSimulation::update_mesh() {
+	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
 
-	m_shader_models_module.ComputeFourierComponents(L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
+	m_shader_models_module.ComputeFourierComponents(realtimeSeconds, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
 
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_x_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);

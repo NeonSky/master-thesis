@@ -3,6 +3,7 @@
 #include "RenderGraph.h"
 #include "RenderTargetPool.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "GameFramework/GameState.h"
 
 #include <complex>
 #include <random>
@@ -195,6 +196,7 @@ void FourierComponentsShader::Buildh0Textures(int N, FourierComponentsSettings s
 
 void FourierComponentsShader::BuildAndExecuteGraph(
   FRHICommandListImmediate &RHI_cmd_list,
+  float t,
   float L,
   UTextureRenderTarget2D* tilde_hkt_dx,
   UTextureRenderTarget2D* tilde_hkt_dy,
@@ -207,7 +209,7 @@ void FourierComponentsShader::BuildAndExecuteGraph(
 
 	PassParameters->N = m_N;
 	PassParameters->L = L;
-	PassParameters->t = FPlatformTime::Seconds();
+    PassParameters->t = t; // FPlatformTime::Seconds();
 
   PassParameters->tilde_h0_k = register_texture(graph_builder, this->tilde_h0_k->GetTexture2D(), "tilde_h0_k");
   PassParameters->tilde_h0_neg_k = register_texture(graph_builder, this->tilde_h0_neg_k->GetTexture2D(), "tilde_h0_neg_k");

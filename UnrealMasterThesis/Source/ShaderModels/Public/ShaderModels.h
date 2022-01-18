@@ -16,6 +16,7 @@ public:
 	void Buildh0Textures(int N, FourierComponentsSettings settings);
 
 	void ComputeFourierComponents(
+		float t,
 		float L,
 		UTextureRenderTarget2D* tilde_hkt_dx,
 		UTextureRenderTarget2D* tilde_hkt_dy,
