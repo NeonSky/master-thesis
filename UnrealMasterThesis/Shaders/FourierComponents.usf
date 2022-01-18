@@ -63,11 +63,13 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
   float w = sqrt(gravity * k);
 
+  // See the report for the reason behind the division by 2.
+
   float2 tilde_h0_ks = tilde_h0_k[id.xy].rg;
-  Complex fourier_comp = newComplex(tilde_h0_ks.x, tilde_h0_ks.y);
+  Complex fourier_comp = newComplex(tilde_h0_ks.x / 2.0, tilde_h0_ks.y / 2.0);
 
   float2 tilde_h0_neg_ks = tilde_h0_neg_k[id.xy].rg;
-  Complex fourier_comp_conj = newComplex(tilde_h0_neg_ks.x, tilde_h0_neg_ks.y);
+  Complex fourier_comp_conj = newComplex(tilde_h0_neg_ks.x / 2.0, tilde_h0_neg_ks.y / 2.0);
 
   float cos_w_t = cos(w * t);
   float sin_w_t = sin(w * t);

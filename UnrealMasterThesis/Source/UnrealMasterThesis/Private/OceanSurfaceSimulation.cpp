@@ -61,13 +61,13 @@ void AOceanSurfaceSimulation::create_mesh() {
 	// Vertices
 	TArray<FVector> vertices;
 
-  	// UV-coordinates
+	// UV-coordinates
 	TArray<FVector2D> uv0;
 	TArray<FVector2D> uv1;
 	TArray<FVector2D> uv2;
 	TArray<FVector2D> uv3;
 
-	// [0, N-1] represent the ocean path, while the Nth entry (along each direction) starts the repeat.
+	// [0, N-1] represent the ocean patch, while the Nth entry (along each direction) starts the repeat.
 	for (int32 x = 0; x <= this->N; x++) {
 		for (int32 y = 0; y <= this->N; y++) {
 
@@ -82,23 +82,24 @@ void AOceanSurfaceSimulation::create_mesh() {
 	}
 
 	m_shader_models_module = FModuleManager::LoadModuleChecked<ShaderModelsModule>("ShaderModels");
-  	m_shader_models_module.GenerateButterflyTexture(this->butterfly_rtt);
+	m_shader_models_module.GenerateButterflyTexture(this->butterfly_rtt);
 
 	FourierComponentsSettings settings;
-  	settings.tile_size = L;
-  	settings.gravity = gravity;
-  	settings.amplitude = amplitude;
+	settings.tile_size = L;
+	settings.gravity = gravity;
+	settings.amplitude = amplitude;
 	settings.wave_alignment = wave_alignment;
-  	settings.wind_speed = wind_speed;
-  	settings.wind_direction = wind_direction;
+	settings.wind_speed = wind_speed;
+	settings.wind_direction = wind_direction;
 
-  	m_shader_models_module.Buildh0Textures(this->N, settings);
+	m_shader_models_module.Buildh0Textures(this->N, settings);
 
 	// Triangles
+	// We use (N+1)^2 vertices instead of N^2 in order to produce seamless tiling (diplacement of vertex N+1 will equal that of vertex 0, in a given horizontal axis).
 	TArray<int32> triangles;
-	UKismetProceduralMeshLibrary::CreateGridMeshTriangles(N+1, N+1, false, triangles);
+	UKismetProceduralMeshLibrary::CreateGridMeshTriangles(N + 1, N + 1, false, triangles);
 
-  	// Normals and Tangents
+	// Normals and Tangents
 	TArray<FVector> normals;
 	TArray<FProcMeshTangent> tangents;
 

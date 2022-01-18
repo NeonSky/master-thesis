@@ -63,12 +63,6 @@ TArray<FFloat16Color> create_init_data(int N, FourierComponentsSettings settings
 
   float L = pow(settings.wind_speed, 2.0) / settings.gravity;
 
-  // float tile_size = 100.0;
-  // float gravity = 9.82;
-  // float amplitude = 100.0;
-  // float wave_length = 0.1;
-  // float wind_speed = 10.0;
-  // FVector2D wind_direction = FVector2D(1.0, 1.0);
   settings.wind_direction.Normalize();
 
   auto wave_spectrum = [=](FVector2D k_vec) {
@@ -81,8 +75,6 @@ TArray<FFloat16Color> create_init_data(int N, FourierComponentsSettings settings
     FVector2D k_hat = k_vec.GetSafeNormal();
 
     float k_hat_dot_omega_hat = FVector2D::DotProduct(k_hat, settings.wind_direction);
-    //UE_LOG(LogTemp, Warning, TEXT("dot: %.9g"), k_hat_dot_omega_hat);
-    // float wave_alignment = 8.0; // 2.0 (or 6.0) is used in Tessendorf, but GPGPU paper suggets 8.0 on page 29
 
     float res = settings.amplitude;
     res *= exp(-1.0 / pow(wave_number * L, 2.0));
@@ -110,21 +102,19 @@ TArray<FFloat16Color> create_init_data(int N, FourierComponentsSettings settings
         2.0 * PI * (x - floor(N / 2.0)) / settings.tile_size
       );
 
-      FVector2D wave_vector2 = FVector2D(
+      FVector2D neg_wave_vector = FVector2D(
         2.0 * PI * ((-z) - floor(N / 2.0)) / settings.tile_size,
         2.0 * PI * ((-x) - floor(N / 2.0)) / settings.tile_size
       );
 
       float xi_r = dist(rng);
-      float xi_i = dist(rng); 
+      float xi_i = dist(rng);
       std::complex<float> complex_rv(xi_r, xi_i);
 
-      //UE_LOG(LogTemp, Warning, TEXT("(%i, %i): %.9g"), z, x, wave_spectrum(wave_vector));
-      //UE_LOG(LogTemp, Warning, TEXT("(%i, %i): %.9g"), z, x, wave_spectrum(wave_vector2));
+      float delta_k = 2.0f * PI / L;
 
-      // See https://github.com/gasgiant/FFT-Ocean/blob/35ffede12f1daa2207017bc0d71d94eb7441c8a8/Assets/ComputeShaders/InitialSpectrum.compute#:~:text=void%20CalculateConjugatedSpectrum
-      std::complex<float> h0 = sqrt(1.0f / 2.0f) * complex_rv * sqrt(wave_spectrum(wave_vector));
-      std::complex<float> h0_conj = std::conj(sqrt(1.0f / 2.0f) * complex_rv * sqrt(wave_spectrum(wave_vector2)));
+      std::complex<float> h0 = sqrt(1.0f / 2.0f) * complex_rv * sqrt(2.0f * wave_spectrum(wave_vector) * delta_k * delta_k);
+      std::complex<float> h0_conj = std::conj(sqrt(1.0f / 2.0f) * complex_rv * sqrt(2.0f * wave_spectrum(neg_wave_vector) * delta_k * delta_k));
 
       res.Add(FFloat16Color(FLinearColor(h0.real(), h0.imag(), h0_conj.real(), h0_conj.imag())));
     }
