@@ -34,6 +34,13 @@ Complex conj(Complex c) {
   return c;
 }
 
+Complex div(Complex c1, Complex c2) {
+    Complex c;
+    c.re = (c1.re * c2.re + c1.im * c2.im) / (c2.re * c2.re + c2.im * c2.im);
+    c.im = (c1.im * c2.re - c1.re * c2.im) / (c2.re * c2.re + c2.im * c2.im);
+    return c;
+}
+
 int N;   // Resolution
 float L; // Side length of patch in meters
 float t; // Time (in seconds)
@@ -100,15 +107,43 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
   tilde_hkt_dy[id.xy] = float4(hkt_dy.re, hkt_dy.im, 0.0, 1.0);
   tilde_hkt_dz[id.xy] = float4(hkt_dz.re, hkt_dz.im, 0.0, 1.0);
 
-  // gradient h = i * k * h~(k, t)
+  // gradient h = i * k * h~(k, t), gives us slope vector slope_x, slope_z
+  // the normal is then (0, 1, 0) - (slope_x, 0, slope_z)
+
+
   Complex ikx = newComplex(0, k_vec.x);
   Complex iky = newComplex(0, k_vec.y);
   
   Complex tsx = mul(ikx, hkt_dy);
   Complex tsz = mul(iky, hkt_dy);
   
-  tilde_slope_x[id.xy] = float4(tsx.re, tsx.im, 0.0, 1.0);
-  tilde_slope_z[id.xy] = float4(tsz.re, tsz.im, 0.0, 1.0);
+  // Eq 4.14, without displacement correction
+  // tilde_slope_x[id.xy] = float4(tsx.re, tsx.im, 0.0, 1.0);
+  // tilde_slope_z[id.xy] = float4(tsz.re, tsz.im, 0.0, 1.0);
+
+  // However, with displacements Eq 4,14 is not correct, Eq 4.21
+
+  Complex hkt_dxx = mul(
+    mul(newComplex(0.0, k_vec.x / k), newComplex(0.0, k_vec.x / k)),
+    hkt_dy
+  );
+
+  Complex hkt_dzz = mul(
+    mul(newComplex(0.0, k_vec.y / k), newComplex(0.0, k_vec.y / k)),
+    hkt_dy
+  );
+
+  Complex u = newComplex(1, 0);
+  Complex u_dDx = mul(u, hkt_dxx);
+  Complex divisor = add(newComplex(1, 0), u_dDx);
+  Complex tilde_slope_x_displacementcorrected = div(tsx, divisor);
+
+  Complex u_dDz = mul(u, hkt_dzz);
+  divisor = add(newComplex(1, 0), u_dDz);
+  Complex tilde_slope_z_displacementcorrected = div(tsz, divisor);
+
+  tilde_slope_x[id.xy] = float4(tilde_slope_x_displacementcorrected.re, tilde_slope_x_displacementcorrected.im, 0.0, 1.0);
+  tilde_slope_z[id.xy] = float4(tilde_slope_z_displacementcorrected.re, tilde_slope_z_displacementcorrected.im, 0.0, 1.0);
   
   
   
