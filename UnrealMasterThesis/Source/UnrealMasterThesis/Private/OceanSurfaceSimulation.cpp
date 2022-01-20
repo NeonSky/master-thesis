@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "OceanSurfaceSimulation.h"
+#include "Globals/StatelessHelpers.h"
 
 #include "ImageUtils.h"
 #include "KismetProceduralMeshLibrary.h"
@@ -21,8 +22,6 @@ AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
 
 void AOceanSurfaceSimulation::BeginPlay() {
 	Super::BeginPlay();
-
-	wind_direction.Normalize();
 
 	// Check that RTTs have correct dimensions.
 	// The alternative of resizing RTTs during runtime doesn't appear to be a great idea: https://answers.unrealengine.com/questions/177345/changing-rendertexture-size-at-runtime-dramaticall.html?sort=oldest
@@ -85,15 +84,59 @@ void AOceanSurfaceSimulation::create_mesh() {
 	m_shader_models_module = FModuleManager::LoadModuleChecked<ShaderModelsModule>("ShaderModels");
 	m_shader_models_module.GenerateButterflyTexture(this->butterfly_rtt);
 
-	FourierComponentsSettings settings;
-	settings.tile_size = L;
-	settings.gravity = gravity;
-	settings.amplitude = amplitude;
-	settings.wave_alignment = wave_alignment;
-	settings.wind_speed = wind_speed;
-	settings.wind_direction = wind_direction;
+	// Becomes the directional spreading function chosen from the editor.
+	std::function<float(FVector2D, FVector2D)> d = [this](FVector2D k_vec, FVector2D wind_direction) {
 
-	m_shader_models_module.Buildh0Textures(this->N, settings);
+		float k = k_vec.Size();
+		float g = GRAVITY;
+
+		float omega = sqrt(k * g);
+
+		// Angle of wave vector
+		float theta = atan2(k_vec.Y, k_vec.X);
+
+		// Angle of wind (assumed to be 0, i.e. positive x-axis, in most literature)
+		float theta_p = atan2(wind_direction.Y, wind_direction.X); // The peak is equal to the wind direction
+
+		// Angle of wave vector relative to the wind (Horvath equation 41)
+		theta = theta - theta_p;
+
+		float res = 0.0f;
+
+		if (directional_spreading_function == DirectionalSpreadingType::Uniform) {
+			res = UniformDirectionalSpectrum();
+		}
+		else if (directional_spreading_function == DirectionalSpreadingType::DonelanBanner) {
+			res = DonelanBannerDirectionalSpectrum(theta, omega, donelan_banner_settings);
+		}
+		else {
+			UE_LOG(LogTemp, Error, TEXT("Unknown enum!"));
+		}
+
+		return FMath::Clamp(res, 0.0f, 1.0f);
+	};
+
+	// Becomes the wave spectrum chosen from the editor.
+	std::function<float(FVector2D)> w = [this, d](FVector2D k_vec) {
+
+		float res = 0.0f;
+
+		if (wave_spectrum == WaveSpectrumType::Phillips) {
+			phillips_settings.wind_direction.Normalize();
+			res = PhillipsWaveSpectrum(k_vec, phillips_settings) * d(k_vec, phillips_settings.wind_direction);
+		}
+		else if (wave_spectrum == WaveSpectrumType::Jonswap) {
+			jonswap_settings.wind_direction.Normalize();
+			res = JonswapWaveSpectrum(k_vec, jonswap_settings) * d(k_vec, jonswap_settings.wind_direction);
+		}
+		else {
+			UE_LOG(LogTemp, Error, TEXT("Unknown enum!"));
+		}
+
+		return pow(amplitude_scaler, 2.0f) * res; // We square the scalar since the spectrum represents amplitude squared
+	};
+
+	m_shader_models_module.Buildh0Textures(this->N, this->L, w);
 
 	// Triangles
 	// We use (N+1)^2 vertices instead of N^2 in order to produce seamless tiling (diplacement of vertex N+1 will equal that of vertex 0, in a given horizontal axis).

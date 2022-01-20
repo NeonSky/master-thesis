@@ -1,4 +1,5 @@
 #include "FourierComponents.h"
+#include "Globals/StatelessHelpers.h"
 
 #include "RenderGraph.h"
 #include "RenderTargetPool.h"
@@ -9,87 +10,6 @@
 #include <random>
 
 IMPLEMENT_GLOBAL_SHADER(FourierComponentsShader, "/Project/UnrealMasterThesis/FourierComponents.usf", "MainCompute", SF_Compute);
-
-float PhillipsSpectrum(FVector2D k_vec, FourierComponentsSettings settings) {
-  if (k_vec.IsZero()) {
-    return 0.0f;
-  }
-
-  float phillips_L = pow(settings.wind_speed, 2.0) / settings.gravity;
-
-  float wave_number = k_vec.Size(); // vector magnitude
-
-  FVector2D k_hat = k_vec.GetSafeNormal();
-
-  float k_hat_dot_omega_hat = FVector2D::DotProduct(k_hat, settings.wind_direction);
-
-  float res = settings.amplitude;
-  res *= exp(-1.0 / pow(wave_number * phillips_L, 2.0));
-  res /= pow(wave_number, 4.0);
-  res *= pow(k_hat_dot_omega_hat, settings.wave_alignment);
-
-  float damping   = 0.001f;
-  float wave_length = wave_number * damping; // Used by Tessendorf in the first set of examples
-  res *= exp(-pow(wave_number, 2.0) * pow(wave_length, 2.0));
-
-  return res;
-}
-
-float Jonswap(float omega, const FourierComponentsSettings& settings) {
-  double U_10 = settings.wind_speed;
-  double F = 100000.0; // fetch
-  double gamma = 3.3f;
-  double g = settings.gravity;
-  double alpha = 0.076f * pow(g * F / pow(U_10, 2.0f), -0.22f);
-  double omega_p = 22.0f * pow(U_10 * F / pow(g, 2.0f), -0.33f);
-  double sigma = omega <= omega_p ? 0.07f : 0.09f;
-  double r = exp(-pow(omega - omega_p, 2.0) / (2.0 * sigma * sigma * omega_p * omega_p));
-
-  return alpha * g * g * exp(-(5.0/4.0) * pow(omega_p / omega, 4.0)) * pow(gamma, r) / pow(omega, 5.0);
-}
-
-// Donelan-Banner Directional Spreading. See Horvath paper
-float DirectionalSpectrum(float theta, float omega, const FourierComponentsSettings& settings) {
-
-  float U_10 = settings.wind_speed;
-  float F = 100000.0; // fetch
-  float g = settings.gravity;
-
-  float omega_p = 22.0f * pow(U_10 * F / pow(g, 2.0f), -0.33f);
-  float omega_over_omega_p = omega / omega_p;
-
-  float beta = 0.0f;
-  if (omega_over_omega_p < 0.95f) {
-    beta = 2.61f * pow(omega_over_omega_p, 1.3f);
-  }
-  else if (omega_over_omega_p < 1.6f) {
-    beta = 2.28f * pow(omega_over_omega_p, -1.3f);
-  }
-  else {
-    float e = -0.4 + 0.8393 * exp(-0.567 * log(pow(omega_over_omega_p, 2.0)));
-    beta = pow(10, e);
-  }
-
-  float sech_term = 1.0f / cosh(beta * theta); // https://mathworld.wolfram.com/HyperbolicSecant.html
-
-  return beta * pow(sech_term, 2.0) / (2 * tanh(beta * PI));
-}
-
-float JonswapSpectrum(FVector2D k_vec, const FourierComponentsSettings& settings) {
-  if (k_vec.IsZero()) {
-    return 0.0f;
-  }
-
-  float k = k_vec.Size();
-  float g = settings.gravity;
-
-  float omega = sqrt(k * g);
-  float theta = atan2(k_vec.Y, k_vec.X);
-  float theta_p = atan2(settings.wind_direction.Y, settings.wind_direction.X); // The peak is equal to the wind direction
-  float theta_diff = theta - theta_p; // Horvath equation 41
-
-  return Jonswap(omega, settings) * DirectionalSpectrum(theta_diff, omega, settings) * sqrt(g) / (2 * k * sqrt(k));
-}
 
 FRDGTextureRef register_texture(
 	FRDGBuilder& graph_builder,
@@ -141,17 +61,7 @@ CustomUAV create_UAV(
   return uav;
 }
 
-TArray<FFloat16Color> create_init_data(int N, FourierComponentsSettings settings) {
-
-  settings.wind_direction.Normalize();
-
-  auto wave_spectrum = [=](FVector2D k_vec, FourierComponentsSettings settings) {
-    if (settings.amplitude > 0.0) {
-      return PhillipsSpectrum(k_vec, settings);
-    } else {
-      return JonswapSpectrum(k_vec, settings);
-    }
-  };
+TArray<FFloat16Color> create_init_data(int N, float L, std::function<float (FVector2D)> wave_spectrum) {
 
   std::random_device rd{};
   std::mt19937 rng{rd()};
@@ -163,23 +73,23 @@ TArray<FFloat16Color> create_init_data(int N, FourierComponentsSettings settings
     for (int x = 0; x < N; x++) {
 
       FVector2D wave_vector = FVector2D(
-        2.0 * PI * (z - floor(N / 2.0)) / settings.tile_size,
-        2.0 * PI * (x - floor(N / 2.0)) / settings.tile_size
+        2.0 * PI * (z - floor(N / 2.0)) / L,
+        2.0 * PI * (x - floor(N / 2.0)) / L
       );
 
       FVector2D neg_wave_vector = FVector2D(
-        2.0 * PI * ((-z) - floor(N / 2.0)) / settings.tile_size,
-        2.0 * PI * ((-x) - floor(N / 2.0)) / settings.tile_size
+        2.0 * PI * ((-z) - floor(N / 2.0)) / L,
+        2.0 * PI * ((-x) - floor(N / 2.0)) / L
       );
 
       float xi_r = dist(rng);
       float xi_i = dist(rng);
       std::complex<float> complex_rv(xi_r, xi_i);
 
-      float delta_k = 2.0f * PI / settings.tile_size;
+      float delta_k = 2.0f * PI / L;
 
-      std::complex<float> h0 = sqrt(1.0f / 2.0f) * complex_rv * sqrt(2.0f * wave_spectrum(wave_vector, settings) * delta_k * delta_k);
-      std::complex<float> h0_conj = std::conj(sqrt(1.0f / 2.0f) * complex_rv * sqrt(2.0f * wave_spectrum(neg_wave_vector, settings) * delta_k * delta_k));
+      std::complex<float> h0 = sqrt(1.0f / 2.0f) * complex_rv * sqrt(2.0f * wave_spectrum(wave_vector) * delta_k * delta_k);
+      std::complex<float> h0_conj = std::conj(sqrt(1.0f / 2.0f) * complex_rv * sqrt(2.0f * wave_spectrum(neg_wave_vector) * delta_k * delta_k));
 
       res.Add(FFloat16Color(FLinearColor(h0.real(), h0.imag(), h0_conj.real(), h0_conj.imag())));
     }
@@ -189,11 +99,11 @@ TArray<FFloat16Color> create_init_data(int N, FourierComponentsSettings settings
 
 }
 
-void FourierComponentsShader::Buildh0Textures(int N, FourierComponentsSettings settings) {
+void FourierComponentsShader::Buildh0Textures(int N, float L, std::function<float (FVector2D)> wave_spectrum) {
 
   this->m_N = N;
 
-  TArray<FFloat16Color> init_data = create_init_data(N, settings);
+  TArray<FFloat16Color> init_data = create_init_data(N, L, wave_spectrum);
 
   //////////////////////////////
   //////////////////////////////
