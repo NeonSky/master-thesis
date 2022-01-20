@@ -62,10 +62,9 @@ CustomUAV create_UAV(
 
 TArray<FFloat16Color> create_init_data(int N, FourierComponentsSettings settings) {
 
-  float L = pow(settings.wind_speed, 2.0) / settings.gravity;
-
   settings.wind_direction.Normalize();
 
+  float phillips_L = pow(settings.wind_speed, 2.0) / settings.gravity;
   auto wave_spectrum = [=](FVector2D k_vec) {
     if (k_vec.IsZero()) {
       return 0.0f;
@@ -78,7 +77,7 @@ TArray<FFloat16Color> create_init_data(int N, FourierComponentsSettings settings
     float k_hat_dot_omega_hat = FVector2D::DotProduct(k_hat, settings.wind_direction);
 
     float res = settings.amplitude;
-    res *= exp(-1.0 / pow(wave_number * L, 2.0));
+    res *= exp(-1.0 / pow(wave_number * phillips_L, 2.0));
     res /= pow(wave_number, 4.0);
     res *= pow(k_hat_dot_omega_hat, settings.wave_alignment);
 
@@ -112,7 +111,7 @@ TArray<FFloat16Color> create_init_data(int N, FourierComponentsSettings settings
       float xi_i = dist(rng);
       std::complex<float> complex_rv(xi_r, xi_i);
 
-      float delta_k = 2.0f * PI / L;
+      float delta_k = 2.0f * PI / settings.tile_size;
 
       std::complex<float> h0 = sqrt(1.0f / 2.0f) * complex_rv * sqrt(2.0f * wave_spectrum(wave_vector) * delta_k * delta_k);
       std::complex<float> h0_conj = std::conj(sqrt(1.0f / 2.0f) * complex_rv * sqrt(2.0f * wave_spectrum(neg_wave_vector) * delta_k * delta_k));
