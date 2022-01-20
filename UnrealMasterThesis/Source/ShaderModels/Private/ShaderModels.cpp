@@ -71,23 +71,29 @@ void ShaderModelsModule::ComputeFourierComponents(
 	float L,
 	UTextureRenderTarget2D* tilde_hkt_dx,
 	UTextureRenderTarget2D* tilde_hkt_dy,
-	UTextureRenderTarget2D* tilde_hkt_dz) {
+	UTextureRenderTarget2D* tilde_hkt_dz,
+	UTextureRenderTarget2D* tilde_slope_x,
+	UTextureRenderTarget2D* tilde_slope_z) {
 
  	TShaderMapRef<FourierComponentsShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	UTextureRenderTarget2D* tilde_hkt_dx_param = tilde_hkt_dx;
 	UTextureRenderTarget2D* tilde_hkt_dy_param = tilde_hkt_dy;
 	UTextureRenderTarget2D* tilde_hkt_dz_param = tilde_hkt_dz;
+	UTextureRenderTarget2D* tilde_slope_x_param = tilde_slope_x;
+	UTextureRenderTarget2D* tilde_slope_z_param = tilde_slope_z;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, t, L, tilde_hkt_dx_param, tilde_hkt_dy_param, tilde_hkt_dz_param](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, t, L, tilde_hkt_dx_param, tilde_hkt_dy_param, tilde_hkt_dz_param, tilde_slope_x_param, tilde_slope_z_param](FRHICommandListImmediate& RHI_cmd_list) {
 			shader->BuildAndExecuteGraph(
 				RHI_cmd_list,
 				t,
 				L,
 				tilde_hkt_dx_param,
 				tilde_hkt_dy_param,
-				tilde_hkt_dz_param
+				tilde_hkt_dz_param,
+				tilde_slope_x_param,
+				tilde_slope_z_param
 			);
 		}); 
 }

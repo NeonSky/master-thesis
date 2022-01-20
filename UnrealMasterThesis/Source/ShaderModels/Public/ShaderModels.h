@@ -20,7 +20,9 @@ public:
 		float L,
 		UTextureRenderTarget2D* tilde_hkt_dx,
 		UTextureRenderTarget2D* tilde_hkt_dy,
-		UTextureRenderTarget2D* tilde_hkt_dz
+		UTextureRenderTarget2D* tilde_hkt_dz,
+		UTextureRenderTarget2D* tilde_slope_x,
+		UTextureRenderTarget2D* tilde_slope_z
 	);
 
 };

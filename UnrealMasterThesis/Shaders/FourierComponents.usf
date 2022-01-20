@@ -44,6 +44,8 @@ Texture2D<float4> tilde_h0_neg_k;
 RWTexture2D<float4> tilde_hkt_dx;
 RWTexture2D<float4> tilde_hkt_dy;
 RWTexture2D<float4> tilde_hkt_dz;
+RWTexture2D<float4> tilde_slope_x;
+RWTexture2D<float4> tilde_slope_z;
 
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
@@ -97,5 +99,19 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
   tilde_hkt_dx[id.xy] = float4(hkt_dx.re, hkt_dx.im, 0.0, 1.0);
   tilde_hkt_dy[id.xy] = float4(hkt_dy.re, hkt_dy.im, 0.0, 1.0);
   tilde_hkt_dz[id.xy] = float4(hkt_dz.re, hkt_dz.im, 0.0, 1.0);
+
+  // gradient h = i * k * h~(k, t)
+  Complex ikx = newComplex(0, k_vec.x);
+  Complex iky = newComplex(0, k_vec.y);
+  
+  Complex tsx = mul(ikx, hkt_dy);
+  Complex tsz = mul(iky, hkt_dy);
+  
+  tilde_slope_x[id.xy] = float4(tsx.re, tsx.im, 0.0, 1.0);
+  tilde_slope_z[id.xy] = float4(tsz.re, tsz.im, 0.0, 1.0);
+  
+  
+  
+  
 
 }

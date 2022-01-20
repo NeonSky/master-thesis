@@ -32,6 +32,8 @@ public:
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, tilde_hkt_dx)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, tilde_hkt_dy)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, tilde_hkt_dz)
+		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, tilde_slope_x)
+		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, tilde_slope_z)
 
 	END_SHADER_PARAMETER_STRUCT()
 
@@ -54,7 +56,9 @@ public:
     float L,
     UTextureRenderTarget2D* tilde_hkt_dx,
     UTextureRenderTarget2D* tilde_hkt_dy,
-    UTextureRenderTarget2D* tilde_hkt_dz
+    UTextureRenderTarget2D* tilde_hkt_dz,
+	UTextureRenderTarget2D* tilde_slope_x,
+	UTextureRenderTarget2D* tilde_slope_z
   );
 
 private:

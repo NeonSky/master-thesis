@@ -43,6 +43,12 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UTextureRenderTarget2D* spectrum_z_rtt;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UTextureRenderTarget2D* slope_x_rtt;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UTextureRenderTarget2D* slope_z_rtt;
+
 	UPROPERTY(VisibleAnywhere)
 	UProceduralMeshComponent* mesh;
 

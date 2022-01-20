@@ -200,7 +200,9 @@ void FourierComponentsShader::BuildAndExecuteGraph(
   float L,
   UTextureRenderTarget2D* tilde_hkt_dx,
   UTextureRenderTarget2D* tilde_hkt_dy,
-  UTextureRenderTarget2D* tilde_hkt_dz) {
+  UTextureRenderTarget2D* tilde_hkt_dz,
+  UTextureRenderTarget2D* tilde_slope_x,
+  UTextureRenderTarget2D* tilde_slope_z) {
 
 	FRDGBuilder graph_builder(RHI_cmd_list);
 
@@ -217,10 +219,14 @@ void FourierComponentsShader::BuildAndExecuteGraph(
   CustomUAV uav1 = create_UAV(graph_builder, tilde_hkt_dx, TEXT("Compute_Something_Texture1"));
   CustomUAV uav2 = create_UAV(graph_builder, tilde_hkt_dy, TEXT("Compute_Something_Texture2"));
   CustomUAV uav3 = create_UAV(graph_builder, tilde_hkt_dz, TEXT("Compute_Something_Texture3"));
+  CustomUAV uav4 = create_UAV(graph_builder, tilde_slope_x, TEXT("Compute_Slope_Texture1"));
+  CustomUAV uav5 = create_UAV(graph_builder, tilde_slope_z, TEXT("Compute_Slope_Texture2"));
 
   PassParameters->tilde_hkt_dx = uav1.uav_ref;
   PassParameters->tilde_hkt_dy = uav2.uav_ref;
   PassParameters->tilde_hkt_dz = uav3.uav_ref;
+  PassParameters->tilde_slope_x = uav4.uav_ref;
+  PassParameters->tilde_slope_z = uav5.uav_ref;
 
 	TShaderMapRef<FourierComponentsShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
@@ -241,6 +247,12 @@ void FourierComponentsShader::BuildAndExecuteGraph(
 	TRefCountPtr<IPooledRenderTarget> PooledComputeTarget3;
 	graph_builder.QueueTextureExtraction(uav3.ref, &PooledComputeTarget3);
 
+    TRefCountPtr<IPooledRenderTarget> PooledComputeTarget4;
+    graph_builder.QueueTextureExtraction(uav4.ref, &PooledComputeTarget4);
+
+    TRefCountPtr<IPooledRenderTarget> PooledComputeTarget5;
+    graph_builder.QueueTextureExtraction(uav5.ref, &PooledComputeTarget5);
+
 	graph_builder.Execute();
 
 	RHI_cmd_list.CopyToResolveTarget(
@@ -260,6 +272,18 @@ void FourierComponentsShader::BuildAndExecuteGraph(
     tilde_hkt_dz->GetRenderTargetResource()->TextureRHI,
     FResolveParams()
   );
+
+    RHI_cmd_list.CopyToResolveTarget(
+    PooledComputeTarget4.GetReference()->GetRenderTargetItem().TargetableTexture,
+    tilde_slope_x->GetRenderTargetResource()->TextureRHI,
+    FResolveParams()
+  );
+
+    RHI_cmd_list.CopyToResolveTarget(
+    PooledComputeTarget5.GetReference()->GetRenderTargetItem().TargetableTexture,
+    tilde_slope_z->GetRenderTargetResource()->TextureRHI,
+    FResolveParams()
+    );
 
   // DEBUG READ-BACK
   // {
