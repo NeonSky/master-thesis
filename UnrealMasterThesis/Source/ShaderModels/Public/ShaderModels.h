@@ -13,7 +13,7 @@ public:
 	void GenerateButterflyTexture(UTextureRenderTarget2D* output);
 	void FFT(UTextureRenderTarget2D* butterfly, UTextureRenderTarget2D* output);
 
-	void Buildh0Textures(int N, FourierComponentsSettings settings);
+	void Buildh0Textures(int N, float L, std::function<float (FVector2D)> wave_spectrum);
 
 	void ComputeFourierComponents(
 		float t,

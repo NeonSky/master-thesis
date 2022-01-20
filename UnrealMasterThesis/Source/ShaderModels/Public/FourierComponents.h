@@ -5,14 +5,7 @@
 #include "ShaderParameterStruct.h"
 #include "Modules/ModuleManager.h"
 
-struct FourierComponentsSettings {
-  float tile_size;
-  float gravity;
-  float amplitude;
-  float wave_alignment;
-  float wind_speed;
-  FVector2D wind_direction;
-};
+#include <functional>
 
 class SHADERMODELS_API FourierComponentsShader : public FGlobalShader {
 public:
@@ -46,16 +39,16 @@ public:
 		OutEnvironment.SetDefine(TEXT("N_THREADS_Y"), 1);
 	}
 
-	void Buildh0Textures(int N, FourierComponentsSettings settings);
+	void Buildh0Textures(int N, float L, std::function<float (FVector2D)> wave_spectrum);
 
 	void BuildAndExecuteGraph(
-    FRHICommandListImmediate &RHI_cmd_list,
-	float t,
-    float L,
-    UTextureRenderTarget2D* tilde_hkt_dx,
-    UTextureRenderTarget2D* tilde_hkt_dy,
-    UTextureRenderTarget2D* tilde_hkt_dz
-  );
+			FRHICommandListImmediate &RHI_cmd_list,
+			float t,
+			float L,
+			UTextureRenderTarget2D *tilde_hkt_dx,
+			UTextureRenderTarget2D *tilde_hkt_dy,
+			UTextureRenderTarget2D *tilde_hkt_dz
+	);
 
 private:
 

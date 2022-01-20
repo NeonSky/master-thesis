@@ -3,6 +3,7 @@
 #pragma once
 
 #include "ShaderModels.h"
+#include "WaveSpectrums.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -10,6 +11,17 @@
 
 #include "OceanSurfaceSimulation.generated.h"
 
+UENUM()
+enum WaveSpectrumType {
+  Phillips UMETA(DisplayName = "Phillips"),
+  Jonswap  UMETA(DisplayName = "JONSWAP"),
+};
+
+UENUM()
+enum DirectionalSpreadingType {
+  Uniform       UMETA(DisplayName = "Uniform"),
+  DonelanBanner UMETA(DisplayName = "Donelan-Banner"),
+};
 
 UCLASS(Blueprintable)
 class UNREALMASTERTHESIS_API AOceanSurfaceSimulation : public AActor {
@@ -47,27 +59,27 @@ private:
 	UProceduralMeshComponent* mesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float gravity;
+	TEnumAsByte<WaveSpectrumType> wave_spectrum;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float L; // The side length of the patch in meters. Essentially animation speed. Higher -> Slower
+	TEnumAsByte<DirectionalSpreadingType> directional_spreading_function;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float amplitude; //  in meters per second.
+	FPhillipsSpectrumSettings phillips_settings;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float wave_length; // in meters
+	FJonswapSpectrumSettings jonswap_settings;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float wave_alignment; // usually between 2.0 and 8.0
+	FDonelanBannerSettings donelan_banner_settings;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float wind_speed; // Wind speed in meters per second.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), meta=(UIMin = "0.01", UIMax = "10.0"))
+	float amplitude_scaler;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	FVector2D wind_direction; // Ensured to be normalized in code.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), meta=(UIMin = "1.0", UIMax = "1000.0"))
+	float L; // The side length of the patch in meters.
 
-	int32 N; // Resolution
+	int32 N; // Resolution in terms of vertices per horizontal unit axis.
 
 	ShaderModelsModule m_shader_models_module; // Reference to the ShaderModels module
 
