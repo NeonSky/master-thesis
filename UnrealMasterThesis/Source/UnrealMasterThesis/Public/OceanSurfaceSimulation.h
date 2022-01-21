@@ -55,9 +55,6 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UTextureRenderTarget2D* spectrum_z_rtt;
 
-	UPROPERTY(VisibleAnywhere)
-	UProceduralMeshComponent* mesh;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TEnumAsByte<WaveSpectrumType> wave_spectrum;
 
@@ -77,11 +74,13 @@ private:
 	float amplitude_scaler;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), meta=(UIMin = "1.0", UIMax = "1000.0"))
-	float L; // The side length of the patch in meters.
+	float L; // The side length of each ocean tile in meters.
 
 	int32 N; // Resolution in terms of vertices per horizontal unit axis.
 
 	ShaderModelsModule m_shader_models_module; // Reference to the ShaderModels module
+
+	TArray<UProceduralMeshComponent*> tile_meshes; // Each tile is a separate mesh but they share material
 
 	void create_mesh();
 	void update_mesh();
