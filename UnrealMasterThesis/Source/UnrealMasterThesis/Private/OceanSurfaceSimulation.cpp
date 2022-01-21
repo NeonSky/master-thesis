@@ -8,7 +8,11 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "Kismet/GameplayStatics.h"
 
-static const float METERS_TO_UNREAL_UNITS = 100;
+// Having this in the editor would be nice, but we need to use CreateDefaultSubobject (it seems).
+// This function may only be called from the constructor, which doesn't have access to the initialized editor properties.
+// The NewObject function could potentially work, but it does not appear to give visible results in our case.
+const int TILES_COUNT = 121; // Should be 1 or higher
+
 
 AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
 	UE_LOG(LogTemp, Warning, TEXT("AOceanSurfaceSimulation::AOceanSurfaceSimulation()"));
@@ -16,8 +20,12 @@ AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
 	// Configure Tick() to be called every frame.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// Initialize the mesh as an empty procedural mesh.
-	this->mesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Generated Ocean Surface"));
+	// Initialize the tiles as empty procedural meshes.
+	this->tile_meshes.SetNum(TILES_COUNT);
+	for (int i = 0; i < TILES_COUNT; i++) {
+		FName name = FName(*FString::Printf(TEXT("Ocean tile %i"), i+1));
+		this->tile_meshes[i] = CreateDefaultSubobject<UProceduralMeshComponent>(name);
+	}
 }
 
 void AOceanSurfaceSimulation::BeginPlay() {
@@ -45,7 +53,9 @@ void AOceanSurfaceSimulation::BeginPlay() {
 
 	create_mesh();
 
-	this->mesh->SetMaterial(0, this->material);
+	for (int i = 0; i < TILES_COUNT; i++) {
+		this->tile_meshes[i]->SetMaterial(0, this->material);
+	}
 }
 
 void AOceanSurfaceSimulation::Tick(float DeltaTime) {
@@ -55,6 +65,7 @@ void AOceanSurfaceSimulation::Tick(float DeltaTime) {
 }
 
 void AOceanSurfaceSimulation::create_mesh() {
+
 	float spatial_size = L * METERS_TO_UNREAL_UNITS;
 	float z_pos = 0.0;
 
@@ -151,7 +162,36 @@ void AOceanSurfaceSimulation::create_mesh() {
 	TArray<FColor> vertex_colors;
 	bool create_collision = false;
 
-	this->mesh->CreateMeshSection(section_index, vertices, triangles, normals, uv0, uv1, uv2, uv3, vertex_colors, tangents, create_collision);
+	// Outward spiral movement. Credit: https://stackoverflow.com/a/14010215/8418261
+	int layer = 1;
+	int leg = 0;
+	int x = 0;
+	int y = 0;
+	auto go_next = [&]() {
+			switch (leg) {
+        case 0: ++x; if(x  == layer)  ++leg;                break;
+        case 1: ++y; if(y  == layer)  ++leg;                break;
+        case 2: --x; if(-x == layer)  ++leg;                break;
+        case 3: --y; if(-y == layer){ leg = 0; ++layer; }   break;
+			}
+	};
+
+	TArray<FVector> offset_vertices = vertices;
+
+	// Place tiles in an outward spiral pattern.
+	for (int t = 0; t < TILES_COUNT; t++) {
+
+		for (int32 u = 0; u <= this->N; u++) {
+			for (int32 v = 0; v <= this->N; v++) {
+				int i = u * (this->N+1) + v;
+				offset_vertices[i] = vertices[i] + FVector(spatial_size * x, spatial_size * y, 0.0);
+			}
+		}
+
+		this->tile_meshes[t]->CreateMeshSection(section_index, offset_vertices, triangles, normals, uv0, uv1, uv2, uv3, vertex_colors, tangents, create_collision);
+
+		go_next();
+	}
 }
 
 void AOceanSurfaceSimulation::update_mesh() {
