@@ -11,7 +11,7 @@
 // Having this in the editor would be nice, but we need to use CreateDefaultSubobject (it seems).
 // This function may only be called from the constructor, which doesn't have access to the initialized editor properties.
 // The NewObject function could potentially work, but it does not appear to give visible results in our case.
-const int TILES_COUNT = 121; // Should be 1 or higher
+const int TILES_COUNT = 49; // Should be 1 or higher
 
 
 AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
