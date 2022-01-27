@@ -76,3 +76,4 @@ DerivedDataCache/*
 # Custom Directories
 .vscode
 build
+Content/Custom/Models
