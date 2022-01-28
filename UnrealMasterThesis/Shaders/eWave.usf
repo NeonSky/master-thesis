@@ -1,0 +1,45 @@
+#include "/Engine/Public/Platform.ush"
+
+static const float PI = 3.1415926535897933;
+static const float gravity = 9.82;
+
+int N;   // Resolution
+float L; // Side length of patch in meters
+float t; // Time (in seconds)
+
+RWTexture2D<float4> eWave_h;
+RWTexture2D<float4> eWave_hPrev;
+RWTexture2D<float4> eWave_v;
+RWTexture2D<float4> eWave_vPrev;
+
+[numthreads(N_THREADS_X, N_THREADS_Y, 1)]
+void eWaveCompute(uint3 id : SV_DispatchThreadID) {
+
+  // Horizontal position
+  float2 x = float2(id.xy) - float(N) / 2.0;
+
+  // Wave vector
+  float2 k_vec = float2(
+    2.0 * PI * x.x / L,
+    2.0 * PI * x.y / L
+  );
+
+  // Wave number
+  float k = length(k_vec);
+  k = max(k, 0.00001);
+
+  float w = sqrt(gravity * k);
+
+  float cos_w_t = cos(w * t);
+  float sin_w_t = sin(w * t);
+
+  float kOverw =  k / w;
+  float gOverw = gravity / w;
+
+  float h = cos_w_t * eWave_hPrev[id.xy] + kOverw * sin_w_t * eWave_vPrev[id.xy]; // eq 19
+  float v = cos_w_t * eWave_vPrev[id.xy] - gOverw * sin_w_t * eWave_hPrev[id.xy]; // eq 20
+
+  eWave_h[id.xy] = float4(h, 0.0, 0.0, 1.0);
+  eWave_v[id.xy] = float4(v, 0.0, 0.0, 1.0);
+
+}
