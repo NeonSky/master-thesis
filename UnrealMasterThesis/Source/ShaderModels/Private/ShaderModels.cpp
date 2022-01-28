@@ -4,7 +4,7 @@
 #include "ButterflyTexture.h"
 #include "FourierComponents.h"
 #include "ButterflyPostProcess.h"
-#include "ElevationSampler.h"
+#include "eWave.h"
 
 #include "GlobalShader.h"
 #include "ShaderCore.h" 
@@ -93,24 +93,33 @@ void ShaderModelsModule::ComputeFourierComponents(
 		}); 
 }
 
-void ShaderModelsModule::SampleElevationPoints(UTextureRenderTarget2D* elevations, TArray<FVector2D> input_sample_coordinates, TArray<float>* output) {
+void ShaderModelsModule::ComputeeWave(
+	float t, 
+	float L, 
+	UTextureRenderTarget2D* eWave_h, 
+	UTextureRenderTarget2D* eWave_hPrev,
+	UTextureRenderTarget2D* eWave_v, 
+	UTextureRenderTarget2D* eWave_vPrev) {
 
- 	TShaderMapRef<ElevationSamplerShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+	TShaderMapRef<eWaveShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
-	FRenderCommandFence fence;
+	UTextureRenderTarget2D* eWave_h_param = eWave_h;
+	UTextureRenderTarget2D* eWave_hPrev_param = eWave_hPrev;
+	UTextureRenderTarget2D* eWave_v_param = eWave_v;
+	UTextureRenderTarget2D* eWave_vPrev_dz_param = eWave_vPrev;
+
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, elevations, input_sample_coordinates, output](FRHICommandListImmediate& RHI_cmd_list) {
-			shader->BuildAndExecuteGraph(
-				RHI_cmd_list,
-				elevations,
-				input_sample_coordinates,
-				output
-			);
-		}); 
-
-	// Force the output to be ready since UE will not allow the render thread to get 2 frames behind the game thread anyway. 
-	fence.BeginFence();
-	fence.Wait();
+		[shader, t, L, eWave_h_param, eWave_hPrev_param, eWave_v_param, eWave_vPrev_dz_param](FRHICommandListImmediate& RHI_cmd_list) {
+		shader->BuildAndExecuteGraph(
+			RHI_cmd_list,
+			t,
+			L,
+			eWave_h_param,
+			eWave_hPrev_param,
+			eWave_v_param,
+			eWave_vPrev_dz_param
+		);
+	});
 
 }
 

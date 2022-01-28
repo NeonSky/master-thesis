@@ -23,6 +23,13 @@ public:
 		UTextureRenderTarget2D* tilde_hkt_dz
 	);
 
-	void SampleElevationPoints(UTextureRenderTarget2D* elevations, TArray<FVector2D> input_sample_coordinates, TArray<float>* output);
+	void ComputeeWave(
+		float t,
+		float L,
+		UTextureRenderTarget2D* eWave_h,
+		UTextureRenderTarget2D* eWave_hPrev,
+		UTextureRenderTarget2D* eWave_v,
+		UTextureRenderTarget2D* eWave_vPrev
+	);
 
 };
