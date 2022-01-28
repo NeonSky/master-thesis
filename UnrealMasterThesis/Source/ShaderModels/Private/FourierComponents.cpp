@@ -235,6 +235,14 @@ void FourierComponentsShader::BuildAndExecuteGraph(
     FResolveParams()
   );
 
+  // void* data = 0;
+  // FGPUFenceRHIRef fence = RHI_cmd_list.CreateGPUFence("TestFence");
+  // int width = 256;
+  // int height = 256;
+  // UE_LOG(LogTemp, Warning, TEXT("POLL %b"), fence->Poll());
+  // RHI_cmd_list.MapStagingSurface(tilde_hkt_dy->GetRenderTargetResource()->TextureRHI, fence, data, width, height);
+  // UE_LOG(LogTemp, Warning, TEXT("POLL %b"), fence->Poll());
+
   // DEBUG READ-BACK
   // {
   //   FRHIResourceCreateInfo CreateInfo;

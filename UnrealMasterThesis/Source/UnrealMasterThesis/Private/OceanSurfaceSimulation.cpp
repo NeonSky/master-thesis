@@ -13,6 +13,10 @@
 // The NewObject function could potentially work, but it does not appear to give visible results in our case.
 const int TILES_COUNT = 49; // Should be 1 or higher
 
+TArray<FFloat16Color> data;
+int frames_before = 0;
+int frames_after = 0;
+bool has_read = true;
 
 AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
 	UE_LOG(LogTemp, Warning, TEXT("AOceanSurfaceSimulation::AOceanSurfaceSimulation()"));
@@ -56,6 +60,8 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	for (int i = 0; i < TILES_COUNT; i++) {
 		this->tile_meshes[i]->SetMaterial(0, this->material);
 	}
+
+	this->spectrum_y_rtt->bGPUSharedFlag = true;
 }
 
 void AOceanSurfaceSimulation::Tick(float DeltaTime) {
@@ -194,6 +200,77 @@ void AOceanSurfaceSimulation::create_mesh() {
 	}
 }
 
+void AOceanSurfaceSimulation::sync_read() {
+	// Read back elevations
+	TArray<FColor> pixels;
+	FTextureRenderTarget2DResource* tex_res = (FTextureRenderTarget2DResource*) this->spectrum_y_rtt->Resource;
+
+	// NOTE: This code takes about
+	// (0.578546 - 0.558922) * 1000 = 19.6 ms on average (with this->spectrum_y_rtt->bGPUSharedFlag = false;)
+	// (0.141197 - 0.127357) * 1000 = 13.8 ms on average (with this->spectrum_y_rtt->bGPUSharedFlag = true;)
+	UE_LOG(LogTemp, Warning, TEXT("BEFORE: %f"), FPlatformTime::Seconds());
+	tex_res->ReadPixels(pixels);
+	UE_LOG(LogTemp, Warning, TEXT("AFTER: %f"), FPlatformTime::Seconds());
+}
+
+void AOceanSurfaceSimulation::async_req() {
+	if (!has_read) {
+		return;
+	}
+
+	UTextureRenderTarget2D* rtt = this->spectrum_y_rtt;
+	frames_before = frames_after;
+	int32 n = this->N;
+
+	UE_LOG(LogTemp, Warning, TEXT("BEFORE: %f"), FPlatformTime::Seconds());
+	has_read = false;
+	ENQUEUE_RENDER_COMMAND(SceneDrawCompletion)(
+
+		[rtt, n](FRHICommandListImmediate& RHI_cmd_list) {
+
+			FRHITexture* rhi_tex = rtt->GetRenderTargetResource()->TextureRHI;
+
+			FRHIResourceCreateInfo CreateInfo;
+			FTexture2DRHIRef readback_tex = RHICreateTexture2D(
+				n,
+				n,
+				PF_FloatRGBA,
+				1,
+				1,
+				TexCreate_RenderTargetable,
+				CreateInfo);
+
+			RHI_cmd_list.CopyToResolveTarget(
+				rhi_tex->GetTexture2D(),
+				readback_tex,
+				FResolveParams()
+			);
+
+			FReadSurfaceDataFlags read_flags(RCM_MinMax);
+			read_flags.SetLinearToGamma(false);
+
+			// Avoids segfault, but segfaults occassionaly.
+			RHI_cmd_list.ReadSurfaceFloatData(
+				readback_tex,
+				FIntRect(0, 0, n, n),
+				data,
+				read_flags
+			);
+		});
+}
+
+void AOceanSurfaceSimulation::async_read() {
+
+	if (data.Num() != 256*256) {
+		return;
+	}
+
+	// (0.929488 - 0.904734) * 1000 = 24.75 ms
+	UE_LOG(LogTemp, Warning, TEXT("AFTER: %f (%i frames)"), FPlatformTime::Seconds(), frames_after - frames_before);
+	data.SetNum(0);
+	has_read = true;
+}
+
 void AOceanSurfaceSimulation::update_mesh() {
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
 
@@ -201,5 +278,10 @@ void AOceanSurfaceSimulation::update_mesh() {
 
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_x_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
+	frames_after++;
+	async_req();
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
+
+	async_read();
+	// sync_read();
 }

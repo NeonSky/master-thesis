@@ -13,6 +13,8 @@ public class UnrealMasterThesis : ModuleRules {
 			"Engine",
 			"InputCore",
 			"ProceduralMeshComponent",
+			"RHI",
+			"RenderCore",
 			"ShaderModels"
 		});
 
