@@ -61,7 +61,7 @@ void AOceanSurfaceSimulation::BeginPlay() {
 void AOceanSurfaceSimulation::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
-	this->update_mesh();
+	this->update_mesh(DeltaTime);
 }
 
 void AOceanSurfaceSimulation::create_mesh() {
@@ -194,7 +194,7 @@ void AOceanSurfaceSimulation::create_mesh() {
 	}
 }
 
-void AOceanSurfaceSimulation::update_mesh() {
+void AOceanSurfaceSimulation::update_mesh(float dt) {
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
 
 	m_shader_models_module.ComputeFourierComponents(realtimeSeconds, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
@@ -202,4 +202,30 @@ void AOceanSurfaceSimulation::update_mesh() {
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_x_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
+
+	// TODO: the ewave fields should be filled with 0s at the start
+	// TODO: add 
+	// TODO: forward FFT ewave height field (the field that is NOW prev is the one that would have been current in the previous frame and is the one that needs to go back to frequency space)
+	// ...(velocity potential field should already be in frequency space, I see no reason to FFT it back and forth.)
+	m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_hPrev_rtt);
+
+	
+	m_shader_models_module.ComputeeWave(dt, L, this->ewave_h_rtt, this->ewave_hPrev_rtt, this->ewave_v_rtt, this->ewave_vPrev_rtt);
+	
+	// TODO: inverse FFT back from frequency space
+	m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt);
+	// TODO: probably do this for horizontal displacements as well
+
+	
+	
+	// swap the current and prevs
+	UTextureRenderTarget2D* temp = this->ewave_hPrev_rtt;
+	this->ewave_hPrev_rtt = this->ewave_h_rtt;
+	this->ewave_h_rtt = temp;
+
+	temp = this->ewave_vPrev_rtt;
+	this->ewave_vPrev_rtt = this->ewave_v_rtt;
+	this->ewave_v_rtt = temp;
+	 
+
 }

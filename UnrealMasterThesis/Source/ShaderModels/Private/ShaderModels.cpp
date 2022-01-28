@@ -4,6 +4,7 @@
 #include "ButterflyTexture.h"
 #include "FourierComponents.h"
 #include "ButterflyPostProcess.h"
+#include "eWave.h"
 
 #include "GlobalShader.h"
 #include "ShaderCore.h" 
@@ -90,6 +91,36 @@ void ShaderModelsModule::ComputeFourierComponents(
 				tilde_hkt_dz_param
 			);
 		}); 
+}
+
+void ShaderModelsModule::ComputeeWave(
+	float t, 
+	float L, 
+	UTextureRenderTarget2D* eWave_h, 
+	UTextureRenderTarget2D* eWave_hPrev,
+	UTextureRenderTarget2D* eWave_v, 
+	UTextureRenderTarget2D* eWave_vPrev) {
+
+	TShaderMapRef<eWaveShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+
+	UTextureRenderTarget2D* eWave_h_param = eWave_h;
+	UTextureRenderTarget2D* eWave_hPrev_param = eWave_hPrev;
+	UTextureRenderTarget2D* eWave_v_param = eWave_v;
+	UTextureRenderTarget2D* eWave_vPrev_dz_param = eWave_vPrev;
+
+	ENQUEUE_RENDER_COMMAND(shader)(
+		[shader, t, L, eWave_h_param, eWave_hPrev_param, eWave_v_param, eWave_vPrev_dz_param](FRHICommandListImmediate& RHI_cmd_list) {
+		shader->BuildAndExecuteGraph(
+			RHI_cmd_list,
+			t,
+			L,
+			eWave_h_param,
+			eWave_hPrev_param,
+			eWave_v_param,
+			eWave_vPrev_dz_param
+		);
+	});
+
 }
 
 IMPLEMENT_MODULE(ShaderModelsModule, ShaderModels);

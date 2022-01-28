@@ -23,4 +23,13 @@ public:
 		UTextureRenderTarget2D* tilde_hkt_dz
 	);
 
+	void ComputeeWave(
+		float t,
+		float L,
+		UTextureRenderTarget2D* eWave_h,
+		UTextureRenderTarget2D* eWave_hPrev,
+		UTextureRenderTarget2D* eWave_v,
+		UTextureRenderTarget2D* eWave_vPrev
+	);
+
 };
