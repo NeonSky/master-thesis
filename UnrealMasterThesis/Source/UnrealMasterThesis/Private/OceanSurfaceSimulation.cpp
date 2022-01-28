@@ -225,8 +225,10 @@ void AOceanSurfaceSimulation::async_req() {
 	UE_LOG(LogTemp, Warning, TEXT("BEFORE: %f"), FPlatformTime::Seconds());
 	has_read = false;
 	ENQUEUE_RENDER_COMMAND(SceneDrawCompletion)(
-
 		[rtt, n](FRHICommandListImmediate& RHI_cmd_list) {
+			UE_LOG(LogTemp, Warning, TEXT("BEFOOOOOOORE"));
+			FGenericPlatformProcess::Sleep(1.0f);
+			UE_LOG(LogTemp, Warning, TEXT("AFTEEEEEEER"));
 
 			FRHITexture* rhi_tex = rtt->GetRenderTargetResource()->TextureRHI;
 
@@ -272,6 +274,7 @@ void AOceanSurfaceSimulation::async_read() {
 }
 
 void AOceanSurfaceSimulation::update_mesh() {
+	// UE_LOG(LogTemp, Warning, TEXT("update_mesh"));
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
 
 	m_shader_models_module.ComputeFourierComponents(realtimeSeconds, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
