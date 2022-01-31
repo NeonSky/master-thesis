@@ -15,8 +15,6 @@ const int TILES_COUNT = 49; // Should be 1 or higher
 
 
 AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
-	UE_LOG(LogTemp, Warning, TEXT("AOceanSurfaceSimulation::AOceanSurfaceSimulation()"));
-
 	// Configure Tick() to be called every frame.
 	PrimaryActorTick.bCanEverTick = true;
 

@@ -3,9 +3,13 @@
 #include "Boat.h"
 #include "Globals/StatelessHelpers.h"
 
-ABoat::ABoat() {
-	UE_LOG(LogTemp, Warning, TEXT("ABoat::ABoat()"));
+#include "Engine/TextureRenderTarget2D.h"
 
+float prev_time = 0.0;
+int frame = 0;
+int prev_frame = 0;
+
+ABoat::ABoat() {
 	// Configure Tick() to be called every frame.
 	PrimaryActorTick.bCanEverTick = true;
 }
@@ -13,12 +17,94 @@ ABoat::ABoat() {
 void ABoat::BeginPlay() {
 	Super::BeginPlay();
 
+  m_velocity_input = FVector2D(0.0f);
   m_speed_input = normal_speed;
+  m_has_requested_elevations = false;
 }
 
 void ABoat::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
+  ReadElevations();
+  UpdateElevations();
+  UpdateTransform(DeltaTime);
+
+  frame++;
+}
+
+void ABoat::ReadElevations() {
+
+ 	if (m_has_requested_elevations) {
+		return;
+	}
+  m_has_requested_elevations = true;
+
+	UTextureRenderTarget2D* input = this->spectrum_y_rtt;
+	TArray<FFloat16Color>* output = &this->m_elevation_data_scratch;
+	FRenderCommandFence* fence = &m_elevation_read_fence;
+
+	// frames_before = frames_after;
+	// UE_LOG(LogTemp, Warning, TEXT("BEFORE: %f"), FPlatformTime::Seconds());
+
+	// UE_LOG(LogTemp, Warning, TEXT("READ!"));
+  prev_frame = frame;
+	ENQUEUE_RENDER_COMMAND(SceneDrawCompletion)(
+    [input, output, fence](FRHICommandListImmediate& RHI_cmd_list) {
+
+      int32 N = 256;
+
+			FRHITexture* rhi_tex = input->GetRenderTargetResource()->TextureRHI;
+
+			FRHIResourceCreateInfo CreateInfo;
+			FTexture2DRHIRef readback_tex = RHICreateTexture2D(
+				N,
+				N,
+				PF_FloatRGBA,
+				1,
+				1,
+				TexCreate_RenderTargetable,
+				CreateInfo);
+
+      for (int i = 0; i < 500; i++) {
+        RHI_cmd_list.CopyToResolveTarget(
+          rhi_tex->GetTexture2D(),
+          readback_tex,
+          FResolveParams()
+        );
+
+        FReadSurfaceDataFlags read_flags(RCM_MinMax);
+        read_flags.SetLinearToGamma(false);
+
+        RHI_cmd_list.ReadSurfaceFloatData(
+          readback_tex,
+          FIntRect(0, 0, N, N),
+          *output,
+          read_flags
+        );
+      }
+
+      // UE_LOG(LogTemp, Warning, TEXT("Fence before: %i"), fence->IsFenceComplete());
+      fence->BeginFence();
+      // UE_LOG(LogTemp, Warning, TEXT("Fence after: %i"), fence->IsFenceComplete());
+
+    }); 
+}
+
+void ABoat::UpdateElevations() {
+  if (!m_has_requested_elevations || !m_elevation_read_fence.IsFenceComplete()) {
+    return;
+  }
+
+  float time = FPlatformTime::Seconds();
+	// UE_LOG(LogTemp, Warning, TEXT("Read complete: %f"), (time - prev_time) * 1000.0f);
+	UE_LOG(LogTemp, Warning, TEXT("Read complete after %i frames (%f ms)"), frame - prev_frame, (time - prev_time) * 1000.0f);
+  prev_time = time;
+
+  m_elevation_data = m_elevation_data_scratch;
+  m_has_requested_elevations = false;
+}
+
+void ABoat::UpdateTransform(float DeltaTime) {
   if (m_velocity_input.IsNearlyZero(0.001f)) {
     return;
   }
