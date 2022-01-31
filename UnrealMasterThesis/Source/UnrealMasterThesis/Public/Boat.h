@@ -30,20 +30,23 @@ protected:
 private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float speed1;
+	float slow_speed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float speed2;
+	float normal_speed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float speed3;
+	float fast_speed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float rotation_speed;
 
   FVector2D m_velocity_input;
   float m_speed_input;
 
-  void UseSpeed1();
-  void UseSpeed2();
-  void UseSpeed3();
+  void UseSlowSpeed();
+  void UseNormalSpeed();
+  void UseFastSpeed();
 
   void HorizontalAxis(float input);
   void VerticalAxis(float input);
