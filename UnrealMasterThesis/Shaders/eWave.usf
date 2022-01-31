@@ -3,6 +3,32 @@
 static const float PI = 3.1415926535897933;
 static const float gravity = 9.82;
 
+struct Complex {
+  float re;
+  float im;
+};
+
+Complex newComplex(float re, float im) {
+  Complex c;
+  c.re = re;
+  c.im = im;
+  return c;
+}
+
+Complex mul(Complex c1, Complex c2) {
+  Complex c;
+  c.re = c1.re * c2.re - c1.im * c2.im;
+  c.im = c1.re * c2.im + c1.im * c2.re;
+  return c;
+}
+
+Complex add(Complex c1, Complex c2) {
+  Complex c;
+  c.re = c1.re + c2.re;
+  c.im = c1.im + c2.im;
+  return c;
+}
+
 int N;   // Resolution
 float L; // Side length of patch in meters
 float t; // Time (in seconds)
@@ -36,10 +62,22 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
   float kOverw =  k / w;
   float gOverw = gravity / w;
 
-  float h = cos_w_t * eWave_hPrev[id.xy] + kOverw * sin_w_t * eWave_vPrev[id.xy]; // eq 19
-  float v = cos_w_t * eWave_vPrev[id.xy] - gOverw * sin_w_t * eWave_hPrev[id.xy]; // eq 20
 
-  eWave_h[id.xy] = float4(h, 0.0, 0.0, 1.0);
-  eWave_v[id.xy] = float4(v, 0.0, 0.0, 1.0);
+  // float h = cos_w_t * eWave_hPrev[id.xy] + kOverw * sin_w_t * eWave_vPrev[id.xy]; // eq 19
+  Complex term1_19 = newComplex(eWave_hPrev[id.xy].x * cos_w_t, eWave_hPrev[id.xy].y * cos_w_t);                             // cos(wt) * h_prev
+  Complex term2_19 = newComplex(eWave_vPrev[id.xy].x * sin_w_t * kOverw, eWave_vPrev[id.xy].y * sin_w_t * kOverw);           // |k|/w * sin(wt) * v_prev
+  Complex height = add(term1_19, term2_19);
+
+
+  // float v = cos_w_t * eWave_vPrev[id.xy]      -      gOverw * sin_w_t * eWave_hPrev[id.xy]; // eq 20
+  Complex term1_20 = newComplex(eWave_vPrev[id.xy].x * cos_w_t, eWave_vPrev[id.xy].y * cos_w_t);                             // cos(wt) * vprev
+  Complex term2_20 = newComplex(eWave_hPrev[id.xy].x * sin_w_t * -1 * gOverw, eWave_hPrev[id.xy].y * sin_w_t * -1 * gOverw); // g/w * sin(wt) * h_prev * -1
+  Complex velpot = add(term1_20, term2_20);
+
+ 
+  
+
+  eWave_h[id.xy] = float4(height.re, -height.im, 0.0, 1.0);
+  eWave_v[id.xy] = float4(velpot.re, -velpot.im, 0.0, 1.0);
 
 }

@@ -56,6 +56,10 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	for (int i = 0; i < TILES_COUNT; i++) {
 		this->tile_meshes[i]->SetMaterial(0, this->material);
 	}
+
+	// ----
+	eWave_addition_rtt->UpdateTexture2D(eWave_addition_texture, TSF_RGBA16);
+	eWave_addition_rtt->UpdateResourceImmediate(false);
 }
 
 void AOceanSurfaceSimulation::Tick(float DeltaTime) {
@@ -203,21 +207,28 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
 
-	// TODO: the ewave fields should be filled with 0s at the start
-	// TODO: add 
-	// TODO: forward FFT ewave height field (the field that is NOW prev is the one that would have been current in the previous frame and is the one that needs to go back to frequency space)
-	// ...(velocity potential field should already be in frequency space, I see no reason to FFT it back and forth.)
-	m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_hPrev_rtt);
-
 	
+	// Add height addition texture to the height field
+	m_shader_models_module.ComputeAdd(this->ewave_h_rtt, this->eWave_addition_rtt, this->ewave_h_rtt);
+	// m_shader_models_module.ComputeAdd(this->ewave_v_rtt, this->eWave_addition_velocity_rtt, this->ewave_v_rtt);
+	
+	static bool first = true;
+	m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_hPrev_rtt); // FFT height field to frequency space
+	if (first) {
+		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt); // first frame, also FFT velocity potential and height prev
+		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt);
+		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_vPrev_rtt);
+	}
+	first = false;
+	
+	// solve eq 19 and 20 in frequency space
 	m_shader_models_module.ComputeeWave(dt, L, this->ewave_h_rtt, this->ewave_hPrev_rtt, this->ewave_v_rtt, this->ewave_vPrev_rtt);
 	
-	// TODO: inverse FFT back from frequency space
+	// inverse FFT back from frequency space (applied complex conjugate before FFT)
 	m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt);
+	
 	// TODO: probably do this for horizontal displacements as well
 
-	
-	
 	// swap the current and prevs
 	UTextureRenderTarget2D* temp = this->ewave_hPrev_rtt;
 	this->ewave_hPrev_rtt = this->ewave_h_rtt;
