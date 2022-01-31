@@ -5,6 +5,7 @@
 #include "FourierComponents.h"
 #include "ButterflyPostProcess.h"
 #include "eWave.h"
+#include "Add.h"
 
 #include "GlobalShader.h"
 #include "ShaderCore.h" 
@@ -118,6 +119,29 @@ void ShaderModelsModule::ComputeeWave(
 			eWave_hPrev_param,
 			eWave_v_param,
 			eWave_vPrev_dz_param
+		);
+	});
+
+}
+
+void ShaderModelsModule::ComputeAdd(
+	UTextureRenderTarget2D* term1,
+	UTextureRenderTarget2D* term2,
+	UTextureRenderTarget2D* result) {
+
+	TShaderMapRef<AddShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+
+	UTextureRenderTarget2D* term1_param = term1;
+	UTextureRenderTarget2D* term2_param = term2;
+	UTextureRenderTarget2D* result_param = result;
+
+	ENQUEUE_RENDER_COMMAND(shader)(
+		[shader, term1_param, term2_param, result_param](FRHICommandListImmediate& RHI_cmd_list) {
+		shader->BuildAndExecuteGraph(
+			RHI_cmd_list,
+			term1_param,
+			term2_param,
+			result_param
 		);
 	});
 
