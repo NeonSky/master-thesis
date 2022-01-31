@@ -32,4 +32,10 @@ public:
 		UTextureRenderTarget2D* eWave_vPrev
 	);
 
+	void ComputeAdd(
+		UTextureRenderTarget2D* term1,
+		UTextureRenderTarget2D* term2,
+		UTextureRenderTarget2D* result
+	);
+
 };
