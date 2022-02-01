@@ -1,6 +1,7 @@
 #include "/Engine/Public/Platform.ush"
 
 RWTexture2D<float4> InputOutputTexture;
+float scale;
 
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
@@ -8,9 +9,12 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     float sign = -(2 * fmod(id.x + id.y, 2) - 1); // sign equals -1 if (id.x + id.y) % 2 == 1, otherwise 1
 
     float r = InputOutputTexture[id.xy].r;
+    float g = InputOutputTexture[id.xy].g;
 
     // We do not divide by N^2 here since we would then have to later multiply by N^2 anyway.
     // See the report for further details.
-    InputOutputTexture[id.xy] = float4(sign * r, 0.0, 0.0, 1.0);
+
+    float s = scale;
+    InputOutputTexture[id.xy] = float4(sign * r * s, sign * g * s, 0.0, 1.0);
 
 }

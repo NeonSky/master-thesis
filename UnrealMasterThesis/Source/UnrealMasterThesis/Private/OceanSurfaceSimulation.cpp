@@ -57,8 +57,6 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	}
 
 	// ----
-	eWave_addition_rtt->UpdateTexture2D(eWave_addition_texture, TSF_RGBA16);
-	eWave_addition_rtt->UpdateResourceImmediate(false);
 }
 
 void AOceanSurfaceSimulation::Tick(float DeltaTime) {
@@ -222,36 +220,32 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
 
-	
-	// Add height addition texture to the height field
-	m_shader_models_module.ComputeAdd(this->ewave_h_rtt, this->eWave_addition_rtt, this->ewave_h_rtt);
-	// m_shader_models_module.ComputeAdd(this->ewave_v_rtt, this->eWave_addition_velocity_rtt, this->ewave_v_rtt);
-	
-	static bool first = true;
-	m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_hPrev_rtt); // FFT height field to frequency space
-	if (first) {
-		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt); // first frame, also FFT velocity potential and height prev
-		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt);
-		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_vPrev_rtt);
-	}
-	first = false;
-	
-	// solve eq 19 and 20 in frequency space
-	m_shader_models_module.ComputeeWave(dt, L, this->ewave_h_rtt, this->ewave_hPrev_rtt, this->ewave_v_rtt, this->ewave_vPrev_rtt);
-	
-	// inverse FFT back from frequency space (applied complex conjugate before FFT)
-	m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt);
-	
-	// TODO: probably do this for horizontal displacements as well
 
-	// swap the current and prevs
-	UTextureRenderTarget2D* temp = this->ewave_hPrev_rtt;
-	this->ewave_hPrev_rtt = this->ewave_h_rtt;
-	this->ewave_h_rtt = temp;
+	
+		// Add height addition texture to the height field
+		//m_shader_models_module.ComputeAdd(this->eWave_addition_rtt, this->eWave_addition_texture, this->eWave_addition_rtt);
+		//m_shader_models_module.FFT(this->butterfly_rtt, this->eWave_addition_rtt, 1.0f / 16.0f);
+		//m_shader_models_module.FFT(this->butterfly_rtt, this->eWave_addition_rtt, 1.0f / 16.0f);
 
-	temp = this->ewave_vPrev_rtt;
-	this->ewave_vPrev_rtt = this->ewave_v_rtt;
-	this->ewave_v_rtt = temp;
+
+
+		// m_shader_models_module.ComputeAdd(this->ewave_h_rtt, this->eWave_addition_texture, this->ewave_h_rtt); // TODO: remember h is changed in editor to temporary 4x4
+
+
+		//m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt, 1 / (N * N));
+
+		
+		//m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt); // FFT height field to frequency space
+		//m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt);
+
+		// solve eq 19 and 20 in frequency space
+		//m_shader_models_module.ComputeeWave(dt, L, this->ewave_h_rtt, this->ewave_hPrev_rtt, this->ewave_v_rtt, this->ewave_vPrev_rtt);
+
+		// inverse FFT back from frequency space (applied complex conjugate in "ComputeeWave" before FFT)
+		//m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt);
+		//m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt);
+		//m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt, 1/(N * N));
+		
 	 
 
 }

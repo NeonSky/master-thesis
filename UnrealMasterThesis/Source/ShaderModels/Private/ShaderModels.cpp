@@ -37,15 +37,16 @@ void ShaderModelsModule::GenerateButterflyTexture(UTextureRenderTarget2D* output
 		}); 
 }
 
-void ShaderModelsModule::FFT(UTextureRenderTarget2D* butterfly, UTextureRenderTarget2D* output) {
+void ShaderModelsModule::FFT(UTextureRenderTarget2D* butterfly, UTextureRenderTarget2D* output, float scale) {
  	TShaderMapRef<ButterflyShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
  	TShaderMapRef<ButterflyPostProcessShader> shader2(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	UTextureRenderTarget2D* butterfly_param = butterfly;
 	UTextureRenderTarget2D* output_param    = output;
+	float scale_param = scale;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, butterfly_param, output_param, shader2](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, butterfly_param, output_param, shader2, scale_param](FRHICommandListImmediate& RHI_cmd_list) {
 			shader->BuildAndExecuteGraph(
 				RHI_cmd_list,
 				butterfly_param,
@@ -54,7 +55,8 @@ void ShaderModelsModule::FFT(UTextureRenderTarget2D* butterfly, UTextureRenderTa
 
 			shader2->BuildAndExecuteGraph(
 				RHI_cmd_list,
-				output_param
+				output_param,
+				scale_param
 			);
 		}); 
 }
@@ -66,6 +68,15 @@ void ShaderModelsModule::Buildh0Textures(int N, float L, std::function<float (FV
 		[shader, N, L, wave_spectrum](FRHICommandListImmediate& RHI_cmd_list) {
 			shader->Buildh0Textures(N, L, wave_spectrum);
 		}); 
+
+	TShaderMapRef<AddShader> shader2(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+
+	ENQUEUE_RENDER_COMMAND(shader2)(
+		[shader2, N, L](FRHICommandListImmediate& RHI_cmd_list) {
+		shader2->BuildTestTextures(N, L);
+	});
+
+
 }
 
 void ShaderModelsModule::ComputeFourierComponents(
@@ -126,13 +137,13 @@ void ShaderModelsModule::ComputeeWave(
 
 void ShaderModelsModule::ComputeAdd(
 	UTextureRenderTarget2D* term1,
-	UTextureRenderTarget2D* term2,
+	UTexture2D* term2,
 	UTextureRenderTarget2D* result) {
 
 	TShaderMapRef<AddShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	UTextureRenderTarget2D* term1_param = term1;
-	UTextureRenderTarget2D* term2_param = term2;
+	UTexture2D* term2_param = term2;
 	UTextureRenderTarget2D* result_param = result;
 
 	ENQUEUE_RENDER_COMMAND(shader)(

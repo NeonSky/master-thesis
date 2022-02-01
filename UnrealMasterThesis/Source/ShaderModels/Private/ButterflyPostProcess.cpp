@@ -34,7 +34,8 @@ FRDGTextureRef register_texture_(
 
 void ButterflyPostProcessShader::BuildAndExecuteGraph(
   FRHICommandListImmediate &RHI_cmd_list,
-	UTextureRenderTarget2D* input_output) {
+	UTextureRenderTarget2D* input_output,
+	float scale) {
 
 	FRDGBuilder graph_builder(RHI_cmd_list);
 
@@ -47,6 +48,7 @@ void ButterflyPostProcessShader::BuildAndExecuteGraph(
   FParameters* PassParameters = graph_builder.AllocParameters<ButterflyPostProcessShader::FParameters>();
 
   PassParameters->InputOutputTexture = input_texture_UAV;
+  PassParameters->scale = scale;
 
   int N = input_output->SizeX;
 
