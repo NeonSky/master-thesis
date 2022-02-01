@@ -11,7 +11,7 @@ public:
 	virtual void ShutdownModule() override;
 
 	void GenerateButterflyTexture(UTextureRenderTarget2D* output);
-	void FFT(UTextureRenderTarget2D* butterfly, UTextureRenderTarget2D* output);
+	void FFT(UTextureRenderTarget2D* butterfly, UTextureRenderTarget2D* output, float scale = 1.0f);
 
 	void Buildh0Textures(int N, float L, std::function<float (FVector2D)> wave_spectrum);
 
@@ -34,7 +34,8 @@ public:
 
 	void ComputeAdd(
 		UTextureRenderTarget2D* term1,
-		UTextureRenderTarget2D* term2,
+		UTexture2D* term2,
+		// UTextureRenderTarget2D* term2,
 		UTextureRenderTarget2D* result
 	);
 
