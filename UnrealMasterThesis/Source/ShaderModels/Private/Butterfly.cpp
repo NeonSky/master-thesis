@@ -165,8 +165,8 @@ void ButterflyShader::BuildAndExecuteGraph(
     FResolveParams()
   );
 	
-	// UE_LOG(LogTemp, Warning, TEXT("FFT OUTPUT START"));
-	// ReadbackRTT(RHI_cmd_list, input_output);
-	// UE_LOG(LogTemp, Warning, TEXT("FFT OUTPUT END"));
+	UE_LOG(LogTemp, Warning, TEXT("FFT OUTPUT START"));
+	ReadbackRTT(RHI_cmd_list, input_output);
+	UE_LOG(LogTemp, Warning, TEXT("FFT OUTPUT END"));
 
 }
