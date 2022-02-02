@@ -10,6 +10,7 @@
 #include <random>
 
 #define NN 256
+#define TEMP_TEXTURE_N 4
 
 IMPLEMENT_GLOBAL_SHADER(AddShader, "/Project/UnrealMasterThesis/Add.usf", "eWaveCompute", SF_Compute);
 
@@ -67,8 +68,8 @@ void AddShader::BuildTestTextures(int N, float L) {
     {
         FRHIResourceCreateInfo CreateInfo;
         FTexture2DRHIRef Texture2DRHI = RHICreateTexture2D(
-            4,
-            4,
+            TEMP_TEXTURE_N,
+            TEMP_TEXTURE_N,
             PF_FloatRGBA,
             1,
             1,
@@ -76,12 +77,17 @@ void AddShader::BuildTestTextures(int N, float L) {
             CreateInfo);
 
         TArray<FFloat16Color> pixel_data;
-        float test_data = 1.0f;
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                pixel_data.Add(FFloat16Color(FLinearColor(test_data, 0, 0.0, 1.0)));
+        bool flip = true;
+        for (int i = 0; i < TEMP_TEXTURE_N; i++) {
+            for (int j = 0; j < TEMP_TEXTURE_N; j++) {
+                if (flip) {
+                    pixel_data.Add(FFloat16Color(FLinearColor(1.0, 0.0, 0.0, 1.0)));
+                }
+                else {
+                    pixel_data.Add(FFloat16Color(FLinearColor(0.0, 0.0, 0.0, 1.0)));
+                }
             }
-            test_data = test_data > 0.01 ? 0.0f : 1.0f;
+            flip = !flip;
         }
 
         uint32 DestStride = 0;
@@ -109,13 +115,9 @@ void AddShader::BuildAndExecuteGraph(
     //CustomUAV uavAdd2 = create_UAV3(graph_builder, term2, TEXT("term 2"));
     CustomUAV uavAdd3 = create_UAV3(graph_builder, result, TEXT("result"));
 
-    //auto test = term2->Resource->GetTexture2DRHI();
-
-    //FRHITexture2D* term2Texture2D_ptr = (term2->Resource->GetTexture2DRHI()->GetTexture2D());
-
     PassParameters->term1 = uavAdd1.uav_ref;
     PassParameters->term2 = register_texture3(graph_builder, this->test->GetTexture2D(), "term2"); // uavAdd2.uav_ref;
-   // PassParameters->term2 = register_texture3(graph_builder, this->test->GetTexture2D(), "term2");
+    // PassParameters->term2 = register_texture3(graph_builder, term2->Resource->GetTexture2DRHI()->GetTexture2D(), "term2");
 
     PassParameters->result = uavAdd3.uav_ref;
 
@@ -126,7 +128,7 @@ void AddShader::BuildAndExecuteGraph(
         RDG_EVENT_NAME("Add Pass"),
         ComputeShader,
         PassParameters,
-        FIntVector(NN, NN, 1)
+        FIntVector(TEMP_TEXTURE_N, TEMP_TEXTURE_N, 1)
     );
 
     TRefCountPtr<IPooledRenderTarget> PooledComputeTarget1_Add;
@@ -135,6 +137,9 @@ void AddShader::BuildAndExecuteGraph(
     //TRefCountPtr<IPooledRenderTarget> PooledComputeTarget2_Add;
     //graph_builder.QueueTextureExtraction(uavAdd2.ref, &PooledComputeTarget2_Add);
 
+    
+    
+    
     TRefCountPtr<IPooledRenderTarget> PooledComputeTarget3_Add;
     graph_builder.QueueTextureExtraction(uavAdd3.ref, &PooledComputeTarget3_Add);
 
@@ -159,11 +164,11 @@ void AddShader::BuildAndExecuteGraph(
     );
 
      //DEBUG READ-BACK
-     /*{
+    /* {
        FRHIResourceCreateInfo CreateInfo;
        FTexture2DRHIRef readback_tex = RHICreateTexture2D(
-         4,
-         4,
+         TEMP_TEXTURE_N,
+         TEMP_TEXTURE_N,
          PF_FloatRGBA,
          1,
          1,
@@ -184,7 +189,7 @@ void AddShader::BuildAndExecuteGraph(
        TArray<FFloat16Color> rdata;
        RHI_cmd_list.ReadSurfaceFloatData(
          readback_tex->GetTexture2D(),
-         FIntRect(0, 0, 4, 4),
+         FIntRect(0, 0, TEMP_TEXTURE_N, TEMP_TEXTURE_N),
          rdata,
          read_flags
        );
