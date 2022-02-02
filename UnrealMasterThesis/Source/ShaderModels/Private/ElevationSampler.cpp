@@ -50,36 +50,30 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
 	FRDGBufferRef InputSampleCoordinates = CreateStructuredBuffer(
 		graph_builder,
 		TEXT("InputSampleCoordinates_StructuredBuffer"),
-		sizeof(float),
+		sizeof(FVector2D),
 		input_sample_coordinates.Num(),
 		input_sample_coordinates.GetData(),
-		sizeof(float) * input_sample_coordinates.Num()
+		sizeof(FVector2D) * input_sample_coordinates.Num()
 	);
 	FRDGBufferSRVRef InputSampleCoordinatesSRV = graph_builder.CreateSRV(InputSampleCoordinates, PF_R32_UINT); // PF_R32_FLOAT?
 	PassParameters->InputSampleCoordinates = InputSampleCoordinatesSRV;
 
   // OutputBuffer
-	FRDGBufferRef OutputBuffer = CreateStructuredBuffer(
-		graph_builder,
-		TEXT("OutputBuffer_StructuredBuffer"),
-		sizeof(float),
-		input_sample_coordinates.Num(),
-		input_sample_coordinates.GetData(),
-		sizeof(float) * input_sample_coordinates.Num()
-	);
-	FRDGBufferUAVRef OutputBufferUAV = graph_builder.CreateUAV(OutputBuffer, PF_R32_UINT); // PF_R32_FLOAT?
+	// FRDGBufferRef OutputBuffer = CreateStructuredBuffer(
+	// 	graph_builder,
+	// 	TEXT("OutputBuffer_StructuredBuffer"),
+	// 	sizeof(float),
+	// 	input_sample_coordinates.Num(),
+	// 	input_sample_coordinates.GetData(),
+	// 	sizeof(float) * input_sample_coordinates.Num()
+	// );
+  FRDGBufferDesc OutputBufferDesc = FRDGBufferDesc::CreateStructuredDesc(sizeof(FVector4), input_sample_coordinates.Num());
+  FRDGBufferRef OutputBuffer = graph_builder.CreateBuffer(OutputBufferDesc, TEXT("OutputBuffer"));
+  FRDGBufferUAVRef OutputBufferUAV = graph_builder.CreateUAV(OutputBuffer);
+	// FRDGBufferUAVRef OutputBufferUAV = graph_builder.CreateUAV(OutputBuffer, PF_R32_UINT); // PF_R32_FLOAT?
 	PassParameters->OutputBuffer = OutputBufferUAV;
 
 	// Remove me
-	// FRHIResourceCreateInfo CreateInfo;
-	// FTexture2DRHIRef readback_tex = RHICreateTexture2D(
-	// 	4,
-	// 	4,
-	// 	PF_FloatRGBA,
-	// 	1,
-	// 	1,
-	// 	TexCreate_RenderTargetable,
-	// 	CreateInfo);
 	FRDGTextureDesc OutTextureDesc = FRDGTextureDesc::Create2D(
 		FIntPoint(elevations->SizeX, elevations->SizeY),
 		PF_FloatRGBA,
@@ -87,7 +81,7 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
 		TexCreate_UAV,
 		1,
 		1); 
-	FRDGTextureRef tex_ref = graph_builder.CreateTexture(OutTextureDesc, *FString("test_output_ref"));
+	FRDGTextureRef tex_ref = graph_builder.CreateTexture(OutTextureDesc, TEXT("test_output_ref"));
 	FRDGTextureUAVDesc OutTextureUAVDesc(tex_ref);
   FRDGTextureUAVRef tex_uav_ref = graph_builder.CreateUAV(OutTextureUAVDesc);
 	PassParameters->test_output = tex_uav_ref;
@@ -115,34 +109,21 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
 	graph_builder.Execute();
 
 	// Copy result to CPU
-	void *source = RHI_cmd_list.LockStructuredBuffer(PooledComputeTarget->GetStructuredBufferRHI(), 0, sizeof(float) * input_sample_coordinates.Num(), RLM_ReadOnly);
-	output->SetNum(input_sample_coordinates.Num());
-	FMemory::Memcpy(output->GetData(), source, sizeof(float) * input_sample_coordinates.Num());
+	FVector4* source = (FVector4*) RHI_cmd_list.LockStructuredBuffer(PooledComputeTarget->GetStructuredBufferRHI(), 0, sizeof(FVector4) * input_sample_coordinates.Num(), RLM_ReadOnly);
+	UE_LOG(LogTemp, Warning, TEXT("Even First Output"));
+	for (int i = 0; i < input_sample_coordinates.Num(); i++) {
+		UE_LOG(LogTemp, Warning, TEXT("i = %i: %f, %f, %f"), i, source[i].X, source[i].Y, source[i].Z);
+	}
+
+	TArray<FVector4> t_output;
+	t_output.SetNum(input_sample_coordinates.Num());
+	FMemory::Memcpy(t_output.GetData(), source, sizeof(FVector4) * input_sample_coordinates.Num());
 	RHI_cmd_list.UnlockStructuredBuffer(PooledComputeTarget->GetStructuredBufferRHI());
 
 	UE_LOG(LogTemp, Warning, TEXT("First Output"));
-	for (int i = 0; i < output->Num(); i++) {
-		UE_LOG(LogTemp, Warning, TEXT("i = %i: %f"), i, (*output)[i]);
+	for (int i = 0; i < t_output.Num(); i++) {
+		UE_LOG(LogTemp, Warning, TEXT("i = %i: %f %f %f"), i, t_output[i].X, t_output[i].Y, t_output[i].Z);
 	}
-
-	// RHI_cmd_list.CopyToResolveTarget(
-  //   PooledComputeTarget2.GetReference()->GetRenderTargetItem().TargetableTexture,
-  //   elevations->GetRenderTargetResource()->TextureRHI,
-  //   FResolveParams()
-  // );
-
-	// FComputeShader::CopyBuffer(
-	// 	RHI_cmd_list,
-	// 	PooledComputeTarget,
-	// 	output->GetData(),
-	// 	sizeof(FVector) * parameters.verticies.Num()
-	// );
-
-  // output->SetNum(0, true);
-  // output->Push(1);
-  // output->Push(2);
-  // output->Push(3);
-  // output->Push(7);
 
   {
     FRHIResourceCreateInfo CreateInfo;

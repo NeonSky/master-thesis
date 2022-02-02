@@ -205,14 +205,12 @@ void AOceanSurfaceSimulation::update_mesh() {
 	TArray<FVector2D> samples;
 	samples.Push(FVector2D(0.0f, 0.0f));
 	samples.Push(FVector2D(1.0f, 0.0f));
+
 	samples.Push(FVector2D(0.0f, 1.0f));
-	samples.Push(FVector2D(0.0f, 1.0f));
-	samples.Push(FVector2D(0.0f, 1.0f));
-	samples.Push(FVector2D(0.0f, 1.0f));
-	samples.Push(FVector2D(0.0f, 1.0f));
-	samples.Push(FVector2D(0.0f, 1.0f));
-	samples.Push(FVector2D(0.0f, 1.0f));
-	samples.Push(FVector2D(0.0f, 1.0f));
+	samples.Push(FVector2D(3.7f, 2.3f));
+
+	samples.Push(FVector2D(5.0f, 1.1f));
+	samples.Push(FVector2D(2.3f, 0.4f));
 
 	m_shader_models_module.SampleElevationPoints(
 		this->spectrum_y_rtt,

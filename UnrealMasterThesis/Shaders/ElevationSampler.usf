@@ -2,22 +2,23 @@
 
 Texture2D<float4> ElevationTexture;
 StructuredBuffer<float2> InputSampleCoordinates;
-RWStructuredBuffer<float> OutputBuffer;
+RWStructuredBuffer<float4> OutputBuffer;
 RWTexture2D<float4> test_output;
 
 [numthreads(N_THREADS_X, 1, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
-    OutputBuffer[id.x] = 5.0f;
+    OutputBuffer[id.x] = float4(0.2, 0.4, 0.6, 0.8);
+
+    // OutputBuffer[0] = 0.5f;
+    // OutputBuffer[1] = 1.5f;
+    // OutputBuffer[2] = 2.5f;
+    // OutputBuffer[3] = 3.5f;
     // OutputBuffer[id.x] = id.x;
 
-    test_output[uint2(0,0)] = float4(0.1, 0.2, 0.3, 0.4);
-    test_output[uint2(0,1)] = float4(0.1, 0.2, 0.3, 0.4);
-    test_output[uint2(0,2)] = float4(0.1, 0.2, 0.3, 0.4);
-    test_output[uint2(0,3)] = float4(0.1, 0.2, 0.3, 0.4);
-
-    test_output[uint2(1,0)] = float4(0.1, 0.2, 0.3, 0.4);
-    test_output[uint2(2,0)] = float4(0.1, 0.2, 0.3, 0.4);
-    test_output[uint2(3,0)] = float4(0.1, 0.2, 0.3, 0.4);
+    test_output[uint2(0,0)] = OutputBuffer[id.x];
+    test_output[uint2(1,0)] = float4(InputSampleCoordinates[0], InputSampleCoordinates[1]);
+    test_output[uint2(2,0)] = float4(InputSampleCoordinates[2], InputSampleCoordinates[3]);
+    test_output[uint2(3,0)] = float4(InputSampleCoordinates[4], InputSampleCoordinates[5]);
 
 }
