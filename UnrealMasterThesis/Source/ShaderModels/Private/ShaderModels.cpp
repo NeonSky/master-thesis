@@ -4,6 +4,7 @@
 #include "ButterflyTexture.h"
 #include "FourierComponents.h"
 #include "ButterflyPostProcess.h"
+#include "ElevationSampler.h"
 
 #include "GlobalShader.h"
 #include "ShaderCore.h" 
@@ -90,6 +91,22 @@ void ShaderModelsModule::ComputeFourierComponents(
 				tilde_hkt_dz_param
 			);
 		}); 
+}
+
+void ShaderModelsModule::SampleElevationPoints(UTextureRenderTarget2D* elevations, TArray<FVector2D> input_sample_coordinates, TArray<float>* output) {
+
+ 	TShaderMapRef<ElevationSamplerShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+
+	ENQUEUE_RENDER_COMMAND(shader)(
+		[shader, elevations, input_sample_coordinates, output](FRHICommandListImmediate& RHI_cmd_list) {
+			shader->BuildAndExecuteGraph(
+				RHI_cmd_list,
+				elevations,
+				input_sample_coordinates,
+				output
+			);
+		}); 
+
 }
 
 IMPLEMENT_MODULE(ShaderModelsModule, ShaderModels);

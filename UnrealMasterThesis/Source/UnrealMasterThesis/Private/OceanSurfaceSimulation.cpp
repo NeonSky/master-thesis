@@ -13,10 +13,9 @@
 // The NewObject function could potentially work, but it does not appear to give visible results in our case.
 const int TILES_COUNT = 49; // Should be 1 or higher
 
+TArray<float> elevation_output;
 
 AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
-	UE_LOG(LogTemp, Warning, TEXT("AOceanSurfaceSimulation::AOceanSurfaceSimulation()"));
-
 	// Configure Tick() to be called every frame.
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -202,4 +201,20 @@ void AOceanSurfaceSimulation::update_mesh() {
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_x_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
+
+	TArray<FVector2D> samples;
+	samples.Push(FVector2D(0.0f, 0.0f));
+	samples.Push(FVector2D(1.0f, 0.0f));
+	samples.Push(FVector2D(0.0f, 1.0f));
+
+	m_shader_models_module.SampleElevationPoints(
+		this->spectrum_y_rtt,
+		samples,
+		&elevation_output
+	);
+
+	UE_LOG(LogTemp, Warning, TEXT("Output"));
+	for (int i = 0; i < elevation_output.Num(); i++) {
+		UE_LOG(LogTemp, Warning, TEXT("i = %i: %f"), i, elevation_output[i]);
+	}
 }

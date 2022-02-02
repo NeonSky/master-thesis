@@ -1,0 +1,12 @@
+#include "/Engine/Public/Platform.ush"
+
+Texture2D<float4> ElevationTexture;
+StructuredBuffer<float2> InputSampleCoordinates;
+RWStructuredBuffer<float> OutputBuffer;
+
+[numthreads(N_THREADS_X, 1, 1)]
+void MainCompute(uint3 id : SV_DispatchThreadID) {
+
+    OutputBuffer[id.x] = id.x;
+
+}

@@ -23,4 +23,6 @@ public:
 		UTextureRenderTarget2D* tilde_hkt_dz
 	);
 
+	void SampleElevationPoints(UTextureRenderTarget2D* elevations, TArray<FVector2D> input_sample_coordinates, TArray<float>* output);
+
 };

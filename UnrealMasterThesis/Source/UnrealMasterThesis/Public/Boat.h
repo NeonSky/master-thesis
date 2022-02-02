@@ -30,6 +30,9 @@ protected:
 private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UTextureRenderTarget2D* spectrum_y_rtt;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float slow_speed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -43,6 +46,15 @@ private:
 
   FVector2D m_velocity_input;
   float m_speed_input;
+
+  bool m_has_requested_elevations;
+  FRenderCommandFence m_elevation_read_fence;
+  TArray<FFloat16Color> m_elevation_data; // We read from this one...
+  TArray<FFloat16Color> m_elevation_data_scratch; // but we map new data to this one
+
+  void ReadElevations();
+  void UpdateElevations();
+  void UpdateTransform(float DeltaTime);
 
   void UseSlowSpeed();
   void UseNormalSpeed();
