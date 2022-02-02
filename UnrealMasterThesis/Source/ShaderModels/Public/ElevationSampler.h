@@ -16,6 +16,7 @@ public:
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, ElevationTexture)
 		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<FVector2D>, InputSampleCoordinates)
 		SHADER_PARAMETER_RDG_BUFFER_UAV(StructuredBuffer<float>, OutputBuffer)
+		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, test_output)
 
 	END_SHADER_PARAMETER_STRUCT()
 

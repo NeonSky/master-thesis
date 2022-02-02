@@ -70,6 +70,28 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
 	FRDGBufferUAVRef OutputBufferUAV = graph_builder.CreateUAV(OutputBuffer, PF_R32_UINT); // PF_R32_FLOAT?
 	PassParameters->OutputBuffer = OutputBufferUAV;
 
+	// Remove me
+	// FRHIResourceCreateInfo CreateInfo;
+	// FTexture2DRHIRef readback_tex = RHICreateTexture2D(
+	// 	4,
+	// 	4,
+	// 	PF_FloatRGBA,
+	// 	1,
+	// 	1,
+	// 	TexCreate_RenderTargetable,
+	// 	CreateInfo);
+	FRDGTextureDesc OutTextureDesc = FRDGTextureDesc::Create2D(
+		FIntPoint(elevations->SizeX, elevations->SizeY),
+		PF_FloatRGBA,
+		FClearValueBinding(),
+		TexCreate_UAV,
+		1,
+		1); 
+	FRDGTextureRef tex_ref = graph_builder.CreateTexture(OutTextureDesc, *FString("test_output_ref"));
+	FRDGTextureUAVDesc OutTextureUAVDesc(tex_ref);
+  FRDGTextureUAVRef tex_uav_ref = graph_builder.CreateUAV(OutTextureUAVDesc);
+	PassParameters->test_output = tex_uav_ref;
+
   // Call compute shader
 	TShaderMapRef<ElevationSamplerShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
   FComputeShaderUtils::AddPass(
@@ -86,12 +108,15 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
 	graph_builder.QueueBufferExtraction(OutputBuffer, &PooledComputeTarget);
 	// graph_builder.QueueBufferExtraction(OutputBuffer, &PooledComputeTarget, FRDGSubresourceState::EAccess::Read);
 
-	graph_builder.Execute();
 
-	output->SetNum(input_sample_coordinates.Num());
+	TRefCountPtr<IPooledRenderTarget> PooledComputeTarget2;
+	graph_builder.QueueTextureExtraction(tex_ref, &PooledComputeTarget2);
+
+	graph_builder.Execute();
 
 	// Copy result to CPU
 	void *source = RHI_cmd_list.LockStructuredBuffer(PooledComputeTarget->GetStructuredBufferRHI(), 0, sizeof(float) * input_sample_coordinates.Num(), RLM_ReadOnly);
+	output->SetNum(input_sample_coordinates.Num());
 	FMemory::Memcpy(output->GetData(), source, sizeof(float) * input_sample_coordinates.Num());
 	RHI_cmd_list.UnlockStructuredBuffer(PooledComputeTarget->GetStructuredBufferRHI());
 
@@ -99,6 +124,12 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
 	for (int i = 0; i < output->Num(); i++) {
 		UE_LOG(LogTemp, Warning, TEXT("i = %i: %f"), i, (*output)[i]);
 	}
+
+	// RHI_cmd_list.CopyToResolveTarget(
+  //   PooledComputeTarget2.GetReference()->GetRenderTargetItem().TargetableTexture,
+  //   elevations->GetRenderTargetResource()->TextureRHI,
+  //   FResolveParams()
+  // );
 
 	// FComputeShader::CopyBuffer(
 	// 	RHI_cmd_list,
@@ -112,4 +143,42 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
   // output->Push(2);
   // output->Push(3);
   // output->Push(7);
+
+  {
+    FRHIResourceCreateInfo CreateInfo;
+    FTexture2DRHIRef readback_tex = RHICreateTexture2D(
+      elevations->SizeX,
+      elevations->SizeY,
+      PF_FloatRGBA,
+      1,
+      1,
+      TexCreate_RenderTargetable,
+      CreateInfo);
+
+    RHI_cmd_list.CopyToResolveTarget(
+      PooledComputeTarget2.GetReference()->GetRenderTargetItem().TargetableTexture,
+      readback_tex->GetTexture2D(),
+      FResolveParams()
+    );
+
+    // UE_LOG(LogTemp, Warning, TEXT("READBACK START"));
+
+    FReadSurfaceDataFlags read_flags(RCM_MinMax);
+    read_flags.SetLinearToGamma(false);
+
+    TArray<FFloat16Color> rdata;
+    RHI_cmd_list.ReadSurfaceFloatData(
+      readback_tex->GetTexture2D(),
+      FIntRect(0, 0, elevations->SizeX, elevations->SizeY),
+      rdata,
+      read_flags
+    );
+
+    UE_LOG(LogTemp, Warning, TEXT("Amount of pixels: %i"), rdata.Num());
+    // for (int i = 0; i < rdata.Num(); i++) {
+    for (int i = 0; i < 4; i++) {
+      UE_LOG(LogTemp, Warning, TEXT("%i: (%f, %f, %f, %f)"), i, rdata[i].R.GetFloat(), rdata[i].G.GetFloat(), rdata[i].B.GetFloat(), rdata[i].A.GetFloat());
+    }
+    UE_LOG(LogTemp, Warning, TEXT("READBACK END"));
+  }
 }

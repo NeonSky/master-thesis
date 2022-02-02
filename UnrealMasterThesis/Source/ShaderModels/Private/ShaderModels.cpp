@@ -97,6 +97,7 @@ void ShaderModelsModule::SampleElevationPoints(UTextureRenderTarget2D* elevation
 
  	TShaderMapRef<ElevationSamplerShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
+	FRenderCommandFence fence;
 	ENQUEUE_RENDER_COMMAND(shader)(
 		[shader, elevations, input_sample_coordinates, output](FRHICommandListImmediate& RHI_cmd_list) {
 			shader->BuildAndExecuteGraph(
@@ -106,6 +107,9 @@ void ShaderModelsModule::SampleElevationPoints(UTextureRenderTarget2D* elevation
 				output
 			);
 		}); 
+
+	fence.BeginFence();
+	fence.Wait();
 
 }
 

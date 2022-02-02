@@ -103,14 +103,14 @@ void ABoat::ReadElevations() {
 
         // ~ 6.3 ms ???
         // UE_LOG(LogTemp, Warning, TEXT("Weeee"));
-        UE_LOG(LogTemp, Warning, TEXT("Reading 1/(8*8) of the texture"));
-        RHI_cmd_list.ReadSurfaceFloatData(
-          readback_tex,
-          FIntRect(0, 0, N/8, N/8),
-          *output,
-          read_flags
-        );
-        UE_LOG(LogTemp, Warning, TEXT("Finished adding that command."));
+        // UE_LOG(LogTemp, Warning, TEXT("Reading 1/(8*8) of the texture"));
+        // RHI_cmd_list.ReadSurfaceFloatData(
+        //   readback_tex,
+        //   FIntRect(0, 0, N/8, N/8),
+        //   *output,
+        //   read_flags
+        // );
+        // UE_LOG(LogTemp, Warning, TEXT("Finished adding that command."));
       // }
 
       // UE_LOG(LogTemp, Warning, TEXT("Fence before: %i"), fence->IsFenceComplete());

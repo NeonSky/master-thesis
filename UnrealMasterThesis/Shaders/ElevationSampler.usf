@@ -3,10 +3,21 @@
 Texture2D<float4> ElevationTexture;
 StructuredBuffer<float2> InputSampleCoordinates;
 RWStructuredBuffer<float> OutputBuffer;
+RWTexture2D<float4> test_output;
 
 [numthreads(N_THREADS_X, 1, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
-    OutputBuffer[id.x] = id.x;
+    OutputBuffer[id.x] = 5.0f;
+    // OutputBuffer[id.x] = id.x;
+
+    test_output[uint2(0,0)] = float4(0.1, 0.2, 0.3, 0.4);
+    test_output[uint2(0,1)] = float4(0.1, 0.2, 0.3, 0.4);
+    test_output[uint2(0,2)] = float4(0.1, 0.2, 0.3, 0.4);
+    test_output[uint2(0,3)] = float4(0.1, 0.2, 0.3, 0.4);
+
+    test_output[uint2(1,0)] = float4(0.1, 0.2, 0.3, 0.4);
+    test_output[uint2(2,0)] = float4(0.1, 0.2, 0.3, 0.4);
+    test_output[uint2(3,0)] = float4(0.1, 0.2, 0.3, 0.4);
 
 }
