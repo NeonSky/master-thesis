@@ -12,9 +12,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
   float4 a = term1[id.xy];
   float4 b = term2[id.xy];
   float4 r = a + b - a;
-  r.y = -r.y;
+  // r.y = -r.y b;
   r.a = 1.0;
-  float4 rr = term2[id.xy].rgba;
-  
   result[id.xy] = r;
 }

@@ -61,5 +61,6 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     Complex H = add(p, mul(w, q));
     
     OutputTexture[id.xy] = float4(H.re, H.im, 0.0, 1.0);
+    //OutputTexture[id.xy] = InputTexture[id.xy];
 
 }
