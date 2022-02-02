@@ -69,7 +69,8 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
 	// );
   FRDGBufferDesc OutputBufferDesc = FRDGBufferDesc::CreateStructuredDesc(sizeof(FVector4), input_sample_coordinates.Num());
   FRDGBufferRef OutputBuffer = graph_builder.CreateBuffer(OutputBufferDesc, TEXT("OutputBuffer"));
-  FRDGBufferUAVRef OutputBufferUAV = graph_builder.CreateUAV(OutputBuffer);
+	FRDGBufferUAVDesc OBuffer(OutputBuffer);
+  FRDGBufferUAVRef OutputBufferUAV = graph_builder.CreateUAV(OBuffer);
 	// FRDGBufferUAVRef OutputBufferUAV = graph_builder.CreateUAV(OutputBuffer, PF_R32_UINT); // PF_R32_FLOAT?
 	PassParameters->OutputBuffer = OutputBufferUAV;
 
@@ -99,7 +100,7 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
 
   // Request output extraction
 	TRefCountPtr<FRDGPooledBuffer> PooledComputeTarget;
-	graph_builder.QueueBufferExtraction(OutputBuffer, &PooledComputeTarget);
+	graph_builder.QueueBufferExtraction(OutputBuffer, &PooledComputeTarget, ERHIAccess::CPURead);
 	// graph_builder.QueueBufferExtraction(OutputBuffer, &PooledComputeTarget, FRDGSubresourceState::EAccess::Read);
 
 
@@ -107,21 +108,33 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
 	graph_builder.QueueTextureExtraction(tex_ref, &PooledComputeTarget2);
 
 	TRefCountPtr<FRDGPooledBuffer> PooledComputeTarget3;
-	graph_builder.QueueBufferExtraction(InputSampleCoordinates, &PooledComputeTarget3);
+	graph_builder.QueueBufferExtraction(InputSampleCoordinates, &PooledComputeTarget3, ERHIAccess::CPURead);
 
 	graph_builder.Execute();
 
+	RHI_cmd_list.SubmitCommandsAndFlushGPU();
 
-	FVector2D* srv_source = (FVector2D*) RHI_cmd_list.LockStructuredBuffer(PooledComputeTarget3->GetStructuredBufferRHI(), 0, sizeof(FVector2D) * input_sample_coordinates.Num(), RLM_ReadOnly);
-	UE_LOG(LogTemp, Warning, TEXT("SRV Readback"));
+
+	// https://github.com/pramberg/DeviceRGB/blob/a2020b2b5accb1fc864c16905c35c352d3e4f39b/Source/DeviceRGB/Private/DeviceRGBViewExtension.cpp#L376
+	auto r = PooledComputeTarget3->GetStructuredBufferRHI();
+
+	FVector2D* serv_source = (FVector2D*) RHI_cmd_list.LockStructuredBuffer(r, 0, sizeof(FVector2D) * input_sample_coordinates.Num(), RLM_WriteOnly);
+	serv_source[0] = FVector2D(3.7f, 1.2f);
+	serv_source[1] = FVector2D(0.1f, 0.5f);
+	RHI_cmd_list.UnlockStructuredBuffer(r);
+
+	FVector2D* srv_source = (FVector2D*) RHI_cmd_list.LockStructuredBuffer(r, 0, sizeof(FVector2D) * input_sample_coordinates.Num(), RLM_ReadOnly);
+	UE_LOG(LogTemp, Warning, TEXT("SRVV Readback"));
 	for (int i = 0; i < input_sample_coordinates.Num(); i++) {
 		UE_LOG(LogTemp, Warning, TEXT("i = %i: %f, %f"), i, srv_source[i].X, srv_source[i].Y);
 	}
 
 	TArray<FVector2D> r_output;
 	r_output.SetNum(input_sample_coordinates.Num());
-	FMemory::Memcpy(r_output.GetData(), srv_source, sizeof(FVector2D) * input_sample_coordinates.Num());
-	RHI_cmd_list.UnlockStructuredBuffer(PooledComputeTarget3->GetStructuredBufferRHI());
+	uint32 sz = sizeof(FVector2D) * input_sample_coordinates.Num();
+	UE_LOG(LogTemp, Warning, TEXT("sz = %u"), sz);
+	FMemory::Memcpy(r_output.GetData(), srv_source, sz);
+	RHI_cmd_list.UnlockStructuredBuffer(r);
 
 	// Copy result to CPU
 	FVector4* source = (FVector4*) RHI_cmd_list.LockStructuredBuffer(PooledComputeTarget->GetStructuredBufferRHI(), 0, sizeof(FVector4) * input_sample_coordinates.Num(), RLM_ReadOnly);
