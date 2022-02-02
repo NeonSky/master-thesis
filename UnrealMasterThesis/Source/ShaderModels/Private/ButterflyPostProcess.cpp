@@ -32,6 +32,39 @@ FRDGTextureRef register_texture_(
 	return RDG_tex_ref;
 }
 
+void ReadbackRTT2(FRHICommandListImmediate& RHI_cmd_list, UTextureRenderTarget2D* rtt) {
+	FRHIResourceCreateInfo CreateInfo;
+	FTexture2DRHIRef readback_tex = RHICreateTexture2D(
+		rtt->SizeX,
+		rtt->SizeY,
+		PF_FloatRGBA,
+		1,
+		1,
+		TexCreate_RenderTargetable,
+		CreateInfo);
+
+	RHI_cmd_list.CopyToResolveTarget(
+		rtt->GetRenderTargetResource()->TextureRHI,
+		readback_tex->GetTexture2D(),
+		FResolveParams()
+	);
+
+	FReadSurfaceDataFlags read_flags(RCM_MinMax);
+	read_flags.SetLinearToGamma(false);
+
+	TArray<FFloat16Color> data;
+	RHI_cmd_list.ReadSurfaceFloatData(
+		readback_tex->GetTexture2D(),
+		FIntRect(0, 0, rtt->SizeX, rtt->SizeY),
+		data,
+		read_flags
+	);
+
+	for (int i = 0; i < data.Num(); i++) {
+		UE_LOG(LogTemp, Warning, TEXT("%i: (%f, %f, %f, %f)"), i, data[i].R.GetFloat(), data[i].G.GetFloat(), data[i].B.GetFloat(), data[i].A.GetFloat());
+	}
+
+}
 void ButterflyPostProcessShader::BuildAndExecuteGraph(
   FRHICommandListImmediate &RHI_cmd_list,
 	UTextureRenderTarget2D* input_output,
@@ -70,5 +103,11 @@ void ButterflyPostProcessShader::BuildAndExecuteGraph(
     input_output->GetRenderTargetResource()->TextureRHI,
     FResolveParams()
   );
+
+	/*static int t = 0;
+	UE_LOG(LogTemp, Warning, TEXT("FFT Post process OUTPUT START: %d"), t);
+	ReadbackRTT2(RHI_cmd_list, input_output);
+	UE_LOG(LogTemp, Warning, TEXT("FFT Post process OUTPUT END"));
+	t++;*/
 
 }
