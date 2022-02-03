@@ -8,6 +8,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 
+#include <queue>
+
 #include "Boat.generated.h"
 
 UCLASS(Blueprintable)
@@ -34,6 +36,12 @@ private:
 	AOceanSurfaceSimulation* ocean_surface_simulation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int artificial_frame_delay; // The GPU readback latency in frames
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int artificial_frame_skip; // The number of consecutive frames we don't perform a readback
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UTextureRenderTarget2D* spectrum_y_rtt;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -51,10 +59,9 @@ private:
   FVector2D m_velocity_input;
   float m_speed_input;
 
-  bool m_has_requested_elevations;
-  FRenderCommandFence m_elevation_read_fence;
-  TArray<FFloat16Color> m_elevation_data; // We read from this one...
-  TArray<FFloat16Color> m_elevation_data_scratch; // but we map new data to this one
+  std::queue<TArray<float>> m_elevations;
+  int m_requested_elevations_on_frame;
+  int m_cur_frame;
 
   void UpdateElevations();
   void UpdateTransform(float DeltaTime);

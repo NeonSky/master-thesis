@@ -17,7 +17,9 @@ void ABoat::BeginPlay() {
 
   m_velocity_input = FVector2D(0.0f);
   m_speed_input = normal_speed;
-  m_has_requested_elevations = false;
+
+  m_requested_elevations_on_frame = 0;
+  m_cur_frame = 0;
 }
 
 void ABoat::Tick(float DeltaTime) {
@@ -25,17 +27,30 @@ void ABoat::Tick(float DeltaTime) {
 
   UpdateElevations();
   UpdateTransform(DeltaTime);
+
+  m_cur_frame++;
 }
 
 void ABoat::UpdateElevations() {
-
   SCOPE_CYCLE_COUNTER(STAT_UpdateElevations);
 
-	TArray<FVector2D> sample_points;
-	sample_points.Push(FVector2D(GetActorLocation().X, GetActorLocation().Y));
-  TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
+  // Request elevations
+  if (m_cur_frame - m_requested_elevations_on_frame >= artificial_frame_skip) {
+    m_requested_elevations_on_frame = m_cur_frame;
 
-  SetActorLocation(FVector(GetActorLocation().X, GetActorLocation().Y, elevations[0]));
+    TArray<FVector2D> sample_points;
+    sample_points.Push(FVector2D(GetActorLocation().X, GetActorLocation().Y));
+
+    TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
+    m_elevations.push(elevations);
+  }
+
+  // Apply elevations
+  if (m_elevations.size() > artificial_frame_delay) {
+    TArray<float> elevations = m_elevations.front();
+    SetActorLocation(FVector(GetActorLocation().X, GetActorLocation().Y, elevations[0]));
+    m_elevations.pop();
+  }
 
 }
 
