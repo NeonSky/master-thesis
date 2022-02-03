@@ -1,4 +1,4 @@
-#include "Add.h"
+#include "Scale.h"
 #include "Globals/StatelessHelpers.h"
 
 #include "RenderGraph.h"
@@ -12,9 +12,9 @@
 #define NN 256
 #define TEMP_TEXTURE_N 4
 
-IMPLEMENT_GLOBAL_SHADER(AddShader, "/Project/UnrealMasterThesis/Add.usf", "eWaveCompute", SF_Compute);
+IMPLEMENT_GLOBAL_SHADER(ScaleShader, "/Project/UnrealMasterThesis/Scale.usf", "eWaveCompute", SF_Compute);
 
-FRDGTextureRef register_texture3(
+FRDGTextureRef register_texture4(
     FRDGBuilder& graph_builder,
     FTexture2DRHIRef rhi_ref,
     FString name) {
@@ -42,7 +42,7 @@ struct CustomUAV {
     FRDGTextureUAVRef uav_ref;
 };
 
-CustomUAV create_UAV3( // TODO: this and register texture defined in fourier components.
+CustomUAV create_UAV4( // TODO: this and register texture defined in fourier components.
     FRDGBuilder& graph_builder,
     UTextureRenderTarget2D* rtt,
     FString name) {
@@ -64,7 +64,7 @@ CustomUAV create_UAV3( // TODO: this and register texture defined in fourier com
     return uav;
 }
 
-void AddShader::BuildTestTextures(int N, float L) {
+void ScaleShader::BuildTestTextures(int N, float L) {
     {
         FRHIResourceCreateInfo CreateInfo;
         FTexture2DRHIRef Texture2DRHI = RHICreateTexture2D(
@@ -81,7 +81,7 @@ void AddShader::BuildTestTextures(int N, float L) {
         for (int i = 0; i < TEMP_TEXTURE_N; i++) {
             for (int j = 0; j < TEMP_TEXTURE_N; j++) {
                 if (flip) {
-                    pixel_data.Add(FFloat16Color(FLinearColor(1.0, 0.0, 0.0, 1.0))); // 0.2 * j + 0.1
+                    pixel_data.Add(FFloat16Color(FLinearColor(1.0, 0.0, 0.0, 1.0)));
                 }
                 else {
                     pixel_data.Add(FFloat16Color(FLinearColor(0.0, 0.0, 0.0, 1.0)));
@@ -95,74 +95,97 @@ void AddShader::BuildTestTextures(int N, float L) {
         FMemory::Memcpy(data, pixel_data.GetData(), sizeof(FFloat16Color) * pixel_data.Num());
         RHIUnlockTexture2D(Texture2DRHI, 0, false);
 
-        this->test = Texture2DRHI;
+        //this->test = Texture2DRHI;
     }
 }
 
-void AddShader::BuildAndExecuteGraph(
+void ReadbackRTT3(FRHICommandListImmediate& RHI_cmd_list, UTextureRenderTarget2D* rtt) {
+    FRHIResourceCreateInfo CreateInfo;
+    FTexture2DRHIRef readback_tex = RHICreateTexture2D(
+        rtt->SizeX,
+        rtt->SizeY,
+        PF_FloatRGBA,
+        1,
+        1,
+        TexCreate_RenderTargetable,
+        CreateInfo);
+
+    RHI_cmd_list.CopyToResolveTarget(
+        rtt->GetRenderTargetResource()->TextureRHI,
+        readback_tex->GetTexture2D(),
+        FResolveParams()
+    );
+
+    FReadSurfaceDataFlags read_flags(RCM_MinMax);
+    read_flags.SetLinearToGamma(false);
+
+    TArray<FFloat16Color> data;
+    RHI_cmd_list.ReadSurfaceFloatData(
+        readback_tex->GetTexture2D(),
+        FIntRect(0, 0, rtt->SizeX, rtt->SizeY),
+        data,
+        read_flags
+    );
+
+    for (int i = 0; i < data.Num(); i++) {
+        UE_LOG(LogTemp, Warning, TEXT("%i: (%f, %f, %f, %f)"), i, data[i].R.GetFloat(), data[i].G.GetFloat(), data[i].B.GetFloat(), data[i].A.GetFloat());
+    }
+
+}
+
+void ScaleShader::BuildAndExecuteGraph(
     FRHICommandListImmediate& RHI_cmd_list,
-    UTextureRenderTarget2D* term1,
-    UTexture2D* term2,
-    UTextureRenderTarget2D* result) {
+    UTextureRenderTarget2D* input_rtt,
+    UTextureRenderTarget2D* output_rtt,
+    float scale_real,
+    float scale_imag) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
 
     FParameters* PassParameters;
-    PassParameters = graph_builder.AllocParameters<AddShader::FParameters>();
+    PassParameters = graph_builder.AllocParameters<ScaleShader::FParameters>();
 
 
-    CustomUAV uavAdd1 = create_UAV3(graph_builder, term1, TEXT("term 1"));
-    //CustomUAV uavAdd2 = create_UAV3(graph_builder, term2, TEXT("term 2"));
-    CustomUAV uavAdd3 = create_UAV3(graph_builder, result, TEXT("result"));
+    CustomUAV uavScale1 = create_UAV4(graph_builder, input_rtt, TEXT("input_rtt"));
+    CustomUAV uavScale2 = create_UAV4(graph_builder, output_rtt, TEXT("output_rtt"));
 
-    PassParameters->term1 = uavAdd1.uav_ref;
-    PassParameters->term2 = register_texture3(graph_builder, this->test->GetTexture2D(), "term2"); // uavAdd2.uav_ref;
-    // PassParameters->term2 = register_texture3(graph_builder, term2->Resource->GetTexture2DRHI()->GetTexture2D(), "term2");
+    PassParameters->input_rtt = uavScale1.uav_ref;
+    PassParameters->output_rtt = uavScale2.uav_ref;
+    PassParameters->scale_real = scale_real;
+    PassParameters->scale_imag = scale_imag;
+    
 
-    PassParameters->result = uavAdd3.uav_ref;
-
-    TShaderMapRef<AddShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+    TShaderMapRef<ScaleShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
     FComputeShaderUtils::AddPass(
         graph_builder,
-        RDG_EVENT_NAME("Add Pass"),
+        RDG_EVENT_NAME("Scale Pass"),
         ComputeShader,
         PassParameters,
         FIntVector(TEMP_TEXTURE_N, TEMP_TEXTURE_N, 1)
     );
 
-    //TRefCountPtr<IPooledRenderTarget> PooledComputeTarget1_Add;
-    //graph_builder.QueueTextureExtraction(uavAdd1.ref, &PooledComputeTarget1_Add);
+    TRefCountPtr<IPooledRenderTarget> PooledComputeTarget2_Scale;
+    graph_builder.QueueTextureExtraction(uavScale2.ref, &PooledComputeTarget2_Scale);
 
-    //TRefCountPtr<IPooledRenderTarget> PooledComputeTarget2_Add;
-    //graph_builder.QueueTextureExtraction(uavAdd2.ref, &PooledComputeTarget2_Add);
-
-    
-    
-    
-    TRefCountPtr<IPooledRenderTarget> PooledComputeTarget3_Add;
-    graph_builder.QueueTextureExtraction(uavAdd3.ref, &PooledComputeTarget3_Add);
+    //TRefCountPtr<IPooledRenderTarget> PooledComputeTarget2_Scale;
+    //graph_builder.QueueTextureExtraction(uavScale2.ref, &PooledComputeTarget2_Scale);
 
     graph_builder.Execute();
 
-    /*RHI_cmd_list.CopyToResolveTarget(
-        PooledComputeTarget1_Add.GetReference()->GetRenderTargetItem().TargetableTexture,
-        term1->GetRenderTargetResource()->TextureRHI,
-        FResolveParams()
-    );*/
-
-    /*RHI_cmd_list.CopyToResolveTarget(
-        PooledComputeTarget2_Add.GetReference()->GetRenderTargetItem().TargetableTexture,
-        term2->GetRenderTargetResource()->TextureRHI,
-        FResolveParams()
-    );*/
-
     RHI_cmd_list.CopyToResolveTarget(
-        PooledComputeTarget3_Add.GetReference()->GetRenderTargetItem().TargetableTexture,
-        result->GetRenderTargetResource()->TextureRHI,
+        PooledComputeTarget2_Scale.GetReference()->GetRenderTargetItem().TargetableTexture,
+        input_rtt->GetRenderTargetResource()->TextureRHI,
         FResolveParams()
     );
-
+    /*RHI_cmd_list.CopyToResolveTarget(
+        PooledComputeTarget2_Scale.GetReference()->GetRenderTargetItem().TargetableTexture,
+        output_rtt->GetRenderTargetResource()->TextureRHI,
+        FResolveParams()
+    );*/
+    //UE_LOG(LogTemp, Warning, TEXT("SCALE OUTPUT START"));
+    //ReadbackRTT3(RHI_cmd_list, rtt);
+    //UE_LOG(LogTemp, Warning, TEXT("FFT SCALE process OUTPUT END"));
      //DEBUG READ-BACK
      {
        FRHIResourceCreateInfo CreateInfo;
@@ -176,12 +199,12 @@ void AddShader::BuildAndExecuteGraph(
          CreateInfo);
 
        RHI_cmd_list.CopyToResolveTarget(
-         result->GetRenderTargetResource()->TextureRHI,
+         output_rtt->GetRenderTargetResource()->TextureRHI,
          readback_tex->GetTexture2D(),
          FResolveParams()
        );
 
-       UE_LOG(LogTemp, Warning, TEXT("READBACK START - Add.cpp, after add pass"));
+       UE_LOG(LogTemp, Warning, TEXT("READBACK START - Scale.cpp, after scale pass"));
 
        FReadSurfaceDataFlags read_flags(RCM_MinMax);
        read_flags.SetLinearToGamma(false);
