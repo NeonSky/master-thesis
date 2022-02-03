@@ -4,6 +4,7 @@
 #include "ButterflyTexture.h"
 #include "FourierComponents.h"
 #include "ButterflyPostProcess.h"
+#include "ElevationSampler.h"
 
 #include "GlobalShader.h"
 #include "ShaderCore.h" 
@@ -90,6 +91,27 @@ void ShaderModelsModule::ComputeFourierComponents(
 				tilde_hkt_dz_param
 			);
 		}); 
+}
+
+void ShaderModelsModule::SampleElevationPoints(UTextureRenderTarget2D* elevations, TArray<FVector2D> input_sample_coordinates, TArray<float>* output) {
+
+ 	TShaderMapRef<ElevationSamplerShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+
+	FRenderCommandFence fence;
+	ENQUEUE_RENDER_COMMAND(shader)(
+		[shader, elevations, input_sample_coordinates, output](FRHICommandListImmediate& RHI_cmd_list) {
+			shader->BuildAndExecuteGraph(
+				RHI_cmd_list,
+				elevations,
+				input_sample_coordinates,
+				output
+			);
+		}); 
+
+	// Force the output to be ready since UE will not allow the render thread to get 2 frames behind the game thread anyway. 
+	fence.BeginFence();
+	fence.Wait();
+
 }
 
 IMPLEMENT_MODULE(ShaderModelsModule, ShaderModels);

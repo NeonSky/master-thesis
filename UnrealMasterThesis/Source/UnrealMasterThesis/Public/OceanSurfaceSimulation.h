@@ -33,6 +33,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	TArray<float> sample_elevation_points(TArray<FVector2D> sample_points);
+
 protected:
 
 	// Called once on "Play"

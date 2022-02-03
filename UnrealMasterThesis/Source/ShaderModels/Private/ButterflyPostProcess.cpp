@@ -58,8 +58,6 @@ void ButterflyPostProcessShader::BuildAndExecuteGraph(
     FIntVector(N, N, 1)
   );
 
-  // TODO: Not sure if the below is needed (apart from execute obviously)
-
 	TRefCountPtr<IPooledRenderTarget> PooledComputeTarget;
 	graph_builder.QueueTextureExtraction(io_tex_ref, &PooledComputeTarget);
 
