@@ -82,15 +82,15 @@ void ABoat::UpdateTransform(float DeltaTime) {
   SetActorLocation(pos + delta_pos);
 }
 
-void ABoat::SetupPlayerInputComponent(class UInputComponent* InputComponent) {
-  Super::SetupPlayerInputComponent(InputComponent);
+void ABoat::SetupPlayerInputComponent(class UInputComponent* inputComponent) {
+  Super::SetupPlayerInputComponent(inputComponent);
 
-  InputComponent->BindAction("Speed1", IE_Pressed, this, &ABoat::UseSlowSpeed);
-  InputComponent->BindAction("Speed2", IE_Pressed, this, &ABoat::UseNormalSpeed);
-  InputComponent->BindAction("Speed3", IE_Pressed, this, &ABoat::UseFastSpeed);
+  inputComponent->BindAction("Speed1", IE_Pressed, this, &ABoat::UseSlowSpeed);
+  inputComponent->BindAction("Speed2", IE_Pressed, this, &ABoat::UseNormalSpeed);
+  inputComponent->BindAction("Speed3", IE_Pressed, this, &ABoat::UseFastSpeed);
 
-  InputComponent->BindAxis("HorizontalAxis", this, &ABoat::HorizontalAxis);
-  InputComponent->BindAxis("VerticalAxis", this, &ABoat::VerticalAxis);
+  inputComponent->BindAxis("HorizontalAxis", this, &ABoat::HorizontalAxis);
+  inputComponent->BindAxis("VerticalAxis", this, &ABoat::VerticalAxis);
 }
 
 void ABoat::UseSlowSpeed()   { m_speed_input = slow_speed; }
