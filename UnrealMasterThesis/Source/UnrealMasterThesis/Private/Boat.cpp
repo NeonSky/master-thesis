@@ -3,9 +3,11 @@
 #include "Boat.h"
 #include "Globals/StatelessHelpers.h"
 
-ABoat::ABoat() {
-	UE_LOG(LogTemp, Warning, TEXT("ABoat::ABoat()"));
+#include "Engine/TextureRenderTarget2D.h"
 
+DECLARE_CYCLE_STAT(TEXT("CustomDebug ~ UpdateElevations"), STAT_UpdateElevations, STATGROUP_CustomDebug);
+
+ABoat::ABoat() {
 	// Configure Tick() to be called every frame.
 	PrimaryActorTick.bCanEverTick = true;
 }
@@ -13,12 +15,31 @@ ABoat::ABoat() {
 void ABoat::BeginPlay() {
 	Super::BeginPlay();
 
+  m_velocity_input = FVector2D(0.0f);
   m_speed_input = normal_speed;
+  m_has_requested_elevations = false;
 }
 
 void ABoat::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
+  UpdateElevations();
+  UpdateTransform(DeltaTime);
+}
+
+void ABoat::UpdateElevations() {
+
+  SCOPE_CYCLE_COUNTER(STAT_UpdateElevations);
+
+	TArray<FVector2D> sample_points;
+	sample_points.Push(FVector2D(GetActorLocation().X, GetActorLocation().Y));
+  TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
+
+  SetActorLocation(FVector(GetActorLocation().X, GetActorLocation().Y, elevations[0]));
+
+}
+
+void ABoat::UpdateTransform(float DeltaTime) {
   if (m_velocity_input.IsNearlyZero(0.001f)) {
     return;
   }

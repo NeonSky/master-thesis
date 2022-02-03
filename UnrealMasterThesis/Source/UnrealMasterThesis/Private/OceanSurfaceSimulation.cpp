@@ -13,10 +13,9 @@
 // The NewObject function could potentially work, but it does not appear to give visible results in our case.
 const int TILES_COUNT = 49; // Should be 1 or higher
 
+TArray<float> elevation_output;
 
 AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
-	UE_LOG(LogTemp, Warning, TEXT("AOceanSurfaceSimulation::AOceanSurfaceSimulation()"));
-
 	// Configure Tick() to be called every frame.
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -62,6 +61,22 @@ void AOceanSurfaceSimulation::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
 	this->update_mesh();
+}
+
+TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points) {
+
+	m_shader_models_module.SampleElevationPoints(
+		this->spectrum_y_rtt,
+		sample_points,
+		&elevation_output
+	);
+
+	// UE_LOG(LogTemp, Warning, TEXT("Output"));
+	// for (int i = 0; i < elevation_output.Num(); i++) {
+	// 	UE_LOG(LogTemp, Warning, TEXT("i = %i: %f"), i, elevation_output[i]);
+	// }
+
+	return elevation_output;
 }
 
 void AOceanSurfaceSimulation::create_mesh() {
