@@ -238,13 +238,18 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 			//UE_LOG(LogTemp, Error, TEXT("ADD"));
 		//}
 		//else {
-			m_shader_models_module.FFT(this->butterfly_rtt, this->eWave_addition_rtt, 1.0f);
-			m_shader_models_module.ComputeScale(this->eWave_addition_rtt, this->eWave_addition_rtt, 1, -1);
+			//m_shader_models_module.FFT(this->butterfly_rtt, this->eWave_addition_rtt, 1.0f);
+			//m_shader_models_module.ComputeScale(this->eWave_addition_rtt, this->eWave_addition_rtt, 1, -1);
 			m_shader_models_module.FFT(this->butterfly_rtt, this->eWave_addition_rtt, 1.0f / (N * N));
-			m_shader_models_module.ComputeScale(this->eWave_addition_rtt, this->eWave_addition_rtt, 1, -1);
+
+			m_shader_models_module.ComputeScale(this->eWave_addition_rtt, this->eWave_addition_rtt, 2, -1);
+			
 			first = false;
 			//UE_LOG(LogTemp, Error, TEXT("FFT"));
 		}
+		
+		
+		
 		flip = !flip;
 		counter++;
 	//}
