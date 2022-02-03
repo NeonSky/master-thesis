@@ -1,0 +1,29 @@
+#include "/Engine/Public/Platform.ush"
+
+Texture2D<float4> elevation_texture;
+StructuredBuffer<float2> input_sample_coordinates;
+RWTexture2D<float> output_texture;
+
+[numthreads(N_THREADS_X, 1, 1)]
+void MainCompute(uint3 id : SV_DispatchThreadID) {
+
+    const float L = 100.0;
+    const float cm_to_m = 100.0;
+    const float world_size = cm_to_m * L;
+
+    // The coordinate of interest in world space.
+    float2 ws_coord = input_sample_coordinates[id.x];
+
+    // The coordinate of interest in normalized UV space.
+    float2 coord = (world_size * 0.5 + ws_coord) / world_size;
+
+    SamplerState Sampler {
+        Filter = MIN_MAG_MIP_LINEAR;
+        AddressU = Wrap;
+        AddressV = Wrap;
+    };
+    float elevation = elevation_texture.SampleLevel(Sampler, coord, 0).r;
+
+    output_texture[uint2(id.x,0)] = cm_to_m * elevation;
+
+}
