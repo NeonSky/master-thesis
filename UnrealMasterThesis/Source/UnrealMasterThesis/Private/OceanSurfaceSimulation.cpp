@@ -199,7 +199,7 @@ void AOceanSurfaceSimulation::create_mesh() {
 void AOceanSurfaceSimulation::update_mesh(float dt) {
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
 
-	m_shader_models_module.ComputeFourierComponents(realtimeSeconds, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
+	//m_shader_models_module.ComputeFourierComponents(realtimeSeconds, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
 
 	//m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_x_rtt);
 	//m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
@@ -224,7 +224,9 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		//}
 		//else {
 			m_shader_models_module.FFT(this->butterfly_rtt, this->eWave_addition_rtt, 1.0f);
+			m_shader_models_module.ComputeScale(this->eWave_addition_rtt, this->eWave_addition_rtt, 1, -1);
 			m_shader_models_module.FFT(this->butterfly_rtt, this->eWave_addition_rtt, 1.0f / (N * N));
+			m_shader_models_module.ComputeScale(this->eWave_addition_rtt, this->eWave_addition_rtt, 1, -1);
 			first = false;
 			//UE_LOG(LogTemp, Error, TEXT("FFT"));
 		}

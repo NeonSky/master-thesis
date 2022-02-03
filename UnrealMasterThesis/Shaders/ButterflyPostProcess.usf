@@ -15,6 +15,7 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     // See the report for further details.
 
     float s = scale;
+    s = 1.0;
     InputOutputTexture[id.xy] = float4(sign * r * s, sign * g * s, 0.0, 1.0);
 
 }
