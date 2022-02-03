@@ -1,0 +1,17 @@
+#include "/Engine/Public/Platform.ush"
+
+RWTexture2D<float4> input_rtt;
+RWTexture2D<float4> output_rtt;
+float scale_real;
+float scale_imag;
+
+
+
+[numthreads(N_THREADS_X, N_THREADS_Y, 1)]
+void eWaveCompute(uint3 id : SV_DispatchThreadID) {
+  float r = input_rtt[id.xy].r;
+  float g = input_rtt[id.xy].g;
+  r = r * scale_real;
+  g = g * scale_imag;
+  output_rtt[id.xy] = float4(r, g * scale_real, 0.0, 1.0);
+}
