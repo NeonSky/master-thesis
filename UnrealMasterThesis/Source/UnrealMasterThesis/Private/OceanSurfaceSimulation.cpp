@@ -220,11 +220,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 			// Note: parameter 2 is overridden in the Add shader, the test texture is passed as parameter 2 to the shader
 		    // Note: currently does not even add, just writes the test data to a the render target from parameter 3. 
 			m_shader_models_module.ComputeAdd(this->eWave_addition_rtt, this->eWave_addition_texture, this->eWave_addition_rtt);
-			float scale = 1 / (N * N);
-			m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->eWave_addition_rtt, 0);
-			//m_shader_models_module.ComputeScale(this->eWave_addition_rtt, this->eWave_addition_rtt, 1.0, -1.0);
-			m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->eWave_addition_rtt, 0);
-			m_shader_models_module.ComputeScale(this->eWave_addition_rtt, this->eWave_addition_rtt, 1.0 / 16, -1.0 * scale);
+			
 			// TODO: remove the scale parameter
 			//UE_LOG(LogTemp, Error, TEXT("ADD"));
 		//}
@@ -240,6 +236,14 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 			first = false;
 			//UE_LOG(LogTemp, Error, TEXT("FFT"));
 		}
+		float scale = 1 / (N * N);
+		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->eWave_addition_rtt, 0);
+		//m_shader_models_module.ComputeScale(this->eWave_addition_rtt, this->eWave_addition_rtt, 1.0, -1.0);
+
+		m_shader_models_module.ComputeeWave(0.016, L, this->ewave_h_rtt, this->ewave_hPrev_rtt, this->ewave_v_rtt, this->ewave_vPrev_rtt);
+
+		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->eWave_addition_rtt, 0);
+		m_shader_models_module.ComputeScale(this->eWave_addition_rtt, this->eWave_addition_rtt, 1.0 / 16, -1.0 * scale);
 		
 		
 		

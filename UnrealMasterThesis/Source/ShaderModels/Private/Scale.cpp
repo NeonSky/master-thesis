@@ -148,13 +148,11 @@ void ScaleShader::BuildAndExecuteGraph(
     FParameters* PassParameters;
     PassParameters = graph_builder.AllocParameters<ScaleShader::FParameters>();
 
-
-	FRDGTextureRef io_tex_ref = register_texture4(graph_builder, input_rtt, "InputOutputRenderTarget");
-	// FRDGTextureRef io_tex_ref = register_texture(graph_builder, input_output, "InputOutputRenderTarget");
+    // FRDGTextureRef io_tex_ref = register_texture(graph_builder, input_output, "InputOutputRenderTarget");
 
     // CustomUAV uavScale1 = create_UAV4(graph_builder, input_rtt, TEXT("input_rtt"));
     // CustomUAV uavScale2 = create_UAV4(graph_builder, output_rtt, TEXT("output_rtt"));
-
+	FRDGTextureRef io_tex_ref = register_texture4(graph_builder, input_rtt, "InputOutputRenderTarget");
     auto uav = graph_builder.CreateUAV(io_tex_ref);
 
     PassParameters->input_rtt = uav;
@@ -195,7 +193,7 @@ void ScaleShader::BuildAndExecuteGraph(
     //ReadbackRTT3(RHI_cmd_list, rtt);
     //UE_LOG(LogTemp, Warning, TEXT("FFT SCALE process OUTPUT END"));
      //DEBUG READ-BACK
-     {
+     /*{
        FRHIResourceCreateInfo CreateInfo;
        FTexture2DRHIRef readback_tex = RHICreateTexture2D(
          TEMP_TEXTURE_N,
@@ -230,6 +228,6 @@ void ScaleShader::BuildAndExecuteGraph(
          UE_LOG(LogTemp, Warning, TEXT("%i: (%f, %f, %f, %f)"), i, rdata[i].R.GetFloat(), rdata[i].G.GetFloat(), rdata[i].B.GetFloat(), rdata[i].A.GetFloat());
        }
        UE_LOG(LogTemp, Warning, TEXT("READBACK END"));
-     }
+     }*/
 
 }
