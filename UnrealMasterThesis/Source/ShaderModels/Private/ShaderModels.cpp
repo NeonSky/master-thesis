@@ -4,6 +4,7 @@
 #include "ButterflyTexture.h"
 #include "FourierComponents.h"
 #include "ButterflyPostProcess.h"
+#include "ButterflyPostProcessForward.h"
 #include "eWave.h"
 #include "Add.h"
 #include "Scale.h"
@@ -46,7 +47,6 @@ void ShaderModelsModule::FFT(UTextureRenderTarget2D* butterfly, UTextureRenderTa
 	UTextureRenderTarget2D* output_param    = output;
 	float scale_param = scale;
 
-	FRenderCommandFence f1;
 	ENQUEUE_RENDER_COMMAND(shader)(
 		[shader, butterfly_param, output_param, shader2, scale_param](FRHICommandListImmediate& RHI_cmd_list) {
 			shader->BuildAndExecuteGraph(
@@ -58,11 +58,36 @@ void ShaderModelsModule::FFT(UTextureRenderTarget2D* butterfly, UTextureRenderTa
 			shader2->BuildAndExecuteGraph(
 				RHI_cmd_list,
 				output_param,
-				scale_param
+				-1,
+				1
 			);
 		});
-	f1.BeginFence();
-	f1.Wait();
+}
+
+
+void ShaderModelsModule::FFT_Forward(UTextureRenderTarget2D* butterfly, UTextureRenderTarget2D* output, float scale) {
+	TShaderMapRef<ButterflyShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+	TShaderMapRef<ButterflyPostProcessShaderForward> shader2(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+
+	UTextureRenderTarget2D* butterfly_param = butterfly;
+	UTextureRenderTarget2D* output_param = output;
+	float scale_param = scale;
+
+	ENQUEUE_RENDER_COMMAND(shader)(
+		[shader, butterfly_param, output_param, shader2, scale_param](FRHICommandListImmediate& RHI_cmd_list) {
+		shader->BuildAndExecuteGraph(
+			RHI_cmd_list,
+			butterfly_param,
+			output_param
+		);
+
+		shader2->BuildAndExecuteGraph(
+			RHI_cmd_list,
+			output_param,
+			-1,
+			1
+		);
+	});
 }
 
 void ShaderModelsModule::FFT2(UTextureRenderTarget2D* butterfly, UTextureRenderTarget2D* output, float scale_real) {
@@ -75,7 +100,6 @@ void ShaderModelsModule::FFT2(UTextureRenderTarget2D* butterfly, UTextureRenderT
 	float scale_real_param = scale_real;
 	float scale_imag_param = -1.0;
 
-	FRenderCommandFence f1;
 	ENQUEUE_RENDER_COMMAND(shader)(
 		[shader, butterfly_param, output_param, shader2_post_process, shader3_scale, scale_real_param, scale_imag_param](FRHICommandListImmediate& RHI_cmd_list) {
 		shader3_scale->BuildAndExecuteGraph(
@@ -95,7 +119,9 @@ void ShaderModelsModule::FFT2(UTextureRenderTarget2D* butterfly, UTextureRenderT
 		shader2_post_process->BuildAndExecuteGraph(
 			RHI_cmd_list,
 			output_param,
-			scale_real_param
+			42,
+			-42
+
 		);
 
 		shader3_scale->BuildAndExecuteGraph(
@@ -106,8 +132,6 @@ void ShaderModelsModule::FFT2(UTextureRenderTarget2D* butterfly, UTextureRenderT
 			-1.0 * scale_real_param
 		);
 	});
-	f1.BeginFence();
-	f1.Wait();
 }
 
 void ShaderModelsModule::Buildh0Textures(int N, float L, std::function<float (FVector2D)> wave_spectrum) {

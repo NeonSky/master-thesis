@@ -5,11 +5,11 @@
 #include "ShaderParameterStruct.h"
 #include "Modules/ModuleManager.h"
 
-class SHADERMODELS_API ButterflyPostProcessShader : public FGlobalShader {
+class SHADERMODELS_API ButterflyPostProcessShaderForward : public FGlobalShader {
 public:
 
-	DECLARE_GLOBAL_SHADER(ButterflyPostProcessShader)
-	SHADER_USE_PARAMETER_STRUCT(ButterflyPostProcessShader, FGlobalShader)
+	DECLARE_GLOBAL_SHADER(ButterflyPostProcessShaderForward)
+	SHADER_USE_PARAMETER_STRUCT(ButterflyPostProcessShaderForward, FGlobalShader)
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, ) 
 

@@ -12,6 +12,7 @@ public:
 
 	void GenerateButterflyTexture(UTextureRenderTarget2D* output);
 	void FFT(UTextureRenderTarget2D* butterfly, UTextureRenderTarget2D* output, float scale = 1.0f);
+	void FFT_Forward(UTextureRenderTarget2D* butterfly, UTextureRenderTarget2D* output, float scale = 1.0f);
 
 	void FFT2(UTextureRenderTarget2D* butterfly, UTextureRenderTarget2D* output, float scale = 1.0f);
 
