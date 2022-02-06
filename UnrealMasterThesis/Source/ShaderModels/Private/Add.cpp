@@ -130,32 +130,11 @@ void AddShader::BuildAndExecuteGraph(
         PassParameters,
         FIntVector(TEMP_TEXTURE_N, TEMP_TEXTURE_N, 1)
     );
-
-    //TRefCountPtr<IPooledRenderTarget> PooledComputeTarget1_Add;
-    //graph_builder.QueueTextureExtraction(uavAdd1.ref, &PooledComputeTarget1_Add);
-
-    //TRefCountPtr<IPooledRenderTarget> PooledComputeTarget2_Add;
-    //graph_builder.QueueTextureExtraction(uavAdd2.ref, &PooledComputeTarget2_Add);
-
-    
-    
     
     TRefCountPtr<IPooledRenderTarget> PooledComputeTarget3_Add;
     graph_builder.QueueTextureExtraction(uavAdd3.ref, &PooledComputeTarget3_Add);
 
     graph_builder.Execute();
-
-    /*RHI_cmd_list.CopyToResolveTarget(
-        PooledComputeTarget1_Add.GetReference()->GetRenderTargetItem().TargetableTexture,
-        term1->GetRenderTargetResource()->TextureRHI,
-        FResolveParams()
-    );*/
-
-    /*RHI_cmd_list.CopyToResolveTarget(
-        PooledComputeTarget2_Add.GetReference()->GetRenderTargetItem().TargetableTexture,
-        term2->GetRenderTargetResource()->TextureRHI,
-        FResolveParams()
-    );*/
 
     RHI_cmd_list.CopyToResolveTarget(
         PooledComputeTarget3_Add.GetReference()->GetRenderTargetItem().TargetableTexture,
