@@ -15,26 +15,29 @@
 IMPLEMENT_GLOBAL_SHADER(ScaleShader, "/Project/UnrealMasterThesis/Scale.usf", "eWaveCompute", SF_Compute);
 
 FRDGTextureRef register_texture4(
-    FRDGBuilder& graph_builder,
-    FTexture2DRHIRef rhi_ref,
-    FString name) {
+	FRDGBuilder& graph_builder,
+	UTextureRenderTarget2D* render_target,
+	FString name) {
 
-    FSceneRenderTargetItem RenderTargetItem;
-    RenderTargetItem.TargetableTexture = rhi_ref;
-    RenderTargetItem.ShaderResourceTexture = rhi_ref;
-    FPooledRenderTargetDesc RenderTargetDesc = FPooledRenderTargetDesc::Create2DDesc(
-        rhi_ref->GetSizeXY(),
-        rhi_ref->GetFormat(),
-        FClearValueBinding::Black,
-        TexCreate_None,
-        TexCreate_RenderTargetable | TexCreate_ShaderResource | TexCreate_UAV,
-        false);
-    TRefCountPtr<IPooledRenderTarget> PooledRenderTarget;
-    GRenderTargetPool.CreateUntrackedElement(RenderTargetDesc, PooledRenderTarget, RenderTargetItem);
+	FRenderTarget* RenderTargetResource = render_target->GetRenderTargetResource();
+	FTexture2DRHIRef RenderTargetRHI = RenderTargetResource->GetRenderTargetTexture();
 
-    FRDGTextureRef RDG_tex_ref = graph_builder.RegisterExternalTexture(PooledRenderTarget, *name);
+	FSceneRenderTargetItem RenderTargetItem;
+	RenderTargetItem.TargetableTexture = RenderTargetRHI;
+	RenderTargetItem.ShaderResourceTexture = RenderTargetRHI;
+	FPooledRenderTargetDesc RenderTargetDesc = FPooledRenderTargetDesc::Create2DDesc(
+		RenderTargetResource->GetSizeXY(),
+		RenderTargetRHI->GetFormat(),
+		FClearValueBinding::Black,
+		TexCreate_None,
+		TexCreate_RenderTargetable | TexCreate_ShaderResource | TexCreate_UAV,
+		false);
+	TRefCountPtr<IPooledRenderTarget> PooledRenderTarget;
+	GRenderTargetPool.CreateUntrackedElement(RenderTargetDesc, PooledRenderTarget, RenderTargetItem);
 
-    return RDG_tex_ref;
+	FRDGTextureRef RDG_tex_ref = graph_builder.RegisterExternalTexture(PooledRenderTarget, *name);
+
+	return RDG_tex_ref;
 }
 
 struct CustomUAV {
@@ -146,11 +149,16 @@ void ScaleShader::BuildAndExecuteGraph(
     PassParameters = graph_builder.AllocParameters<ScaleShader::FParameters>();
 
 
-    CustomUAV uavScale1 = create_UAV4(graph_builder, input_rtt, TEXT("input_rtt"));
-    CustomUAV uavScale2 = create_UAV4(graph_builder, output_rtt, TEXT("output_rtt"));
+	FRDGTextureRef io_tex_ref = register_texture4(graph_builder, input_rtt, "InputOutputRenderTarget");
+	// FRDGTextureRef io_tex_ref = register_texture(graph_builder, input_output, "InputOutputRenderTarget");
 
-    PassParameters->input_rtt = uavScale1.uav_ref;
-    PassParameters->output_rtt = uavScale2.uav_ref;
+    // CustomUAV uavScale1 = create_UAV4(graph_builder, input_rtt, TEXT("input_rtt"));
+    // CustomUAV uavScale2 = create_UAV4(graph_builder, output_rtt, TEXT("output_rtt"));
+
+    auto uav = graph_builder.CreateUAV(io_tex_ref);
+
+    PassParameters->input_rtt = uav;
+    PassParameters->output_rtt = uav;
     PassParameters->scale_real = scale_real;
     PassParameters->scale_imag = scale_imag;
     
@@ -166,7 +174,7 @@ void ScaleShader::BuildAndExecuteGraph(
     );
 
     TRefCountPtr<IPooledRenderTarget> PooledComputeTarget2_Scale;
-    graph_builder.QueueTextureExtraction(uavScale2.ref, &PooledComputeTarget2_Scale);
+    graph_builder.QueueTextureExtraction(io_tex_ref, &PooledComputeTarget2_Scale);
 
     //TRefCountPtr<IPooledRenderTarget> PooledComputeTarget2_Scale;
     //graph_builder.QueueTextureExtraction(uavScale2.ref, &PooledComputeTarget2_Scale);

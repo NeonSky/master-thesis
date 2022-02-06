@@ -1,12 +1,12 @@
-#include "ButterflyPostProcess.h"
+#include "ButterflyPostProcessForward.h"
 
 #include "RenderGraph.h"
 #include "RenderTargetPool.h"
 #include "Engine/TextureRenderTarget2D.h"
 
-IMPLEMENT_GLOBAL_SHADER(ButterflyPostProcessShader, "/Project/UnrealMasterThesis/ButterflyPostProcess.usf", "MainCompute", SF_Compute);
+IMPLEMENT_GLOBAL_SHADER(ButterflyPostProcessShaderForward, "/Project/UnrealMasterThesis/ButterflyPostProcessForward.usf", "MainCompute", SF_Compute);
 
-FRDGTextureRef register_texture_(
+FRDGTextureRef register_texture_2(
 	FRDGBuilder& graph_builder,
 	UTextureRenderTarget2D* render_target,
 	FString name) {
@@ -32,7 +32,7 @@ FRDGTextureRef register_texture_(
 	return RDG_tex_ref;
 }
 
-void ReadbackRTT2(FRHICommandListImmediate& RHI_cmd_list, UTextureRenderTarget2D* rtt) {
+void ReadbackRTT_3(FRHICommandListImmediate& RHI_cmd_list, UTextureRenderTarget2D* rtt) {
 	FRHIResourceCreateInfo CreateInfo;
 	FTexture2DRHIRef readback_tex = RHICreateTexture2D(
 		rtt->SizeX,
@@ -65,7 +65,7 @@ void ReadbackRTT2(FRHICommandListImmediate& RHI_cmd_list, UTextureRenderTarget2D
 	}
 
 }
-void ButterflyPostProcessShader::BuildAndExecuteGraph(
+void ButterflyPostProcessShaderForward::BuildAndExecuteGraph(
   FRHICommandListImmediate &RHI_cmd_list,
 	UTextureRenderTarget2D* input_output,
 	float scale_r,
@@ -73,13 +73,13 @@ void ButterflyPostProcessShader::BuildAndExecuteGraph(
 
 	FRDGBuilder graph_builder(RHI_cmd_list);
 
-	FRDGTextureRef io_tex_ref = register_texture_(graph_builder, input_output, "InputOutputRenderTarget");
+	FRDGTextureRef io_tex_ref = register_texture_2(graph_builder, input_output, "InputOutputRenderTarget");
 
-	TShaderMapRef<ButterflyPostProcessShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+	TShaderMapRef<ButterflyPostProcessShaderForward> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	FRDGTextureUAVRef input_texture_UAV = graph_builder.CreateUAV(io_tex_ref);
 
-  FParameters* PassParameters = graph_builder.AllocParameters<ButterflyPostProcessShader::FParameters>();
+  FParameters* PassParameters = graph_builder.AllocParameters<ButterflyPostProcessShaderForward::FParameters>();
 
   PassParameters->InputOutputTexture = input_texture_UAV;
   PassParameters->scale_r = scale_r;
@@ -95,6 +95,8 @@ void ButterflyPostProcessShader::BuildAndExecuteGraph(
     FIntVector(N, N, 1)
   );
 
+  // TODO: Not sure if the below is needed (apart from execute obviously)
+
 	TRefCountPtr<IPooledRenderTarget> PooledComputeTarget;
 	graph_builder.QueueTextureExtraction(io_tex_ref, &PooledComputeTarget);
 
@@ -108,7 +110,7 @@ void ButterflyPostProcessShader::BuildAndExecuteGraph(
 
 	static int t = 0;
 	UE_LOG(LogTemp, Warning, TEXT("FFT Post process OUTPUT START: %d"), t);
-	ReadbackRTT2(RHI_cmd_list, input_output);
+	ReadbackRTT_3(RHI_cmd_list, input_output);
 	UE_LOG(LogTemp, Warning, TEXT("FFT Post process OUTPUT END"));
 	t++;
 
