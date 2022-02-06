@@ -13,17 +13,20 @@
 
 IMPLEMENT_GLOBAL_SHADER(eWaveShader, "/Project/UnrealMasterThesis/eWave.usf", "eWaveCompute", SF_Compute);
 
-/*FRDGTextureRef register_texture(
+FRDGTextureRef register_texture5(
     FRDGBuilder& graph_builder,
-    FTexture2DRHIRef rhi_ref,
+    UTextureRenderTarget2D* render_target,
     FString name) {
 
+    FRenderTarget* RenderTargetResource = render_target->GetRenderTargetResource();
+    FTexture2DRHIRef RenderTargetRHI = RenderTargetResource->GetRenderTargetTexture();
+
     FSceneRenderTargetItem RenderTargetItem;
-    RenderTargetItem.TargetableTexture = rhi_ref;
-    RenderTargetItem.ShaderResourceTexture = rhi_ref;
+    RenderTargetItem.TargetableTexture = RenderTargetRHI;
+    RenderTargetItem.ShaderResourceTexture = RenderTargetRHI;
     FPooledRenderTargetDesc RenderTargetDesc = FPooledRenderTargetDesc::Create2DDesc(
-        rhi_ref->GetSizeXY(),
-        rhi_ref->GetFormat(),
+        RenderTargetResource->GetSizeXY(),
+        RenderTargetRHI->GetFormat(),
         FClearValueBinding::Black,
         TexCreate_None,
         TexCreate_RenderTargetable | TexCreate_ShaderResource | TexCreate_UAV,
@@ -34,7 +37,7 @@ IMPLEMENT_GLOBAL_SHADER(eWaveShader, "/Project/UnrealMasterThesis/eWave.usf", "e
     FRDGTextureRef RDG_tex_ref = graph_builder.RegisterExternalTexture(PooledRenderTarget, *name);
 
     return RDG_tex_ref;
-}*/
+}
 
 struct CustomUAV {
     FRDGTextureRef ref;
@@ -86,6 +89,15 @@ void eWaveShader::BuildAndExecuteGraph(
     CustomUAV uavewave3 = create_UAV2(graph_builder, eWave_v, TEXT("eWave Velocity Potential"));
     CustomUAV uavewave4 = create_UAV2(graph_builder, eWave_vPrev, TEXT("eWave Velocity Potential Previous Frame"));
 
+    FRDGTextureRef io_tex_ref1 = register_texture5(graph_builder, eWave_h, "eWave Height");
+    FRDGTextureRef io_tex_ref2 = register_texture5(graph_builder, eWave_hPrev, "eWave Height Previous Frame");
+    FRDGTextureRef io_tex_ref3 = register_texture5(graph_builder, eWave_v, "eWave Velocity Potential");
+    FRDGTextureRef io_tex_ref4 = register_texture5(graph_builder, eWave_vPrev, "eWave Velocity Potential Previous Frame");
+    auto uav1 = graph_builder.CreateUAV(io_tex_ref1);
+    auto uav2 = graph_builder.CreateUAV(io_tex_ref2);
+    auto uav3 = graph_builder.CreateUAV(io_tex_ref3);
+    auto uav4 = graph_builder.CreateUAV(io_tex_ref4);
+
     PassParameters->eWave_h = uavewave1.uav_ref;
     PassParameters->eWave_hPrev = uavewave2.uav_ref;
     PassParameters->eWave_v = uavewave3.uav_ref;
@@ -103,13 +115,11 @@ void eWaveShader::BuildAndExecuteGraph(
 
     TRefCountPtr<IPooledRenderTarget> PooledComputeTarget1_ewave;
     graph_builder.QueueTextureExtraction(uavewave1.ref, &PooledComputeTarget1_ewave);
-
     TRefCountPtr<IPooledRenderTarget> PooledComputeTarget2_ewave;
     graph_builder.QueueTextureExtraction(uavewave2.ref, &PooledComputeTarget2_ewave);
-
+    
     TRefCountPtr<IPooledRenderTarget> PooledComputeTarget3_ewave;
     graph_builder.QueueTextureExtraction(uavewave3.ref, &PooledComputeTarget3_ewave);
-
     TRefCountPtr<IPooledRenderTarget> PooledComputeTarget4_ewave;
     graph_builder.QueueTextureExtraction(uavewave4.ref, &PooledComputeTarget4_ewave);
 
