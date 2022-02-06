@@ -81,7 +81,7 @@ void AddShader::BuildTestTextures(int N, float L) {
         for (int i = 0; i < TEMP_TEXTURE_N; i++) {
             for (int j = 0; j < TEMP_TEXTURE_N; j++) {
                 if (flip) {
-                    pixel_data.Add(FFloat16Color(FLinearColor(i + 1 + j, 0.0, 0.0, 1.0))); // 0.2 * j + 0.1,    1,    0.1234 * j + 0.4321 * i  
+                    pixel_data.Add(FFloat16Color(FLinearColor(0.1234 * j + 0.4321 * i, 0.0, 0.0, 1.0))); // 0.2 * j + 0.1,    1,    0.1234 * j + 0.4321 * i  ,    i + 1 + j, 0.0, 0.0, 1.0
                 }
                 else {
                     pixel_data.Add(FFloat16Color(FLinearColor(0.0, 0.0, 0.0, 1.0)));
