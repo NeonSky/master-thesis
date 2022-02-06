@@ -148,10 +148,6 @@ void ScaleShader::BuildAndExecuteGraph(
     FParameters* PassParameters;
     PassParameters = graph_builder.AllocParameters<ScaleShader::FParameters>();
 
-    // FRDGTextureRef io_tex_ref = register_texture(graph_builder, input_output, "InputOutputRenderTarget");
-
-    // CustomUAV uavScale1 = create_UAV4(graph_builder, input_rtt, TEXT("input_rtt"));
-    // CustomUAV uavScale2 = create_UAV4(graph_builder, output_rtt, TEXT("output_rtt"));
 	FRDGTextureRef io_tex_ref = register_texture4(graph_builder, input_rtt, "InputOutputRenderTarget");
     auto uav = graph_builder.CreateUAV(io_tex_ref);
 
@@ -174,9 +170,6 @@ void ScaleShader::BuildAndExecuteGraph(
     TRefCountPtr<IPooledRenderTarget> PooledComputeTarget2_Scale;
     graph_builder.QueueTextureExtraction(io_tex_ref, &PooledComputeTarget2_Scale);
 
-    //TRefCountPtr<IPooledRenderTarget> PooledComputeTarget2_Scale;
-    //graph_builder.QueueTextureExtraction(uavScale2.ref, &PooledComputeTarget2_Scale);
-
     graph_builder.Execute();
 
     RHI_cmd_list.CopyToResolveTarget(
@@ -184,14 +177,10 @@ void ScaleShader::BuildAndExecuteGraph(
         input_rtt->GetRenderTargetResource()->TextureRHI,
         FResolveParams()
     );
-    /*RHI_cmd_list.CopyToResolveTarget(
-        PooledComputeTarget2_Scale.GetReference()->GetRenderTargetItem().TargetableTexture,
-        output_rtt->GetRenderTargetResource()->TextureRHI,
-        FResolveParams()
-    );*/
-    //UE_LOG(LogTemp, Warning, TEXT("SCALE OUTPUT START"));
-    //ReadbackRTT3(RHI_cmd_list, rtt);
-    //UE_LOG(LogTemp, Warning, TEXT("FFT SCALE process OUTPUT END"));
+   
+    UE_LOG(LogTemp, Warning, TEXT("SCALE OUTPUT START"));
+    ReadbackRTT3(RHI_cmd_list, input_rtt);
+    UE_LOG(LogTemp, Warning, TEXT("FFT SCALE process OUTPUT END"));
      //DEBUG READ-BACK
      /*{
        FRHIResourceCreateInfo CreateInfo;
