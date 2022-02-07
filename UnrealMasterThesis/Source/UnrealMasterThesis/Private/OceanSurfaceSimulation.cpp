@@ -220,45 +220,17 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	//m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
 	//m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
 
-
-	
-		// Add height addition texture to the height field
-	static bool flip = true;
-	static bool first = true;
-
-	static float last_ran = realtimeSeconds;
-	static int counter = 0;
-	//if (realtimeSeconds - last_ran >= 2.0f && counter < 2) {
-	last_ran = realtimeSeconds;
-
 	// https://www.dsprelated.com/showarticle/800.php
 	if (first) {
 		// Note: parameter 2 is overridden in the Add shader, the test texture is passed as parameter 2 to the shader
 		// Note: currently does not even add, just writes the test data to a the render target from parameter 3. 
 		m_shader_models_module.ComputeAdd(this->eWave_addition_rtt, this->eWave_addition_texture, this->eWave_addition_rtt);
 
-		float scale = 1 / (N * N);
+		float scale = 1.0f / ((float)N * (float)N);
 		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->eWave_addition_rtt);
-		//m_shader_models_module.ComputeScale(this->eWave_addition_rtt, this->eWave_addition_rtt, 1.0, -1.0);
-
 		//m_shader_models_module.ComputeeWave(0.016, L, this->ewave_h_rtt, this->ewave_hPrev_rtt, this->ewave_v_rtt, this->ewave_vPrev_rtt);
-
-		// m_shader_models_module.ComputeScale(this->eWave_addition_rtt, this->eWave_addition_rtt, 1.0, -1.0);
-		// m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->eWave_addition_rtt, 0);
-		// m_shader_models_module.ComputeScale(this->eWave_addition_rtt, this->eWave_addition_rtt, 1.0 / 16, -1.0);
-		// m_shader_models_module.ComputeScale(this->eWave_addition_rtt, this->eWave_addition_rtt, 1.0 / 16, -1.0 * scale);
 		m_shader_models_module.FFT(this->butterfly_rtt, this->eWave_addition_rtt, 0);
-	
-			
-			first = false;
-		}
-		
-		
-		
-		
-		flip = !flip;
-		counter++;
-	//}
-
-
+		m_shader_models_module.ComputeScale(this->eWave_addition_rtt, this->eWave_addition_rtt, scale, scale);
+		first = false;
+	}
 }
