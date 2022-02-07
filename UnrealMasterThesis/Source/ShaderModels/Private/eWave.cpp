@@ -9,8 +9,8 @@
 #include <complex>
 #include <random>
 
-#define NN 4
-#define TEMP_TEXTURE_N 4
+#define NN 8
+#define TEMP_TEXTURE_N 8
 
 IMPLEMENT_GLOBAL_SHADER(eWaveShader, "/Project/UnrealMasterThesis/eWave.usf", "eWaveCompute", SF_Compute);
 
