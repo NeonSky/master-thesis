@@ -40,10 +40,6 @@ public:
 		UTextureRenderTarget2D* result
 	);
 
-	void ComputeScale(
-		UTextureRenderTarget2D* input_rtt,
-		UTextureRenderTarget2D* output_rtt,
-		float scale
-	);
+	void ComputeScale(UTextureRenderTarget2D* input_output_rtt, float scale);
 
 };
