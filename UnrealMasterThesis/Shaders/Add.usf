@@ -15,8 +15,10 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
   // r.y = -r.y b;
   r.a = 1.0;
 
-  float t = 2.0 * cos(id.x + id.y) + 3.23;
-  result[id.xy] = float4(t, t, 0.0, 1.0);
+  float t1 = 2.0 * sin(id.x + id.y + 3.2) + 3.23;
+  float t2 = 2.3 * cos(id.x + id.y);
+  // We flip t1 and t2 here since we perform IFFT
+  result[id.xy] = float4(t2, t1, 0.0, 1.0);
   // result[id.xy] = b; //float4(id.x, id.y, 0.0, 1.0);
   //result[id.xy] = float4(0.2 * id.x + 0.1, 0.0, 0.0, 1.0);
 }
