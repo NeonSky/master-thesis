@@ -12,5 +12,6 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
   float r = input_rtt[id.xy].r * scale_real;
   float g = input_rtt[id.xy].g * scale_imag;
   output_rtt[id.xy] = float4(r, g, 0.0, 1.0);
+  // output_rtt[id.xy] = float4(1.0, 2.0, 0.0, 1.0);
   //output_rtt[id.xy] = input_rtt[id.xy];
 }
