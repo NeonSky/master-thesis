@@ -84,8 +84,8 @@ void ShaderModelsModule::FFT_Forward(UTextureRenderTarget2D* butterfly, UTexture
 		shader2->BuildAndExecuteGraph(
 			RHI_cmd_list,
 			output_param,
-			-1,
-			1
+			1,
+			scale_param
 		);
 	});
 }
