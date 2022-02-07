@@ -184,23 +184,18 @@ void ShaderModelsModule::ComputeAdd(
 
 }
 
-void ShaderModelsModule::ComputeScale(
-	UTextureRenderTarget2D* input_rtt,
-	UTextureRenderTarget2D* output_rtt,
-	float scale) {
+void ShaderModelsModule::ComputeScale(UTextureRenderTarget2D* input_output_rtt, float scale) {
 
 	TShaderMapRef<ScaleShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
-	UTextureRenderTarget2D* input_rtt_param = input_rtt;
-	UTextureRenderTarget2D* output_rtt_param = output_rtt;
+	UTextureRenderTarget2D* input_output_rtt_param = input_output_rtt;
 	float scale_param = scale;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, input_rtt_param, output_rtt_param, scale_param](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, input_output_rtt_param, scale_param](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
-			input_rtt_param,
-			output_rtt_param,
+			input_output_rtt_param,
 			scale_param
 		);
 	});
