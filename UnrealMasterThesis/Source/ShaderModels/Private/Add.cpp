@@ -10,7 +10,7 @@
 #include <random>
 
 #define NN 256
-#define TEMP_TEXTURE_N 4
+#define TEMP_TEXTURE_N 8
 
 IMPLEMENT_GLOBAL_SHADER(AddShader, "/Project/UnrealMasterThesis/Add.usf", "eWaveCompute", SF_Compute);
 
@@ -80,11 +80,17 @@ void AddShader::BuildTestTextures(int N, float L) {
         bool flip = true;
         for (int i = 0; i < TEMP_TEXTURE_N; i++) {
             for (int j = 0; j < TEMP_TEXTURE_N; j++) {
-                if (flip) {
-                    pixel_data.Add(FFloat16Color(FLinearColor(j + i + 1, 0.0, 0.0, 1.0))); // 0.2 * j + 0.1,    1,    0.1234 * j + 0.4321 * i  ,    i + 1 + j, 0.0, 0.0, 1.0
+                /*if (i == 3 && j == 3) {
+                    pixel_data.Add(FFloat16Color(FLinearColor(1.0, 0.0, 0.0, 1.0)));
                 }
                 else {
-                    pixel_data.Add(FFloat16Color(FLinearColor(0.0, 0.0, 0.0, 1.0))); // -1 * (j + 0.1234) (j above)
+                    pixel_data.Add(FFloat16Color(FLinearColor(0.0, 0.0, 0.0, 1.0)));
+                }*/
+                if (flip) {
+                    pixel_data.Add(FFloat16Color(FLinearColor(cos(i * j), 0.0, 0.0, 1.0))); // 0.2 * j + 0.1,    1,    0.1234 * j + 0.4321 * i  ,    i + 1 + j, 0.0, 0.0, 1.0
+                }
+                else {
+                    pixel_data.Add(FFloat16Color(FLinearColor(cos(i * j), 0.0, 0.0, 1.0))); // -1 * (j + 0.1234) (j above)
                 }
             }
             flip = !flip;

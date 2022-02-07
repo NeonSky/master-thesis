@@ -10,7 +10,7 @@
 #include <random>
 
 #define NN 256
-#define TEMP_TEXTURE_N 4
+#define TEMP_TEXTURE_N 8
 
 IMPLEMENT_GLOBAL_SHADER(ScaleShader, "/Project/UnrealMasterThesis/Scale.usf", "eWaveCompute", SF_Compute);
 
