@@ -140,8 +140,7 @@ void ScaleShader::BuildAndExecuteGraph(
     FRHICommandListImmediate& RHI_cmd_list,
     UTextureRenderTarget2D* input_rtt,
     UTextureRenderTarget2D* output_rtt,
-    float scale_real,
-    float scale_imag) {
+    float scale) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
 
@@ -153,8 +152,7 @@ void ScaleShader::BuildAndExecuteGraph(
 
     PassParameters->input_rtt = uav;
     PassParameters->output_rtt = uav;
-    PassParameters->scale_real = scale_real;
-    PassParameters->scale_imag = scale_imag;
+    PassParameters->scale = scale;
     
 
     TShaderMapRef<ScaleShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));

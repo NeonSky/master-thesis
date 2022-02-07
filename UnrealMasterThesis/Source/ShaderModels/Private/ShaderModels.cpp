@@ -87,50 +87,6 @@ void ShaderModelsModule::FFT_Forward(UTextureRenderTarget2D* butterfly, UTexture
 	});
 }
 
-void ShaderModelsModule::FFT2(UTextureRenderTarget2D* butterfly, UTextureRenderTarget2D* output, float scale_real) {
-	TShaderMapRef<ButterflyShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
-	TShaderMapRef<ButterflyPostProcessShader> shader2_post_process(GetGlobalShaderMap(GMaxRHIFeatureLevel));
-	TShaderMapRef<ScaleShader> shader3_scale(GetGlobalShaderMap(GMaxRHIFeatureLevel));
-
-	UTextureRenderTarget2D* butterfly_param = butterfly;
-	UTextureRenderTarget2D* output_param = output;
-	float scale_real_param = scale_real;
-	float scale_imag_param = -1.0;
-
-	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, butterfly_param, output_param, shader2_post_process, shader3_scale, scale_real_param, scale_imag_param](FRHICommandListImmediate& RHI_cmd_list) {
-		shader3_scale->BuildAndExecuteGraph(
-			RHI_cmd_list,
-			output_param,
-			output_param, // write to the same render target
-			1.0,
-			-1.0
-		);
-
-		shader->BuildAndExecuteGraph(
-			RHI_cmd_list,
-			butterfly_param,
-			output_param
-		);
-
-		shader2_post_process->BuildAndExecuteGraph(
-			RHI_cmd_list,
-			output_param,
-			42,
-			-42
-
-		);
-
-		shader3_scale->BuildAndExecuteGraph(
-			RHI_cmd_list,
-			output_param,
-			output_param, // write to the same render target
-			scale_real_param,
-			-1.0 * scale_real_param
-		);
-	});
-}
-
 void ShaderModelsModule::Buildh0Textures(int N, float L, std::function<float (FVector2D)> wave_spectrum) {
  	TShaderMapRef<FourierComponentsShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
@@ -231,24 +187,21 @@ void ShaderModelsModule::ComputeAdd(
 void ShaderModelsModule::ComputeScale(
 	UTextureRenderTarget2D* input_rtt,
 	UTextureRenderTarget2D* output_rtt,
-	float scale_real,
-	float scale_imag) {
+	float scale) {
 
 	TShaderMapRef<ScaleShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	UTextureRenderTarget2D* input_rtt_param = input_rtt;
 	UTextureRenderTarget2D* output_rtt_param = output_rtt;
-	float scale_real_param = scale_real;
-	float scale_imag_param = scale_imag;
+	float scale_param = scale;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, input_rtt_param, output_rtt_param, scale_real_param, scale_imag_param](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, input_rtt_param, output_rtt_param, scale_param](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
 			input_rtt_param,
 			output_rtt_param,
-			scale_real_param,
-			scale_imag_param
+			scale_param
 		);
 	});
 
