@@ -14,6 +14,9 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
   float4 r = a + b;
   // r.y = -r.y b;
   r.a = 1.0;
-  result[id.xy] = b; //float4(id.x, id.y, 0.0, 1.0);
+
+  float t = 2.0 * cos(id.x + id.y) + 3.23;
+  result[id.xy] = float4(t, t, 0.0, 1.0);
+  // result[id.xy] = b; //float4(id.x, id.y, 0.0, 1.0);
   //result[id.xy] = float4(0.2 * id.x + 0.1, 0.0, 0.0, 1.0);
 }
