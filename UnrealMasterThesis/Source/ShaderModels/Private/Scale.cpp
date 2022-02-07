@@ -138,8 +138,7 @@ void ReadbackRTT3(FRHICommandListImmediate& RHI_cmd_list, UTextureRenderTarget2D
 
 void ScaleShader::BuildAndExecuteGraph(
     FRHICommandListImmediate& RHI_cmd_list,
-    UTextureRenderTarget2D* input_rtt,
-    UTextureRenderTarget2D* output_rtt,
+    UTextureRenderTarget2D* input_output_rtt,
     float scale) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
@@ -147,11 +146,10 @@ void ScaleShader::BuildAndExecuteGraph(
     FParameters* PassParameters;
     PassParameters = graph_builder.AllocParameters<ScaleShader::FParameters>();
 
-	FRDGTextureRef io_tex_ref = register_texture4(graph_builder, input_rtt, "InputOutputRenderTarget");
+	FRDGTextureRef io_tex_ref = register_texture4(graph_builder, input_output_rtt, "InputOutputRenderTarget");
     auto uav = graph_builder.CreateUAV(io_tex_ref);
 
-    PassParameters->input_rtt = uav;
-    PassParameters->output_rtt = uav;
+    PassParameters->input_output_rtt = uav;
     PassParameters->scale = scale;
     
 
@@ -172,49 +170,11 @@ void ScaleShader::BuildAndExecuteGraph(
 
     RHI_cmd_list.CopyToResolveTarget(
         PooledComputeTarget2_Scale.GetReference()->GetRenderTargetItem().TargetableTexture,
-        input_rtt->GetRenderTargetResource()->TextureRHI,
+        input_output_rtt->GetRenderTargetResource()->TextureRHI,
         FResolveParams()
     );
    
     UE_LOG(LogTemp, Warning, TEXT("SCALE OUTPUT START"));
-    ReadbackRTT3(RHI_cmd_list, input_rtt);
+    ReadbackRTT3(RHI_cmd_list, input_output_rtt);
     UE_LOG(LogTemp, Warning, TEXT("FFT SCALE process OUTPUT END"));
-     //DEBUG READ-BACK
-     /*{
-       FRHIResourceCreateInfo CreateInfo;
-       FTexture2DRHIRef readback_tex = RHICreateTexture2D(
-         TEMP_TEXTURE_N,
-         TEMP_TEXTURE_N,
-         PF_FloatRGBA,
-         1,
-         1,
-         TexCreate_RenderTargetable,
-         CreateInfo);
-
-       RHI_cmd_list.CopyToResolveTarget(
-         output_rtt->GetRenderTargetResource()->TextureRHI,
-         readback_tex->GetTexture2D(),
-         FResolveParams()
-       );
-
-       UE_LOG(LogTemp, Warning, TEXT("READBACK START - Scale.cpp, after scale pass"));
-
-       FReadSurfaceDataFlags read_flags(RCM_MinMax);
-       read_flags.SetLinearToGamma(false);
-
-       TArray<FFloat16Color> rdata;
-       RHI_cmd_list.ReadSurfaceFloatData(
-         readback_tex->GetTexture2D(),
-         FIntRect(0, 0, TEMP_TEXTURE_N, TEMP_TEXTURE_N),
-         rdata,
-         read_flags
-       );
-
-       UE_LOG(LogTemp, Warning, TEXT("Amount of pixels: %i"), rdata.Num());
-       for (int i = 0; i < rdata.Num(); i++) {
-         UE_LOG(LogTemp, Warning, TEXT("%i: (%f, %f, %f, %f)"), i, rdata[i].R.GetFloat(), rdata[i].G.GetFloat(), rdata[i].B.GetFloat(), rdata[i].A.GetFloat());
-       }
-       UE_LOG(LogTemp, Warning, TEXT("READBACK END"));
-     }*/
-
 }
