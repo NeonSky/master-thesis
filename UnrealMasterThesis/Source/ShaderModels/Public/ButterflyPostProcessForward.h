@@ -12,11 +12,7 @@ public:
 	SHADER_USE_PARAMETER_STRUCT(ButterflyPostProcessShaderForward, FGlobalShader)
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, ) 
-
-		SHADER_PARAMETER(float, scale_r)
-		SHADER_PARAMETER(float, scale_i)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, InputOutputTexture)
-
 	END_SHADER_PARAMETER_STRUCT()
 
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters) {
@@ -30,5 +26,5 @@ public:
 		OutEnvironment.SetDefine(TEXT("N_THREADS_Y"), 1);
 	}
 
-	void BuildAndExecuteGraph(FRHICommandListImmediate &RHI_cmd_list, UTextureRenderTarget2D* input_output, float scale_r, float scale_i);
+	void BuildAndExecuteGraph(FRHICommandListImmediate &RHI_cmd_list, UTextureRenderTarget2D* input_output);
 };

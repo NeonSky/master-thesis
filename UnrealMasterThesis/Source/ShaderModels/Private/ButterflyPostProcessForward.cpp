@@ -67,9 +67,7 @@ void ReadbackRTT_3(FRHICommandListImmediate& RHI_cmd_list, UTextureRenderTarget2
 }
 void ButterflyPostProcessShaderForward::BuildAndExecuteGraph(
   FRHICommandListImmediate &RHI_cmd_list,
-	UTextureRenderTarget2D* input_output,
-	float scale_r,
-	float scale_i) {
+	UTextureRenderTarget2D* input_output) {
 
 	FRDGBuilder graph_builder(RHI_cmd_list);
 
@@ -82,8 +80,6 @@ void ButterflyPostProcessShaderForward::BuildAndExecuteGraph(
   FParameters* PassParameters = graph_builder.AllocParameters<ButterflyPostProcessShaderForward::FParameters>();
 
   PassParameters->InputOutputTexture = input_texture_UAV;
-  PassParameters->scale_r = scale_r;
-  PassParameters->scale_i = scale_i;
 
   int N = input_output->SizeX;
 

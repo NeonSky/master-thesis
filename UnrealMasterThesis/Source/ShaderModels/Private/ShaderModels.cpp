@@ -65,16 +65,15 @@ void ShaderModelsModule::FFT(UTextureRenderTarget2D* butterfly, UTextureRenderTa
 }
 
 
-void ShaderModelsModule::FFT_Forward(UTextureRenderTarget2D* butterfly, UTextureRenderTarget2D* output, float scale) {
+void ShaderModelsModule::FFT_Forward(UTextureRenderTarget2D* butterfly, UTextureRenderTarget2D* output) {
 	TShaderMapRef<ButterflyShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 	TShaderMapRef<ButterflyPostProcessShaderForward> shader2(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	UTextureRenderTarget2D* butterfly_param = butterfly;
 	UTextureRenderTarget2D* output_param = output;
-	float scale_param = scale;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, butterfly_param, output_param, shader2, scale_param](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, butterfly_param, output_param, shader2](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
 			butterfly_param,
@@ -83,9 +82,7 @@ void ShaderModelsModule::FFT_Forward(UTextureRenderTarget2D* butterfly, UTexture
 
 		shader2->BuildAndExecuteGraph(
 			RHI_cmd_list,
-			output_param,
-			1,
-			scale_param
+			output_param
 		);
 	});
 }
