@@ -214,11 +214,11 @@ void AOceanSurfaceSimulation::create_mesh() {
 void AOceanSurfaceSimulation::update_mesh(float dt) {
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
 
-	//m_shader_models_module.ComputeFourierComponents(realtimeSeconds, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
+	m_shader_models_module.ComputeFourierComponents(realtimeSeconds, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
 
-	//m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_x_rtt);
-	//m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
-	//m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
+	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_x_rtt);
+	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
+	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
 
 	// https://www.dsprelated.com/showarticle/800.php
 	if (first) {
@@ -230,7 +230,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->eWave_addition_rtt);
 		//m_shader_models_module.ComputeeWave(0.016, L, this->ewave_h_rtt, this->ewave_hPrev_rtt, this->ewave_v_rtt, this->ewave_vPrev_rtt);
 		m_shader_models_module.FFT(this->butterfly_rtt, this->eWave_addition_rtt, 0);
-		m_shader_models_module.ComputeScale(this->eWave_addition_rtt, this->eWave_addition_rtt, scale, scale);
+		m_shader_models_module.ComputeScale(this->eWave_addition_rtt, this->eWave_addition_rtt, scale);
 		first = false;
 	}
 }

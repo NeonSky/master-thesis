@@ -15,8 +15,7 @@ public:
 
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, input_rtt)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, output_rtt)
-		SHADER_PARAMETER(float, scale_real)
-		SHADER_PARAMETER(float, scale_imag)
+		SHADER_PARAMETER(float, scale)
 
 	END_SHADER_PARAMETER_STRUCT()
 
@@ -37,8 +36,7 @@ public:
 		FRHICommandListImmediate& RHI_cmd_list,
 		UTextureRenderTarget2D* input_rtt,
 		UTextureRenderTarget2D* output_rtt,
-		float scale_real,
-		float scale_imag
+		float scale
 	);
 private:
 };
