@@ -41,7 +41,7 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-
+	bool first = true;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UMaterial* material;
 
