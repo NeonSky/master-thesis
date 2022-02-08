@@ -10,7 +10,7 @@
 #include <random>
 
 #define NN 256
-#define TEMP_TEXTURE_N 8
+#define TEMP_TEXTURE_N 256
 
 IMPLEMENT_GLOBAL_SHADER(ScaleShader, "/Project/UnrealMasterThesis/Scale.usf", "eWaveCompute", SF_Compute);
 
@@ -174,7 +174,7 @@ void ScaleShader::BuildAndExecuteGraph(
         FResolveParams()
     );
    
-    UE_LOG(LogTemp, Warning, TEXT("SCALE OUTPUT START"));
+    /*UE_LOG(LogTemp, Warning, TEXT("SCALE OUTPUT START"));
     ReadbackRTT3(RHI_cmd_list, input_output_rtt);
-    UE_LOG(LogTemp, Warning, TEXT("FFT SCALE process OUTPUT END"));
+    UE_LOG(LogTemp, Warning, TEXT("FFT SCALE process OUTPUT END"));*/
 }
