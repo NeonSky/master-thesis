@@ -104,10 +104,10 @@ void ButterflyPostProcessShaderForward::BuildAndExecuteGraph(
     FResolveParams()
   );
 
-	static int t = 0;
+	/*static int t = 0;
 	UE_LOG(LogTemp, Warning, TEXT("FFT Post process OUTPUT START: %d"), t);
 	ReadbackRTT_3(RHI_cmd_list, input_output);
 	UE_LOG(LogTemp, Warning, TEXT("FFT Post process OUTPUT END"));
-	t++;
+	t++;*/
 
 }

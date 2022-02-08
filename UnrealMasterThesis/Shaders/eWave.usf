@@ -47,22 +47,11 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 
 
   // Horizontal position
-  // float2 x = float2(id.xy) - float(N) / 2.0;
-
-  // Wave vector
-  //float2 k_vec = float2(
-  //  2.0 * PI * x.x / L,
-  //  2.0 * PI * x.y / L
-  //);
-
-  //float2 k_vec = float2(
-  //  x.x <= N_THREADS_X / 2 ? x.x * 1.0f : (N_THREADS_X - x.x) * 1.0f,
-  //	x.y <= N_THREADS_Y / 2 ? x.y * 1.0f : (N_THREADS_Y - x.y) * 1.0f
-  //);
+  float2 x = float2(id.xy) - float(N) / 2.0;
   
   float2 k_vec = float2(
-    id.x,
-  	id.y
+    x.x,
+    x.y
   );
 
   // Wave number

@@ -42,6 +42,7 @@ protected:
 
 private:
 	bool first = true;
+	float last_ran = 0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UMaterial* material;
 
