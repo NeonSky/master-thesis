@@ -8,7 +8,7 @@
 #include "eWave.h"
 #include "Add.h"
 #include "Scale.h"
-
+#include "Obstruction.h"
 #include "GlobalShader.h"
 #include "ShaderCore.h" 
 #include "Engine/TextureRenderTarget2D.h"
@@ -197,6 +197,28 @@ void ShaderModelsModule::ComputeScale(UTextureRenderTarget2D* input_output_rtt, 
 			RHI_cmd_list,
 			input_output_rtt_param,
 			scale_param
+		);
+	});
+
+}
+
+void ShaderModelsModule::ComputeObstruction(UTextureRenderTarget2D* obstructionMap_rtt, UTextureRenderTarget2D* h_rtt, float xPos, float yPos) {
+
+	TShaderMapRef<ObstructionShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+
+	UTextureRenderTarget2D* obstructionMap_rtt_param = obstructionMap_rtt;
+	UTextureRenderTarget2D* h_rtt_param = h_rtt;
+	float xPos_param = xPos;
+	float yPos_param = yPos;
+
+	ENQUEUE_RENDER_COMMAND(shader)(
+		[shader, obstructionMap_rtt_param, h_rtt_param, xPos_param, yPos_param](FRHICommandListImmediate& RHI_cmd_list) {
+		shader->BuildAndExecuteGraph(
+			RHI_cmd_list,
+			obstructionMap_rtt_param,
+			h_rtt_param,
+			xPos_param,
+			yPos_param
 		);
 	});
 

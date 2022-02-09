@@ -1,0 +1,30 @@
+#include "/Engine/Public/Platform.ush"
+
+RWTexture2D<float4> obstructionMap_rtt;
+RWTexture2D<float4> h_rtt;
+float xPos;
+float yPos;
+
+
+[numthreads(N_THREADS_X, N_THREADS_Y, 1)]
+void eWaveCompute(uint3 id : SV_DispatchThreadID) {
+	int N = 256;
+	float2 IDxy = float2(id.xy) - float(N) / 2.0;
+	float xx = xPos - N / 2.0;
+	float yy = yPos - N / 2.0;
+	
+	float obs = 1;
+	float r = 8;
+	if (((IDxy.x - xx)*(IDxy.x - xx) + (IDxy.y -yy)*(IDxy.y - yy)) < r * r){
+		obs = 0;
+	}
+	
+	obstructionMap_rtt[id.xy] = float4(obs, 0.0, 0.0, 1.0);
+	float h = h_rtt[id.xy].r;
+	float hIm = h_rtt[id.xy].g; // TODO: this should not be here...
+	h *= obstructionMap_rtt[id.xy].r;
+	float scale = 0.3;
+	float obsCompliment = 1.0 - obstructionMap_rtt[id.xy];
+	h += scale * obsCompliment;
+	h_rtt[id.xy] = float4(h, hIm, 0.0, 1.0);
+}

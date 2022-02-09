@@ -11,7 +11,7 @@
 // Having this in the editor would be nice, but we need to use CreateDefaultSubobject (it seems).
 // This function may only be called from the constructor, which doesn't have access to the initialized editor properties.
 // The NewObject function could potentially work, but it does not appear to give visible results in our case.
-const int TILES_COUNT = 49; // Should be 1 or higher
+const int TILES_COUNT = 1; // Should be 1 or higher
 
 TArray<float> elevation_output;
 
@@ -226,21 +226,27 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		// Note: parameter 2 is overridden in the Add shader, the test texture is passed as parameter 2 to the shader
 		// Note: currently does not even add, just writes the test data to a the render target from parameter 3. 
 		m_shader_models_module.ComputeAdd(this->ewave_h_rtt, this->eWave_addition_texture, this->ewave_h_rtt);
-
-		
-		
 		first = false;
 	}
 
-	if (realtimeSeconds - last_ran >= 0.0002) {
-		UE_LOG(LogTemp, Error, TEXT("2 seconds passed\n"));
+		static float x = 0.0;
+		static float y = 0.0;
+		x += 0.5;
+		y += 0.5;
+		//m_shader_models_module.ComputeObstruction(this->eWave_addition_rtt, this->ewave_h_rtt, x, y);
+
+	//if (realtimeSeconds - last_ran >= 0.0002) {
+		//UE_LOG(LogTemp, Error, TEXT("2 seconds passed\n"));
 		last_ran = realtimeSeconds;
 		float scale = 1.0f / ((float)N * (float)N);
 		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt);
 		m_shader_models_module.ComputeeWave(0.016, L, this->ewave_h_rtt, this->ewave_hPrev_rtt, this->ewave_v_rtt, this->ewave_vPrev_rtt);
 		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt, 0);
 		m_shader_models_module.ComputeScale(this->ewave_h_rtt, scale);
-	}
+
+		//m_shader_models_module.ComputeObstruction(this->eWave_addition_rtt, this->ewave_h_rtt, x, y);
+	//}
 	
+		
 	
 }

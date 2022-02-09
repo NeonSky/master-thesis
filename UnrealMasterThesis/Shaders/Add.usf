@@ -23,7 +23,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
   //float t1 = 2.0 * sin(id.x + id.y + 3.2) + 3.23;
   //float t2 = 2.3 * cos(id.x + id.y);
   float t1 = 0.0;
-  if((id.x >= 127 && id.x <= 129) && (id.y >= 127 && id.y <= 129)){
+  if((id.x >= 128 && id.x <= 128) && (id.y >= 128 && id.y <= 128)){
     t1 = 100.0;
   }
   float t2 = 0.0;
