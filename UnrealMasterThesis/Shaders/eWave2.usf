@@ -46,15 +46,18 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 
 	if (m_k != 0)
 	{
-		eWave_h[id.xy].r = coswk*eWave_hPrev[id.xy].r + (m_k / w)*sinwk*eWave_vPrev[id.xy].r; // eq 19
-		eWave_h[id.xy].g = coswk*eWave_hPrev[id.xy].g + (m_k / w)*sinwk*eWave_vPrev[id.xy].g; // eq 19
+		float hRe = coswk*eWave_hPrev[id.xy].r + (m_k / w)*sinwk*eWave_vPrev[id.xy].r; // eq 19
+		float hIm = coswk*eWave_hPrev[id.xy].g + (m_k / w)*sinwk*eWave_vPrev[id.xy].g; // eq 19
 
-		eWave_v[id.xy].r = coswk*eWave_vPrev[id.xy].r - (gravity / w)*sinwk*eWave_hPrev[id.xy].r; // eq 20	
-		eWave_v[id.xy].g = coswk*eWave_vPrev[id.xy].g - (gravity / w)*sinwk*eWave_hPrev[id.xy].g; // eq 20
+		float vRe = coswk*eWave_vPrev[id.xy].r - (gravity / w)*sinwk*eWave_hPrev[id.xy].r; // eq 20	
+		float vIm = coswk*eWave_vPrev[id.xy].g - (gravity / w)*sinwk*eWave_hPrev[id.xy].g; // eq 20
+		
+		eWave_h[id.xy] = float4(hRe, hIm, 0.0, 1.0);
+		eWave_v[id.xy] = float4(vRe, vIm, 0.0, 1.0);
 	}
 	else{
-		eWave_h[id.xy] = eWave_h[id.xy];
-		eWave_v[id.xy] = eWave_v[id.xy];
+		eWave_h[id.xy] = float4(0.0, 0.0, 0.0, 1.0);
+		eWave_v[id.xy] = float4(0.0, 0.0, 0.0, 1.0);
 	}
 
 

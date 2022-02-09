@@ -168,7 +168,7 @@ void eWaveShader::BuildAndExecuteGraph(
          FResolveParams()
        );
 
-       UE_LOG(LogTemp, Warning, TEXT("READBACK START"));
+       //UE_LOG(LogTemp, Warning, TEXT("READBACK START"));
 
        FReadSurfaceDataFlags read_flags(RCM_MinMax);
        read_flags.SetLinearToGamma(false);
