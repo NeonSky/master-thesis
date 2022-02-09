@@ -41,5 +41,6 @@ public:
 	);
 
 	void ComputeScale(UTextureRenderTarget2D* input_output_rtt, float scale);
+	void ComputeObstruction(UTextureRenderTarget2D* obstructionMap_rtt, UTextureRenderTarget2D* h_rtt, float xPos, float yPos);
 
 };
