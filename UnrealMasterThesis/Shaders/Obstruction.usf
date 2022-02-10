@@ -5,11 +5,24 @@ RWTexture2D<float4> h_rtt;
 float xPos;
 float yPos;
 
+float T(float x_y){
+	float L = 256; // TODO: make these in parameters to the shader
+	float taper_size = 5.0;
+	if(x_y / taper_size < 1.0){
+		return x_y / taper_size;
+	}
+	else if(abs(x_y - L) / taper_size < 1.0){
+		return abs(x_y - L) / taper_size < 1.0;
+	}
+	else{
+		return 1.0;
+	}
+}
 
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	int N = 256;
-	float2 IDxy = float2(id.xy) - float(N) / 2.0;
+	float2 IDxy = float2(id.xy) - float(N);// / 2.0;
 	float xx = xPos - N / 2.0;
 	float yy = yPos - N / 2.0;
 	
@@ -23,8 +36,17 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	float h = h_rtt[id.xy].r;
 	float hIm = h_rtt[id.xy].g; // TODO: this should not be here...
 	h *= obstructionMap_rtt[id.xy].r;
-	float scale = 0.3;
+	float scale = 0.15;
 	float obsCompliment = 1.0 - obstructionMap_rtt[id.xy];
 	h += scale * obsCompliment;
+	
+
+	// Boundry conditions
+
+	float T_x = T(id.x);
+	float T_y = T(id.y);
+
+	h = h * T_x * T_y;
+
 	h_rtt[id.xy] = float4(h, hIm, 0.0, 1.0);
 }
