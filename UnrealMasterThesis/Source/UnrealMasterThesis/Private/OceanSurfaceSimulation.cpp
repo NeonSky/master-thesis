@@ -216,9 +216,9 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 
 		static float x = 0.0;
 		static float y = 0.0;
-		x += 0.5;
-		y += 0.5;
-		//m_shader_models_module.ComputeObstruction(this->eWave_addition_rtt, this->ewave_h_rtt, x, y);
+		x += 0.25;
+		y += 0.25;
+		m_shader_models_module.ComputeObstruction(this->eWave_addition_rtt, this->ewave_h_rtt, x, y);
 
 	//if (realtimeSeconds - last_ran >= 0.0002) {
 		//UE_LOG(LogTemp, Error, TEXT("2 seconds passed\n"));
@@ -229,7 +229,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt, 0);
 		m_shader_models_module.ComputeScale(this->ewave_h_rtt, scale);
 
-		//m_shader_models_module.ComputeObstruction(this->eWave_addition_rtt, this->ewave_h_rtt, x, y);
+		m_shader_models_module.ComputeObstruction(this->eWave_addition_rtt, this->ewave_h_rtt, x, y);
 	//}
 	
 		
