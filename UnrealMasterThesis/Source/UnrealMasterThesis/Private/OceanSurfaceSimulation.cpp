@@ -212,6 +212,21 @@ void AOceanSurfaceSimulation::create_mesh() {
 }
 
 void AOceanSurfaceSimulation::update_mesh(float dt) {
+
+	static TArray<FVector4> submerged;
+	if (first) {
+		submerged.Init(FVector4(0.0), 3 * 1);
+		submerged[0] = FVector4(-2.0, -4.0, 0.0, 1.0);
+		submerged[1] = FVector4(2.0, -4.0, 0.0, 1.0);
+		submerged[2] = FVector4(0.0, 8.0, 0.0, 1.0);
+
+		
+		
+		/*submerged[3] = FVector4(-30.0 + 50, -30.0, 0.0, 1.0);
+		submerged[4] = FVector4(30.0 + 50, -30.0, 0.0, 1.0);
+		submerged[5] = FVector4(0.0 + 50, 30.0, 0.0, 1.0);;*/
+	}
+
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
 
 	m_shader_models_module.ComputeFourierComponents(realtimeSeconds, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
@@ -231,9 +246,15 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 
 		static float x = 0.0;
 		static float y = 0.0;
-		x += 0.25;
-		y += 0.25;
-		m_shader_models_module.ComputeObstruction(this->eWave_addition_rtt, this->ewave_h_rtt, x, y);
+		//x = 0.025;
+		y = 0.25;
+		submerged[0][0] += x;
+		submerged[1][0] += x;
+		submerged[2][0] += x;
+		submerged[0][1] += y;
+		submerged[1][1] += y;
+		submerged[2][1] += y;
+		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, x, y);
 
 	//if (realtimeSeconds - last_ran >= 0.0002) {
 		//UE_LOG(LogTemp, Error, TEXT("2 seconds passed\n"));
@@ -243,10 +264,26 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		m_shader_models_module.ComputeeWave(0.016, L, this->ewave_h_rtt, this->ewave_hPrev_rtt, this->ewave_v_rtt, this->ewave_vPrev_rtt);
 		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt, 0);
 		m_shader_models_module.ComputeScale(this->ewave_h_rtt, scale);
-
-		m_shader_models_module.ComputeObstruction(this->eWave_addition_rtt, this->ewave_h_rtt, x, y);
+		//UE_LOG(LogTemp, Error, TEXT("Submerged size: %d"), submerged.Num());
+		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, x, y);
 	//}
 	
 		
 	
+}
+struct SubmergedTriangle {
+	FVector v_L; // The vertex whose relative height above the ocean surface is the smallest.
+	FVector v_M;
+	FVector v_H; // The vertex whose relative height above the ocean surface is the greatest.
+
+	FVector normal;   // Points out from the hull
+	FVector centroid; // The center point of the triangle
+	float height;     // Relative (positive) height below water water for the centroid
+	float area;       // The surface area of the triangle
+	float velocity;   // The (point) velocity at which the centroid is moving
+};
+void ObstructionMap(TArray<SubmergedTriangle>& subTris) {
+	for (auto& st : subTris) {
+		
+	}
 }

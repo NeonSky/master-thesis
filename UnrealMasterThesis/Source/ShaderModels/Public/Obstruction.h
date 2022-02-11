@@ -13,6 +13,10 @@ public:
 
 		BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 
+		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<FVector4>, submergedTriangleVertices)
+		SHADER_PARAMETER(int, numTriangles)
+		SHADER_PARAMETER(int, L)
+
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, obstructionMap_rtt)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, h_rtt)
 		SHADER_PARAMETER(float, xPos)
@@ -33,6 +37,9 @@ public:
 
 	void BuildAndExecuteGraph(
 		FRHICommandListImmediate& RHI_cmd_list,
+		TArray<FVector4> submergedTriangleVertices, // TODO: pass as ref instead?
+		int numTriangles,
+		int L,
 		UTextureRenderTarget2D* obstructionMap_rtt,
 		UTextureRenderTarget2D* h_rtt,
 		float xPos,
