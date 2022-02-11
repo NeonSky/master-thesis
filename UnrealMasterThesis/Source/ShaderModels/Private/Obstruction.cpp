@@ -103,6 +103,9 @@ void ReadbackRTT3_obs(FRHICommandListImmediate& RHI_cmd_list, UTextureRenderTarg
 
 void ObstructionShader::BuildAndExecuteGraph(
     FRHICommandListImmediate& RHI_cmd_list,
+    TArray<FVector4> submergedTriangleVertices, // TODO: pass as ref instead?
+    int numTriangles,
+	int L,
     UTextureRenderTarget2D* obstructionMap_rtt,
     UTextureRenderTarget2D* h_rtt,
     float xPos,
@@ -112,6 +115,23 @@ void ObstructionShader::BuildAndExecuteGraph(
 
     FParameters* PassParameters;
     PassParameters = graph_builder.AllocParameters<ObstructionShader::FParameters>();
+
+    // input_sample_coordinates
+    FRDGBufferRef SubmergedTrianglesStructuredBuffer = CreateStructuredBuffer(
+        graph_builder,
+        TEXT("SubmergedTriangles_StructuredBuffer"),
+        sizeof(FVector4), // bytes per element
+        numTriangles * 3, // num elements
+        submergedTriangleVertices.GetData(),
+        sizeof(FVector4) * numTriangles * 3 // initial data size... ? (and no flags parameter)
+    );
+    FRDGBufferSRVRef SubmergedTrianglesSRV = graph_builder.CreateSRV(SubmergedTrianglesStructuredBuffer, PF_R32_UINT); // PF_R32_FLOAT?
+    PassParameters->submergedTriangleVertices = SubmergedTrianglesSRV;
+
+    PassParameters->numTriangles = numTriangles;
+	PassParameters->L = L;
+
+
 
 	FRDGTextureRef io_tex_ref = register_texture4_obs(graph_builder, obstructionMap_rtt, "InputOutputRenderTarget");
     auto uav = graph_builder.CreateUAV(io_tex_ref);
@@ -154,7 +174,7 @@ void ObstructionShader::BuildAndExecuteGraph(
         FResolveParams()
     );
    
-    /*UE_LOG(LogTemp, Warning, TEXT("SCALE OUTPUT START"));
-    ReadbackRTT3(RHI_cmd_list, input_output_rtt);
-    UE_LOG(LogTemp, Warning, TEXT("FFT SCALE process OUTPUT END"));*/
+    //UE_LOG(LogTemp, Warning, TEXT("OBSTRUCTION OUTPUT START"));
+    //ReadbackRTT3_obs(RHI_cmd_list, obstructionMap_rtt);
+    //UE_LOG(LogTemp, Warning, TEXT("OBSTRUCTION process OUTPUT END"));
 }

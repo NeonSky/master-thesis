@@ -149,41 +149,41 @@ void AddShader::BuildAndExecuteGraph(
     );
 
      //DEBUG READ-BACK
-     {
-       FRHIResourceCreateInfo CreateInfo;
-       FTexture2DRHIRef readback_tex = RHICreateTexture2D(
-         TEMP_TEXTURE_N,
-         TEMP_TEXTURE_N,
-         PF_FloatRGBA,
-         1,
-         1,
-         TexCreate_RenderTargetable,
-         CreateInfo);
+     //{
+     //  FRHIResourceCreateInfo CreateInfo;
+     //  FTexture2DRHIRef readback_tex = RHICreateTexture2D(
+     //    TEMP_TEXTURE_N,
+     //    TEMP_TEXTURE_N,
+     //    PF_FloatRGBA,
+     //    1,
+     //    1,
+     //    TexCreate_RenderTargetable,
+     //    CreateInfo);
 
-       RHI_cmd_list.CopyToResolveTarget(
-         result->GetRenderTargetResource()->TextureRHI,
-         readback_tex->GetTexture2D(),
-         FResolveParams()
-       );
+     //  RHI_cmd_list.CopyToResolveTarget(
+     //    result->GetRenderTargetResource()->TextureRHI,
+     //    readback_tex->GetTexture2D(),
+     //    FResolveParams()
+     //  );
 
-       UE_LOG(LogTemp, Warning, TEXT("READBACK START - Add.cpp, after add pass"));
+     //  //UE_LOG(LogTemp, Warning, TEXT("READBACK START - Add.cpp, after add pass"));
 
-       FReadSurfaceDataFlags read_flags(RCM_MinMax);
-       read_flags.SetLinearToGamma(false);
+     //  FReadSurfaceDataFlags read_flags(RCM_MinMax);
+     //  read_flags.SetLinearToGamma(false);
 
-       TArray<FFloat16Color> rdata;
-       RHI_cmd_list.ReadSurfaceFloatData(
-         readback_tex->GetTexture2D(),
-         FIntRect(0, 0, TEMP_TEXTURE_N, TEMP_TEXTURE_N),
-         rdata,
-         read_flags
-       );
+     //  TArray<FFloat16Color> rdata;
+     //  RHI_cmd_list.ReadSurfaceFloatData(
+     //    readback_tex->GetTexture2D(),
+     //    FIntRect(0, 0, TEMP_TEXTURE_N, TEMP_TEXTURE_N),
+     //    rdata,
+     //    read_flags
+     //  );
 
-       /*UE_LOG(LogTemp, Warning, TEXT("Amount of pixels: %i"), rdata.Num());
+       
+     //}
+    /*UE_LOG(LogTemp, Warning, TEXT("Amount of pixels: %i"), rdata.Num());
        for (int i = 0; i < rdata.Num(); i++) {
          UE_LOG(LogTemp, Warning, TEXT("%i: (%f, %f, %f, %f)"), i, rdata[i].R.GetFloat(), rdata[i].G.GetFloat(), rdata[i].B.GetFloat(), rdata[i].A.GetFloat());
        }
        UE_LOG(LogTemp, Warning, TEXT("READBACK END"));*/
-     }
-
 }

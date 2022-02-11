@@ -202,7 +202,13 @@ void ShaderModelsModule::ComputeScale(UTextureRenderTarget2D* input_output_rtt, 
 
 }
 
-void ShaderModelsModule::ComputeObstruction(UTextureRenderTarget2D* obstructionMap_rtt, UTextureRenderTarget2D* h_rtt, float xPos, float yPos) {
+void ShaderModelsModule::ComputeObstruction(
+	TArray<FVector4> SubmergedTriangles,
+	int L,
+	UTextureRenderTarget2D* obstructionMap_rtt, 
+	UTextureRenderTarget2D* h_rtt, 
+	float xPos, 
+	float yPos) {
 
 	TShaderMapRef<ObstructionShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
@@ -210,11 +216,15 @@ void ShaderModelsModule::ComputeObstruction(UTextureRenderTarget2D* obstructionM
 	UTextureRenderTarget2D* h_rtt_param = h_rtt;
 	float xPos_param = xPos;
 	float yPos_param = yPos;
+	int L_param = L;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, obstructionMap_rtt_param, h_rtt_param, xPos_param, yPos_param](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, SubmergedTriangles, L_param, obstructionMap_rtt_param, h_rtt_param, xPos_param, yPos_param](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
+			SubmergedTriangles,
+			SubmergedTriangles.Num() / 3, // the number of triangles is num verts / 3
+			L_param,
 			obstructionMap_rtt_param,
 			h_rtt_param,
 			xPos_param,
