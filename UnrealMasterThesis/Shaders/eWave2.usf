@@ -6,6 +6,8 @@ static const float gravity = 9.82;
 int N;   // Resolution
 float L; // Side length of patch in meters
 float t; // Time (in seconds)
+int offsetSign_x;
+int offsetSign_y;
 
 RWTexture2D<float4> eWave_h;
 RWTexture2D<float4> eWave_hPrev;
@@ -44,16 +46,19 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	float coswk = cos(w*t);
 	float sinwk = sin(w*t);
 
+
+	int2 offID = int2(id.x + offsetSign_x * 85, id.y + offsetSign_y * 85);
 	if (m_k != 0)
 	{
-		float hRe = coswk*eWave_hPrev[id.xy].r + (m_k / w)*sinwk*eWave_vPrev[id.xy].r; // eq 19
-		float hIm = coswk*eWave_hPrev[id.xy].g + (m_k / w)*sinwk*eWave_vPrev[id.xy].g; // eq 19
+		float hRe = coswk*eWave_hPrev[offID.xy].r + (m_k / w)*sinwk*eWave_vPrev[offID.xy].r; // eq 19
+		float hIm = coswk*eWave_hPrev[offID.xy].g + (m_k / w)*sinwk*eWave_vPrev[offID.xy].g; // eq 19
 
-		float vRe = coswk*eWave_vPrev[id.xy].r - (gravity / w)*sinwk*eWave_hPrev[id.xy].r; // eq 20	
-		float vIm = coswk*eWave_vPrev[id.xy].g - (gravity / w)*sinwk*eWave_hPrev[id.xy].g; // eq 20
+		float vRe = coswk*eWave_vPrev[offID.xy].r - (gravity / w)*sinwk*eWave_hPrev[offID.xy].r; // eq 20	
+		float vIm = coswk*eWave_vPrev[offID.xy].g - (gravity / w)*sinwk*eWave_hPrev[offID.xy].g; // eq 20
 		
 		eWave_h[id.xy] = float4(hRe, hIm, 0.0, 1.0);
 		eWave_v[id.xy] = float4(vRe, vIm, 0.0, 1.0);
+		
 	}
 	else{
 		eWave_h[id.xy] = float4(0.0, 0.0, 0.0, 1.0);

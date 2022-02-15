@@ -108,8 +108,11 @@ void ObstructionShader::BuildAndExecuteGraph(
 	int L,
     UTextureRenderTarget2D* obstructionMap_rtt,
     UTextureRenderTarget2D* h_rtt,
+    UTextureRenderTarget2D* v_rtt,
     float xPos,
-    float yPos) {
+    float yPos,
+    int offsetSign_x,
+    int offsetSign_y) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
 
@@ -130,6 +133,8 @@ void ObstructionShader::BuildAndExecuteGraph(
 
     PassParameters->numTriangles = numTriangles;
 	PassParameters->L = L;
+    PassParameters->offsetSign_x = offsetSign_x;
+    PassParameters->offsetSign_y = offsetSign_y;
 
 
 
@@ -137,9 +142,12 @@ void ObstructionShader::BuildAndExecuteGraph(
     auto uav = graph_builder.CreateUAV(io_tex_ref);
     FRDGTextureRef io_tex_ref2 = register_texture4_obs(graph_builder, h_rtt, "InputOutputRenderTarget2");
     auto uav2 = graph_builder.CreateUAV(io_tex_ref2);
+    FRDGTextureRef io_tex_ref3 = register_texture4_obs(graph_builder, v_rtt, "InputOutputRenderTarget3");
+    auto uav3 = graph_builder.CreateUAV(io_tex_ref3);
 
     PassParameters->obstructionMap_rtt = uav;
     PassParameters->h_rtt = uav2;
+    PassParameters->v_rtt = uav3;
     PassParameters->xPos = xPos;
     PassParameters->yPos = yPos;
     
@@ -160,6 +168,9 @@ void ObstructionShader::BuildAndExecuteGraph(
     TRefCountPtr<IPooledRenderTarget> PooledComputeTarget2_Obs;
     graph_builder.QueueTextureExtraction(io_tex_ref2, &PooledComputeTarget2_Obs);
 
+    TRefCountPtr<IPooledRenderTarget> PooledComputeTarget3_Obs;
+    graph_builder.QueueTextureExtraction(io_tex_ref3, &PooledComputeTarget3_Obs);
+
     graph_builder.Execute();
 
     RHI_cmd_list.CopyToResolveTarget(
@@ -171,6 +182,12 @@ void ObstructionShader::BuildAndExecuteGraph(
     RHI_cmd_list.CopyToResolveTarget(
         PooledComputeTarget2_Obs.GetReference()->GetRenderTargetItem().TargetableTexture,
         h_rtt->GetRenderTargetResource()->TextureRHI,
+        FResolveParams()
+    );
+
+    RHI_cmd_list.CopyToResolveTarget(
+        PooledComputeTarget3_Obs.GetReference()->GetRenderTargetItem().TargetableTexture,
+        v_rtt->GetRenderTargetResource()->TextureRHI,
         FResolveParams()
     );
    

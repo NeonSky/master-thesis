@@ -134,6 +134,8 @@ void ShaderModelsModule::ComputeFourierComponents(
 void ShaderModelsModule::ComputeeWave(
 	float t, 
 	float L, 
+	int offsetSign_x,
+	int offsetSign_y,
 	UTextureRenderTarget2D* eWave_h, 
 	UTextureRenderTarget2D* eWave_hPrev,
 	UTextureRenderTarget2D* eWave_v, 
@@ -147,11 +149,13 @@ void ShaderModelsModule::ComputeeWave(
 	UTextureRenderTarget2D* eWave_vPrev_dz_param = eWave_vPrev;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, t, L, eWave_h_param, eWave_hPrev_param, eWave_v_param, eWave_vPrev_dz_param](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, t, L, offsetSign_x, offsetSign_y, eWave_h_param, eWave_hPrev_param, eWave_v_param, eWave_vPrev_dz_param](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
 			t,
 			L,
+			offsetSign_x,
+			offsetSign_y,
 			eWave_h_param,
 			eWave_hPrev_param,
 			eWave_v_param,
@@ -207,19 +211,23 @@ void ShaderModelsModule::ComputeObstruction(
 	int L,
 	UTextureRenderTarget2D* obstructionMap_rtt, 
 	UTextureRenderTarget2D* h_rtt, 
+	UTextureRenderTarget2D* v_rtt,
 	float xPos, 
-	float yPos) {
+	float yPos,
+	int offsetSign_x,
+	int offsetSign_y) {
 
 	TShaderMapRef<ObstructionShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	UTextureRenderTarget2D* obstructionMap_rtt_param = obstructionMap_rtt;
 	UTextureRenderTarget2D* h_rtt_param = h_rtt;
+	UTextureRenderTarget2D* v_rtt_param = v_rtt;
 	float xPos_param = xPos;
 	float yPos_param = yPos;
 	int L_param = L;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, SubmergedTriangles, L_param, obstructionMap_rtt_param, h_rtt_param, xPos_param, yPos_param](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, SubmergedTriangles, L_param, obstructionMap_rtt_param, h_rtt_param, v_rtt_param, xPos_param, yPos_param, offsetSign_x, offsetSign_y](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
 			SubmergedTriangles,
@@ -227,8 +235,11 @@ void ShaderModelsModule::ComputeObstruction(
 			L_param,
 			obstructionMap_rtt_param,
 			h_rtt_param,
+			v_rtt_param,
 			xPos_param,
-			yPos_param
+			yPos_param,
+			offsetSign_x,
+			offsetSign_y
 		);
 	});
 
