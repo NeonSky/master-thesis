@@ -1,0 +1,22 @@
+#include "/Engine/Public/Platform.ush"
+
+#include "Common.ush"
+
+float SpeedInput;
+float2 VelocityInput;
+Texture2D<float4> ElevationTexture;
+RWTexture2D<float4> InputOutputTexture;
+
+[numthreads(N_THREADS_X, N_THREADS_Y, 1)]
+void MainCompute(uint3 id : SV_DispatchThreadID) {
+
+    // RGB of (0,0) stores position
+    InputOutputTexture[uint2(0,0)] += SpeedInput * VelocityInput.y * float4(1.0, 0.0, 0.0, 0.0) * 0.01;
+    InputOutputTexture[uint2(0,0)] += SpeedInput * VelocityInput.x * float4(0.0, 1.0, 0.0, 0.0) * 0.01;
+
+    InputOutputTexture[uint2(0,0)].z = sample_elevation(ElevationTexture, InputOutputTexture[uint2(0,0)].xy * M_TO_CM);
+
+    // RGBA of (1,0) stores orientation
+    InputOutputTexture[uint2(1,0)] = float4(0.0, 0.0, 0.0, 1.0);
+
+}

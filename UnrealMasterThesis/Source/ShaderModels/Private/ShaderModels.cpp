@@ -1,10 +1,13 @@
 #include "ShaderModels.h"
 
+#include "Globals/StatelessHelpers.h"
+
 #include "Butterfly.h"
 #include "ButterflyTexture.h"
 #include "FourierComponents.h"
 #include "ButterflyPostProcess.h"
 #include "ElevationSampler.h"
+#include "GPUBoat.h"
 
 #include "GlobalShader.h"
 #include "ShaderCore.h" 
@@ -112,6 +115,42 @@ void ShaderModelsModule::SampleElevationPoints(UTextureRenderTarget2D* elevation
 	fence.BeginFence();
 	fence.Wait();
 
+}
+
+void ShaderModelsModule::UpdateGPUBoat(
+    float speed_input,
+    FVector2D velocity_input,
+	UTextureRenderTarget2D* elevation_texture,
+	UTextureRenderTarget2D* input_output,
+	AActor* camera_target) {
+
+ 	TShaderMapRef<GPUBoatShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+
+	TArray<FFloat16Color> data;
+
+	ENQUEUE_RENDER_COMMAND(shader)(
+		[shader, speed_input, velocity_input, elevation_texture, input_output, camera_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
+			shader->BuildAndExecuteGraph(
+				RHI_cmd_list,
+				speed_input,
+				velocity_input,
+				elevation_texture,
+				input_output,
+				camera_target ? (&data) : nullptr
+			);
+		}); 
+
+	if (camera_target) {
+		FRenderCommandFence fence;
+		fence.BeginFence();
+		fence.Wait();
+
+		FVector pos = FVector(data[0].R, data[0].G, data[0].B);
+		FQuat rot   = FQuat(data[1].R, data[1].G, data[1].B, data[1].A);
+
+		camera_target->SetActorLocation(METERS_TO_UNREAL_UNITS * pos);
+		camera_target->SetActorRotation(rot, ETeleportType::None);
+	}
 }
 
 IMPLEMENT_MODULE(ShaderModelsModule, ShaderModels);
