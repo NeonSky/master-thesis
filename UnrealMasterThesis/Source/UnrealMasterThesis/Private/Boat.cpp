@@ -55,7 +55,7 @@ void ABoat::FetchCollisionMeshData() {
   m_collision_mesh_surface_area = 0.0f;
 
   uint32 n_triangles = m_collision_mesh_indices.Num() / 3;
-  for (int i = 0; i < n_triangles; i++) {
+  for (unsigned int i = 0; i < n_triangles; i++) {
 
     uint32 i0 = m_collision_mesh_indices[3*i+0];
     uint32 i1 = m_collision_mesh_indices[3*i+1];
@@ -130,7 +130,7 @@ void ABoat::DebugDrawVelocities() {
   FTransform transform = m_rigidbody.Transform();
 
   uint32 n_triangles = m_collision_mesh_indices.Num() / 3;
-  for (int i = 0; i < n_triangles; i++) {
+  for (unsigned int i = 0; i < n_triangles; i++) {
 
     SubmergedTriangle t;
     t.velocity = 0.0f;
@@ -202,7 +202,7 @@ void ABoat::UpdateSubmergedTriangles() {
   TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
 
   uint32 n_triangles = m_collision_mesh_indices.Num() / 3;
-  for (int i = 0; i < n_triangles; i++) {
+  for (unsigned int i = 0; i < n_triangles; i++) {
 
     SubmergedTriangle t;
     t.velocity = 0.0f;
