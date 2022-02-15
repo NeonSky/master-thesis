@@ -1,0 +1,53 @@
+#pragma once
+
+static const float PI = 3.1415926535897933;
+static const float M_TO_CM = 100.0;
+
+struct Complex {
+  float re;
+  float im;
+};
+
+Complex newComplex(float re, float im) {
+  Complex c;
+  c.re = re;
+  c.im = im;
+  return c;
+}
+
+Complex mul(Complex c1, Complex c2) {
+  Complex c;
+  c.re = c1.re * c2.re - c1.im * c2.im;
+  c.im = c1.re * c2.im + c1.im * c2.re;
+  return c;
+}
+
+Complex add(Complex c1, Complex c2) {
+  Complex c;
+  c.re = c1.re + c2.re;
+  c.im = c1.im + c2.im;
+  return c;
+}
+
+Complex conj(Complex c) {
+  c.im = -c.im;
+  return c;
+}
+
+float sample_elevation(Texture2D<float4> elevation_texture, float2 ws_coord) {
+
+    const float L = 100.0;
+    const float world_size = M_TO_CM * L;
+
+    // The coordinate of interest in normalized UV space.
+    float2 coord = (world_size * 0.5 + ws_coord) / world_size;
+
+    SamplerState Sampler {
+        Filter = MIN_MAG_MIP_LINEAR;
+        AddressU = Wrap;
+        AddressV = Wrap;
+    };
+    float elevation = elevation_texture.SampleLevel(Sampler, coord, 0).r;
+
+    return elevation;
+}

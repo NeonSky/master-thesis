@@ -1,11 +1,6 @@
 #include "/Engine/Public/Platform.ush"
 
-static const float PI = 3.1415926535897933;
-
-struct Complex {
-  float re;
-  float im;
-};
+#include "Common.ush"
 
 int N; // Resolution
 

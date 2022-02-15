@@ -1,9 +1,9 @@
 #pragma once
 
-#include "FourierComponents.h"
-
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
+
+#include <functional>
 
 class SHADERMODELS_API ShaderModelsModule : public IModuleInterface {
 public:
@@ -24,5 +24,7 @@ public:
 	);
 
 	void SampleElevationPoints(UTextureRenderTarget2D* elevations, TArray<FVector2D> input_sample_coordinates, TArray<float>* output);
+
+	void UpdateGPUBoat(float speed_input, FVector2D velocity_input, UTextureRenderTarget2D* elevation_texture, UTextureRenderTarget2D* input_output, AActor* camera_target);
 
 };

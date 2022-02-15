@@ -13,8 +13,6 @@
 // The NewObject function could potentially work, but it does not appear to give visible results in our case.
 const int TILES_COUNT = 49; // Should be 1 or higher
 
-TArray<float> elevation_output;
-
 AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
 	// Configure Tick() to be called every frame.
 	PrimaryActorTick.bCanEverTick = true;
@@ -64,6 +62,8 @@ void AOceanSurfaceSimulation::Tick(float DeltaTime) {
 }
 
 TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points) {
+
+	TArray<float> elevation_output;
 
 	m_shader_models_module.SampleElevationPoints(
 		this->spectrum_y_rtt,
