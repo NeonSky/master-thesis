@@ -6,8 +6,12 @@ int L;
 
 RWTexture2D<float4> obstructionMap_rtt;
 RWTexture2D<float4> h_rtt;
+RWTexture2D<float4> v_rtt;
 float xPos;
 float yPos;
+int offsetSign_x;
+int offsetSign_y;
+
 
 float T(float x_y){
 	float L = 256; // TODO: make these in parameters to the shader
@@ -99,5 +103,18 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 
 	h = h * T_x * T_y;
 
+	// when the simulation moves, 
+	int2 offID = int2(id.x + offsetSign_x * 85, id.y + offsetSign_y * 85);
+	if((offID.x >= 0 && offID.x <= 255) && (offID.y >= 0 && offID.y <= 255)){
+		h = h;
+	}
+	else{
+		h = 0.0;
+	}
+
+
+
 	h_rtt[id.xy] = float4(h, hIm, xPos / 256.0, yPos / 256.0);
+
+	v_rtt[id.xy] = v_rtt[id.xy];
 }

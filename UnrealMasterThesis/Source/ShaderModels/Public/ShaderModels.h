@@ -27,6 +27,8 @@ public:
 	void ComputeeWave(
 		float t,
 		float L,
+		int offsetSign_x,
+		int offsetSign_y,
 		UTextureRenderTarget2D* eWave_h,
 		UTextureRenderTarget2D* eWave_hPrev,
 		UTextureRenderTarget2D* eWave_v,
@@ -45,8 +47,11 @@ public:
 		TArray<FVector4> SubmergedTriangles,
 		int L,
 		UTextureRenderTarget2D* obstructionMap_rtt,
-		UTextureRenderTarget2D* h_rtt, 
+		UTextureRenderTarget2D* h_rtt,
+		UTextureRenderTarget2D* v_rtt,
 		float xPos, 
-		float yPos);
+		float yPos,
+		int offsetSign_x,
+		int offsetSign_y);
 
 };
