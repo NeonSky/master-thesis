@@ -68,7 +68,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 		v2.y = v2.y + 50;
 		
 		if(ptInTriangle(float4(id.x, id.y, 0.0, 1.0), v0, v1, v2)){
-			obstructionMap_rtt[id.xy] = float4(0.0, 0.0, 0.0, 1.0);
+			// obstructionMap_rtt[id.xy] = float4(0.0, 0.0, 0.0, 1.0);
 		}
 			
 	}
@@ -89,6 +89,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	
 	//obstructionMap_rtt[id.xy] = float4(obs, 0.0, 0.0, 1.0);
 	float h = h_rtt[id.xy].r;
+	float v = v_rtt[id.xy].r;
 	float hIm = h_rtt[id.xy].g; // TODO: this should not be here...
 	h *= obstructionMap_rtt[id.xy].r;
 	float scale = 0.15;
@@ -104,17 +105,21 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	h = h * T_x * T_y;
 
 	// when the simulation moves, 
-	int2 offID = int2(id.x + offsetSign_x * 85, id.y + offsetSign_y * 85);
+	int2 offID = int2(id.x + offsetSign_x * N / 3, id.y + offsetSign_y * N / 3);
 	if((offID.x >= 0 && offID.x <= 255) && (offID.y >= 0 && offID.y <= 255)){
 		h = h;
+		v = v;	
 	}
 	else{
 		h = 0.0;
+		v = 0.0;
 	}
 
 
 
 	h_rtt[id.xy] = float4(h, hIm, xPos / 256.0, yPos / 256.0);
 
-	v_rtt[id.xy] = v_rtt[id.xy];
+	float4 vv = v_rtt[id.xy];
+	vv.r = v;
+	v_rtt[id.xy] = vv;
 }

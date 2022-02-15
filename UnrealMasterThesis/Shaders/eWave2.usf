@@ -47,7 +47,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	float sinwk = sin(w*t);
 
 
-	int2 offID = int2(id.x + offsetSign_x * 85, id.y + offsetSign_y * 85);
+	int2 offID = int2(id.x + offsetSign_x * 128, id.y + offsetSign_y * 128);
 	if (m_k != 0)
 	{
 		float hRe = coswk*eWave_hPrev[offID.xy].r + (m_k / w)*sinwk*eWave_vPrev[offID.xy].r; // eq 19

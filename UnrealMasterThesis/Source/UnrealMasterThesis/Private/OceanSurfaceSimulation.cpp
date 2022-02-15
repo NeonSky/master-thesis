@@ -243,19 +243,21 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 
 		int off_x = 0;
 		int off_y = 0;
-		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, x, y, off_x, off_y);
 		
-	if (realtimeSeconds - last_ran >= 0.0001) {
-		/*counter += 1;
-		if (counter == 3) {
+		
+	if (realtimeSeconds - last_ran >= 0.001) {
+		counter += 1;
+		if (counter == 5) {
 			UE_LOG(LogTemp, Error, TEXT("SHIFT!, off_x and off_y = 1\n"));
-			counter = 0;
+			//counter = 0;
 			off_x = 1;
 			off_y = 1;
-		}*/
+		}
 		//UE_LOG(LogTemp, Error, TEXT("2 seconds passed\n"));
 		last_ran = realtimeSeconds;
 		float scale = 1.0f / ((float)N * (float)N);
+
+		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, x, y, off_x, off_y);
 		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt);
 		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
 		m_shader_models_module.ComputeeWave(0.016, L, off_x, off_y, this->ewave_h_rtt, this->ewave_hPrev_rtt, this->ewave_v_rtt, this->ewave_vPrev_rtt);
