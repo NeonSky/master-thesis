@@ -16,6 +16,8 @@ public:
 		SHADER_PARAMETER(int, N)
 		SHADER_PARAMETER(float, L)
 		SHADER_PARAMETER(float, t)
+		SHADER_PARAMETER(int, offsetSign_x)
+		SHADER_PARAMETER(int, offsetSign_y)
 
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, eWave_h)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, eWave_hPrev)
@@ -39,6 +41,8 @@ public:
 		FRHICommandListImmediate& RHI_cmd_list,
 		float t,
 		float L,
+		int offsetSign_x,
+		int offsetSign_y,
 		UTextureRenderTarget2D* eWave_h,
 		UTextureRenderTarget2D* eWave_hPrev,
 		UTextureRenderTarget2D* eWave_v,

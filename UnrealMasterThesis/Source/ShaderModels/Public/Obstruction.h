@@ -19,8 +19,11 @@ public:
 
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, obstructionMap_rtt)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, h_rtt)
+		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, v_rtt)
 		SHADER_PARAMETER(float, xPos)
 		SHADER_PARAMETER(float, yPos)
+		SHADER_PARAMETER(int, offsetSign_x)
+		SHADER_PARAMETER(int, offsetSign_y)
 
 	END_SHADER_PARAMETER_STRUCT()
 
@@ -42,8 +45,11 @@ public:
 		int L,
 		UTextureRenderTarget2D* obstructionMap_rtt,
 		UTextureRenderTarget2D* h_rtt,
+		UTextureRenderTarget2D* v_rtt,
 		float xPos,
-		float yPos
+		float yPos,
+		int offsetSign_x,
+		int offsetSign_y
 	);
 private:
 };

@@ -12,8 +12,7 @@
 // This function may only be called from the constructor, which doesn't have access to the initialized editor properties.
 // The NewObject function could potentially work, but it does not appear to give visible results in our case.
 const int TILES_COUNT = 9; // Should be 1 or higher
-
-TArray<float> elevation_output;
+int counter = 0;
 
 AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
 	// Configure Tick() to be called every frame.
@@ -25,6 +24,7 @@ AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
 		FName name = FName(*FString::Printf(TEXT("Ocean tile %i"), i+1));
 		this->tile_meshes[i] = CreateDefaultSubobject<UProceduralMeshComponent>(name);
 	}
+	counter = 0;
 }
 
 void AOceanSurfaceSimulation::BeginPlay() {
@@ -247,26 +247,39 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		static float x = 0.0;
 		static float y = 0.0;
 		//x = 0.025;
-		y = 0.25;
+		/*y = 0.25;
 		submerged[0][0] += x;
 		submerged[1][0] += x;
 		submerged[2][0] += x;
 		submerged[0][1] += y;
 		submerged[1][1] += y;
-		submerged[2][1] += y;
-		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, x, y);
+		submerged[2][1] += y;*/
 
-	//if (realtimeSeconds - last_ran >= 0.0002) {
+		int off_x = 0;
+		int off_y = 0;
+		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, x, y, off_x, off_y);
+		
+	if (realtimeSeconds - last_ran >= 0.0001) {
+		/*counter += 1;
+		if (counter == 3) {
+			UE_LOG(LogTemp, Error, TEXT("SHIFT!, off_x and off_y = 1\n"));
+			counter = 0;
+			off_x = 1;
+			off_y = 1;
+		}*/
 		//UE_LOG(LogTemp, Error, TEXT("2 seconds passed\n"));
 		last_ran = realtimeSeconds;
 		float scale = 1.0f / ((float)N * (float)N);
 		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt);
-		m_shader_models_module.ComputeeWave(0.016, L, this->ewave_h_rtt, this->ewave_hPrev_rtt, this->ewave_v_rtt, this->ewave_vPrev_rtt);
+		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
+		m_shader_models_module.ComputeeWave(0.016, L, off_x, off_y, this->ewave_h_rtt, this->ewave_hPrev_rtt, this->ewave_v_rtt, this->ewave_vPrev_rtt);
 		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt, 0);
+		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt, 0);
 		m_shader_models_module.ComputeScale(this->ewave_h_rtt, scale);
+		m_shader_models_module.ComputeScale(this->ewave_v_rtt, scale);
 		//UE_LOG(LogTemp, Error, TEXT("Submerged size: %d"), submerged.Num());
-		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, x, y);
-	//}
+		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, x, y, off_x, off_y);
+	}
 	
 		
 	

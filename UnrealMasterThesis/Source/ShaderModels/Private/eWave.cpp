@@ -71,6 +71,8 @@ void eWaveShader::BuildAndExecuteGraph(
     FRHICommandListImmediate& RHI_cmd_list,
     float t,
     float L,
+    int offsetSign_x,
+    int offsetSign_y,
     UTextureRenderTarget2D* eWave_h,
     UTextureRenderTarget2D* eWave_hPrev,
     UTextureRenderTarget2D* eWave_v,
@@ -84,6 +86,9 @@ void eWaveShader::BuildAndExecuteGraph(
     PassParameters->N = NN; // TODO
     PassParameters->L = L;
     PassParameters->t = t;
+    PassParameters->offsetSign_x = offsetSign_x;
+    PassParameters->offsetSign_y = offsetSign_y;
+
 
    // CustomUAV uavewave1 = create_UAV2(graph_builder, eWave_h, TEXT("eWave Height"));
    // CustomUAV uavewave2 = create_UAV2(graph_builder, eWave_hPrev, TEXT("eWave Height Previous Frame"));
@@ -117,11 +122,11 @@ void eWaveShader::BuildAndExecuteGraph(
     TRefCountPtr<IPooledRenderTarget> PooledComputeTarget1_ewave;
     graph_builder.QueueTextureExtraction(io_tex_ref1, &PooledComputeTarget1_ewave);
     /*TRefCountPtr<IPooledRenderTarget> PooledComputeTarget2_ewave;
-    graph_builder.QueueTextureExtraction(io_tex_ref2, &PooledComputeTarget2_ewave);
+    graph_builder.QueueTextureExtraction(io_tex_ref2, &PooledComputeTarget2_ewave);*/
     
     TRefCountPtr<IPooledRenderTarget> PooledComputeTarget3_ewave;
     graph_builder.QueueTextureExtraction(io_tex_ref3, &PooledComputeTarget3_ewave);
-    TRefCountPtr<IPooledRenderTarget> PooledComputeTarget4_ewave;
+    /*TRefCountPtr<IPooledRenderTarget> PooledComputeTarget4_ewave;
     graph_builder.QueueTextureExtraction(io_tex_ref4, &PooledComputeTarget4_ewave);*/
 
     graph_builder.Execute();
@@ -136,14 +141,14 @@ void eWaveShader::BuildAndExecuteGraph(
         PooledComputeTarget2_ewave.GetReference()->GetRenderTargetItem().TargetableTexture,
         eWave_hPrev->GetRenderTargetResource()->TextureRHI,
         FResolveParams()
-    );
+    );*/
 
     RHI_cmd_list.CopyToResolveTarget(
         PooledComputeTarget3_ewave.GetReference()->GetRenderTargetItem().TargetableTexture,
         eWave_v->GetRenderTargetResource()->TextureRHI,
         FResolveParams()
     );
-
+    /*
     RHI_cmd_list.CopyToResolveTarget(
         PooledComputeTarget4_ewave.GetReference()->GetRenderTargetItem().TargetableTexture,
         eWave_vPrev->GetRenderTargetResource()->TextureRHI,
