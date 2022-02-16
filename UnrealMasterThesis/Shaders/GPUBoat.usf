@@ -25,37 +25,82 @@ Rigidbody get_rigidbody() {
     return rigidbody;
 }
 
+void apply_gravity(inout Rigidbody rigidbody) {
+    float3 gravity_force = GRAVITY * rigidbody.mass * float3(0.0, -1.0, 0.0);
+    add_force_at_position(rigidbody, gravity_force, rigidbody.position);
+}
+
+void apply_buoyancy(inout Rigidbody rigidbody) {
+
+    float elevation = sample_elevation(ElevationTexture, rigidbody.position.xy * M_TO_CM) / M_TO_CM;
+    float height = rigidbody.position.y - elevation;
+
+    if (height < 0.0) {
+        height = -height;
+        float area = 27.045519; // manually copied from CPU
+        float3 buoyancy_force = DENSITY_OF_WATER * GRAVITY * height * area * float3(0.0, 1.0, 0.0);
+        add_force_at_position(rigidbody, buoyancy_force, rigidbody.position);
+        // rigidbody.position += height;
+        // rigidbody.force = float3(0.0, 0.0, 0.0);
+    }
+}
+
+void apply_user_input(inout Rigidbody rigidbody) {
+    float3 forward = float3(1.0, 0.0, 0.0);
+    float3 right = float3(0.0, 0.0, 1.0);
+
+    if (VelocityInput.y > 0.0) {
+    // rigidbody.position += SpeedInput * VelocityInput.y * float4(1.0, 0.0, 0.0, 0.0) * 0.01;
+    // rigidbody.position += SpeedInput * VelocityInput.x * float4(0.0, 1.0, 0.0, 0.0) * 0.01;
+        float3 engine_pos = float3(-210.0, 0.0, -30.0) / M_TO_CM;
+
+        // TODO: transform (i.e. also rotate) engine_pos
+        engine_pos += rigidbody.position;
+
+        float engine_power = HORSEPOWER_TO_NEWTON * SpeedInput;
+
+        // add_force_at_position(rigidbody, engine_power * VelocityInput.y * forward, engine_pos);
+        add_force_at_position(rigidbody, engine_power * VelocityInput.y * forward, rigidbody.position);
+    }
+
+    float3 steer_pos = rigidbody.position + 100.0f * forward;
+    float engine_power = HORSEPOWER_TO_NEWTON * sqrt(SpeedInput); // Nerf sideways movement
+
+    add_force_at_position(rigidbody, engine_power * VelocityInput.x * right, steer_pos);
+    // add_force_at_position(rigidbody, engine_power * VelocityInput.x * right, rigidbody.position);
+}
+
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     Rigidbody rigidbody = get_rigidbody();
 
-    // rigidbody.position += SpeedInput * VelocityInput.y * float4(1.0, 0.0, 0.0, 0.0) * 0.01;
-    // rigidbody.position += SpeedInput * VelocityInput.x * float4(0.0, 1.0, 0.0, 0.0) * 0.01;
+    // Debug: reset
+    rigidbody.position = float3(0.0, 0.0, 0.0);
+    // rigidbody.orientation = float4(0.0, 0.0, 0.0, 1.0);
+    rigidbody.linear_velocity = float3(0.0, 0.0, 0.0);
+    rigidbody.angular_velocity = float3(0.0, 0.0, 0.0);
 
-    float elevation = sample_elevation(ElevationTexture, rigidbody.position.xy * M_TO_CM) / M_TO_CM;
-    float height = rigidbody.position.y - elevation;
+    // apply_gravity(rigidbody);
+    // apply_buoyancy(rigidbody);
+    apply_user_input(rigidbody);
 
-    // rigidbody.position.z = elevation;
-
-    // Gravity
-    // float3 gravity_force = GRAVITY * rigidbody.mass * float3(0.0, -1.0, 0.0);
-    // add_force_at_position(rigidbody, gravity_force, rigidbody.position);
-
-    // Buoyancy
-    // float area = 0.1;
-    // float3 buoyancy_force = DENSITY_OF_WATER * GRAVITY * height * area * float3(0.0, 1.0, 0.0);
-    // add_force_at_position(rigidbody, buoyancy_force, rigidbody.position);
-
-    // rigidbody.position = float3(0.0, 0.0, 0.0);
-
-    add_force_at_position(rigidbody, float3(0.0, -height * 10.0, 0.0), rigidbody.position);
     update_rigidbody(rigidbody);
+
+    // Debug
+    // InputOutputTexture[uint2(4,0)].rgb = M_TO_CM * rigidbody.linear_velocity;
+    InputOutputTexture[uint2(4,0)] = rigidbody.orientation;
 
     // Store results
     InputOutputTexture[uint2(0,0)].rgb = rigidbody.position;
     InputOutputTexture[uint2(1,0)]     = rigidbody.orientation;
     InputOutputTexture[uint2(2,0)].rgb = rigidbody.linear_velocity;
     InputOutputTexture[uint2(3,0)].rgb = rigidbody.angular_velocity;
+
+    // InputOutputTexture[uint2(0,0)] = float4(1.0, 0.0, 0.0, 1.0);
+    // InputOutputTexture[uint2(1,0)] = float4(0.0, 1.0, 0.0, 1.0);
+    // InputOutputTexture[uint2(2,0)] = float4(0.0, 0.0, 1.0, 1.0);
+    // InputOutputTexture[uint2(3,0)] = float4(1.0, 1.0, 0.0, 1.0);
+    // InputOutputTexture[uint2(4,0)] = float4(1.0, 1.0, 1.0, 1.0);
 
 }

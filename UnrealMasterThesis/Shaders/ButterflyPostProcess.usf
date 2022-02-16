@@ -11,6 +11,7 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     // We do not divide by N^2 here since we would then have to later multiply by N^2 anyway.
     // See the report for further details.
-    InputOutputTexture[id.xy] = float4(sign * r, 0.0, 0.0, 1.0);
+    // InputOutputTexture[id.xy] = float4(sign * r, 0.0, 0.0, 1.0);
+    InputOutputTexture[id.xy] = float4(0.0, 0.0, 0.0, 1.0);
 
 }

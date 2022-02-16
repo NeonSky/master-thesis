@@ -148,6 +148,8 @@ void ShaderModelsModule::UpdateGPUBoat(
 		FVector pos = FVector(data[0].R, data[0].B, data[0].G);
 		FQuat rot   = FQuat(data[1].R, data[1].G, data[1].B, data[1].A);
 
+		UE_LOG(LogTemp, Warning, TEXT("Debug output: (%f, %f, %f, %f)"), data[4].R.GetFloat(), data[4].G.GetFloat(), data[4].B.GetFloat(), data[4].A.GetFloat());
+
 		camera_target->SetActorLocation(METERS_TO_UNREAL_UNITS * pos);
 		camera_target->SetActorRotation(rot, ETeleportType::None);
 	}

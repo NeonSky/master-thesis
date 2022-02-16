@@ -4,6 +4,7 @@ static const float PI = 3.1415926535897933;
 static const float M_TO_CM = 100.0;
 static const float GRAVITY = 9.82;
 static const float DENSITY_OF_WATER = 1000.0;
+static const float HORSEPOWER_TO_NEWTON = 750.0;
 
 /* Complex number stuff */
 
@@ -38,6 +39,15 @@ Complex conj(Complex c) {
   return c;
 }
 
+/* Quaternion stuff */
+
+float4 qmul(float4 q1, float4 q2) {
+    return float4(
+        q2.xyz * q1.w + q1.xyz * q2.w + cross(q1.xyz, q2.xyz),
+        q1.w * q2.w - dot(q1.xyz, q2.xyz)
+    );
+}
+
 /* Rigidbody stuff */
 
 struct Rigidbody {
@@ -59,7 +69,7 @@ void add_force_at_position(inout Rigidbody rigidbody, float3 f, float3 pos) {
     rigidbody.force += f;
 
     if (length(pos) > 0.0001) {
-        rigidbody.force += cross(pos, f);
+        rigidbody.torque += cross(pos, f);
     }
 }
 
@@ -68,14 +78,17 @@ void update_rigidbody(inout Rigidbody rigidbody) {
     const float dt = 0.02;
 
     float3 linear_acceleration = rigidbody.force / rigidbody.mass;
-    // rigidbody.linear_velocity += linear_acceleration * dt;
-    // rigidbody.position        += rigidbody.linear_velocity * dt;
+    rigidbody.linear_velocity += linear_acceleration * dt;
+    rigidbody.position        += rigidbody.linear_velocity * dt;
 
-    // rigidbody.position += linear_acceleration;
+    float3 angular_acceleration = rigidbody.torque / rigidbody.moment_of_inertia;
+    rigidbody.angular_velocity += angular_acceleration * dt;
 
-    // rigidbody.position = 100.0 * linear_acceleration;
-    rigidbody.position += linear_acceleration;
+    // Angular velocity orientation
+    float3 v = 0.5 * rigidbody.angular_velocity * dt;
+    float4 avo = float4(v, 0.0);
 
+    rigidbody.orientation = normalize(rigidbody.orientation + qmul(avo, rigidbody.orientation));
 }
 
 /* Ocean stuff */
