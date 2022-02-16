@@ -79,7 +79,7 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     rigidbody.position = float3(0.0, 0.0, 0.0);
     // rigidbody.orientation = float4(0.0, 0.0, 0.0, 1.0);
     rigidbody.linear_velocity = float3(0.0, 0.0, 0.0);
-    rigidbody.angular_velocity = float3(0.0, 0.0, 0.0);
+    // rigidbody.angular_velocity = float3(0.0, 0.0, 0.0);
 
     // apply_gravity(rigidbody);
     // apply_buoyancy(rigidbody);
@@ -90,17 +90,12 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     // Debug
     // InputOutputTexture[uint2(4,0)].rgb = M_TO_CM * rigidbody.linear_velocity;
     InputOutputTexture[uint2(4,0)] = rigidbody.orientation;
+    // InputOutputTexture[uint2(4,0)].rgb = rigidbody.angular_velocity;
 
     // Store results
     InputOutputTexture[uint2(0,0)].rgb = rigidbody.position;
     InputOutputTexture[uint2(1,0)]     = rigidbody.orientation;
     InputOutputTexture[uint2(2,0)].rgb = rigidbody.linear_velocity;
     InputOutputTexture[uint2(3,0)].rgb = rigidbody.angular_velocity;
-
-    // InputOutputTexture[uint2(0,0)] = float4(1.0, 0.0, 0.0, 1.0);
-    // InputOutputTexture[uint2(1,0)] = float4(0.0, 1.0, 0.0, 1.0);
-    // InputOutputTexture[uint2(2,0)] = float4(0.0, 0.0, 1.0, 1.0);
-    // InputOutputTexture[uint2(3,0)] = float4(1.0, 1.0, 0.0, 1.0);
-    // InputOutputTexture[uint2(4,0)] = float4(1.0, 1.0, 1.0, 1.0);
 
 }
