@@ -76,9 +76,9 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     Rigidbody rigidbody = get_rigidbody();
 
     // Debug: reset
-    rigidbody.position = float3(0.0, 0.0, 0.0);
+    rigidbody.position = float3(5.0, 0.0, 0.0);
     // rigidbody.orientation = float4(0.0, 0.0, 0.0, 1.0);
-    rigidbody.linear_velocity = float3(0.0, 0.0, 0.0);
+    // rigidbody.linear_velocity = float3(0.0, 0.0, 0.0);
     // rigidbody.angular_velocity = float3(0.0, 0.0, 0.0);
 
     // apply_gravity(rigidbody);
