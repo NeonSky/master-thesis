@@ -48,6 +48,11 @@ float4 qmul(float4 q1, float4 q2) {
     );
 }
 
+float3 rotate_vector_by_quat(float3 v, float4 q) {
+    float4 q_conj = q * float4(-1, -1, -1, 1);
+    return qmul(q, qmul(float4(v, 0), q_conj)).xyz;
+}
+
 /* Rigidbody stuff */
 
 struct Rigidbody {

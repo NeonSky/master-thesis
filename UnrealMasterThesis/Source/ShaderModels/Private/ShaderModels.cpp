@@ -145,7 +145,7 @@ void ShaderModelsModule::UpdateGPUBoat(
 		fence.BeginFence();
 		fence.Wait();
 
-		FVector pos = FVector(data[0].R, data[0].B, data[0].G);
+		FVector pos = FVector(data[0].R, data[0].G, data[0].B);
 		FQuat rot   = FQuat(data[1].R, data[1].G, data[1].B, data[1].A);
 
 		UE_LOG(LogTemp, Warning, TEXT("Debug output: (%f, %f, %f, %f)"), data[4].R.GetFloat(), data[4].G.GetFloat(), data[4].B.GetFloat(), data[4].A.GetFloat());

@@ -26,7 +26,7 @@ Rigidbody get_rigidbody() {
 }
 
 void apply_gravity(inout Rigidbody rigidbody) {
-    float3 gravity_force = GRAVITY * rigidbody.mass * float3(0.0, -1.0, 0.0);
+    float3 gravity_force = GRAVITY * rigidbody.mass * float3(0.0, 0.0, -1.0);
     add_force_at_position(rigidbody, gravity_force, rigidbody.position);
 }
 
@@ -38,7 +38,7 @@ void apply_buoyancy(inout Rigidbody rigidbody) {
     if (height < 0.0) {
         height = -height;
         float area = 27.045519; // manually copied from CPU
-        float3 buoyancy_force = DENSITY_OF_WATER * GRAVITY * height * area * float3(0.0, 1.0, 0.0);
+        float3 buoyancy_force = DENSITY_OF_WATER * GRAVITY * height * area * float3(0.0, 0.0, 1.0);
         add_force_at_position(rigidbody, buoyancy_force, rigidbody.position);
         // rigidbody.position += height;
         // rigidbody.force = float3(0.0, 0.0, 0.0);
@@ -46,12 +46,12 @@ void apply_buoyancy(inout Rigidbody rigidbody) {
 }
 
 void apply_user_input(inout Rigidbody rigidbody) {
-    float3 forward = float3(1.0, 0.0, 0.0);
-    float3 right = float3(0.0, 0.0, 1.0);
+
+    // TODO: transform these
+    float3 forward = rotate_vector_by_quat(float3(1.0, 0.0, 0.0), rigidbody.orientation);
+    float3 right   = rotate_vector_by_quat(float3(0.0, 1.0, 0.0), rigidbody.orientation);
 
     if (VelocityInput.y > 0.0) {
-    // rigidbody.position += SpeedInput * VelocityInput.y * float4(1.0, 0.0, 0.0, 0.0) * 0.01;
-    // rigidbody.position += SpeedInput * VelocityInput.x * float4(0.0, 1.0, 0.0, 0.0) * 0.01;
         float3 engine_pos = float3(-210.0, 0.0, -30.0) / M_TO_CM;
 
         // TODO: transform (i.e. also rotate) engine_pos
@@ -76,10 +76,10 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     Rigidbody rigidbody = get_rigidbody();
 
     // Debug: reset
-    rigidbody.position = float3(5.0, 0.0, 0.0);
+    // rigidbody.position = float3(5.0, 0.0, 0.0);
     // rigidbody.orientation = float4(0.0, 0.0, 0.0, 1.0);
-    // rigidbody.linear_velocity = float3(0.0, 0.0, 0.0);
-    // rigidbody.angular_velocity = float3(0.0, 0.0, 0.0);
+    rigidbody.linear_velocity = float3(0.0, 0.0, 0.0);
+    rigidbody.angular_velocity = float3(0.0, 0.0, 0.0);
 
     // apply_gravity(rigidbody);
     // apply_buoyancy(rigidbody);
