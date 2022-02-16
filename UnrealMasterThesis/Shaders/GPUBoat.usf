@@ -19,7 +19,7 @@ Rigidbody get_rigidbody() {
     rigidbody.linear_velocity  = InputOutputTexture[uint2(2,0)].rgb; // RGB of (2,0) stores linear velocity
     rigidbody.angular_velocity = InputOutputTexture[uint2(3,0)].rgb; // RGB of (3,0) stores angular velocity
 
-    rigidbody.mass              = 500.0;
+    rigidbody.mass              = 2000.0;
     rigidbody.moment_of_inertia = 100.0 * rigidbody.mass;
 
     return rigidbody;
@@ -70,6 +70,25 @@ void apply_user_input(inout Rigidbody rigidbody) {
     // add_force_at_position(rigidbody, engine_power * VelocityInput.x * right, rigidbody.position);
 }
 
+void apply_resistance_forces(inout Rigidbody rigidbody) {
+
+    const float c_damp = 500.0;
+    const float angular_drag = 0.1;
+
+    float r_s = 0.2; // TODO
+
+    // add_force_at_position(rigidbody, engine_power * VelocityInput.x * right, steer_pos);
+
+    // Linear damping of linear velocity
+    add_force_at_position(rigidbody, -c_damp * r_s * rigidbody.linear_velocity, rigidbody.position);
+
+    // Quadratic damping of linear velocity
+    add_force_at_position(rigidbody, -c_damp * r_s * rigidbody.linear_velocity * length(rigidbody.linear_velocity), rigidbody.position);
+
+    // Damping of angular velocity
+    rigidbody.angular_velocity -= angular_drag * rigidbody.angular_velocity * (1.0f - r_s);
+}
+
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
@@ -78,11 +97,12 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     // Debug: reset
     // rigidbody.position = float3(5.0, 0.0, 0.0);
     // rigidbody.orientation = float4(0.0, 0.0, 0.0, 1.0);
-    rigidbody.linear_velocity = float3(0.0, 0.0, 0.0);
-    rigidbody.angular_velocity = float3(0.0, 0.0, 0.0);
+    // rigidbody.linear_velocity = float3(0.0, 0.0, 0.0);
+    // rigidbody.angular_velocity = float3(0.0, 0.0, 0.0);
 
     // apply_gravity(rigidbody);
     // apply_buoyancy(rigidbody);
+    apply_resistance_forces(rigidbody);
     apply_user_input(rigidbody);
 
     update_rigidbody(rigidbody);
