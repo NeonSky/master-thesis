@@ -2,6 +2,10 @@
 
 static const float PI = 3.1415926535897933;
 static const float M_TO_CM = 100.0;
+static const float GRAVITY = 9.82;
+static const float DENSITY_OF_WATER = 1000.0;
+
+/* Complex number stuff */
 
 struct Complex {
   float re;
@@ -33,6 +37,48 @@ Complex conj(Complex c) {
   c.im = -c.im;
   return c;
 }
+
+/* Rigidbody stuff */
+
+struct Rigidbody {
+    float3 force;
+    float3 linear_velocity;
+    float3 position;
+
+    float3 torque;
+    float3 angular_velocity;
+    float4 orientation;
+
+    float mass;
+    float moment_of_inertia;
+};
+
+void add_force_at_position(inout Rigidbody rigidbody, float3 f, float3 pos) {
+    pos -= rigidbody.position;
+
+    rigidbody.force += f;
+
+    if (length(pos) > 0.0001) {
+        rigidbody.force += cross(pos, f);
+    }
+}
+
+void update_rigidbody(inout Rigidbody rigidbody) {
+
+    const float dt = 0.02;
+
+    float3 linear_acceleration = rigidbody.force / rigidbody.mass;
+    // rigidbody.linear_velocity += linear_acceleration * dt;
+    // rigidbody.position        += rigidbody.linear_velocity * dt;
+
+    // rigidbody.position += linear_acceleration;
+
+    // rigidbody.position = 100.0 * linear_acceleration;
+    rigidbody.position += linear_acceleration;
+
+}
+
+/* Ocean stuff */
 
 float sample_elevation(Texture2D<float4> elevation_texture, float2 ws_coord) {
 

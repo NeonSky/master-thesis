@@ -145,7 +145,7 @@ void ShaderModelsModule::UpdateGPUBoat(
 		fence.BeginFence();
 		fence.Wait();
 
-		FVector pos = FVector(data[0].R, data[0].G, data[0].B);
+		FVector pos = FVector(data[0].R, data[0].B, data[0].G);
 		FQuat rot   = FQuat(data[1].R, data[1].G, data[1].B, data[1].A);
 
 		camera_target->SetActorLocation(METERS_TO_UNREAL_UNITS * pos);

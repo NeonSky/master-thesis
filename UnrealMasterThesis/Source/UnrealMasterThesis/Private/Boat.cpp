@@ -193,14 +193,6 @@ void ABoat::UpdateSubmergedTriangles() {
 
   FTransform transform = m_rigidbody.Transform();
 
-  // Fetch ocean surface elevations for all vertices
-  TArray<FVector2D> sample_points;
-  for (auto &v : m_collision_mesh_vertices) {
-    FVector v_ws = transform.TransformPosition(v) * METERS_TO_UNREAL_UNITS;
-    sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
-  }
-  TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
-
   uint32 n_triangles = m_collision_mesh_indices.Num() / 3;
   for (int i = 0; i < n_triangles; i++) {
 
@@ -345,8 +337,7 @@ void ABoat::ApplyBuoyancy() {
   for (auto& t : m_submerged_triangles) {
 
     // (kg / m^3) * (m / s^2) * (m) * (m^2) = kg * (m / s^2) = N
-    float density_of_water = 1000.0f;
-    FVector buoyancy_force = -density_of_water * GRAVITY * t.height * t.area * t.normal;
+    FVector buoyancy_force = -DENSITY_OF_WATER * GRAVITY * t.height * t.area * t.normal;
     buoyancy_force = FVector(0.0, 0.0, abs(buoyancy_force.Z));
 
     m_rigidbody.AddForceAtPosition(buoyancy_force, t.centroid);

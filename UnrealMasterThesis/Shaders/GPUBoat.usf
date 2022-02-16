@@ -7,16 +7,55 @@ float2 VelocityInput;
 Texture2D<float4> ElevationTexture;
 RWTexture2D<float4> InputOutputTexture;
 
+Rigidbody get_rigidbody() {
+    Rigidbody rigidbody;
+
+    rigidbody.force  = float3(0.0, 0.0, 0.0);
+    rigidbody.torque = float3(0.0, 0.0, 0.0);
+
+    rigidbody.position    = InputOutputTexture[uint2(0,0)].rgb; // RGB of (0,0) stores position
+    rigidbody.orientation = InputOutputTexture[uint2(1,0)]; // RGBA of (1,0) stores orientation
+
+    rigidbody.linear_velocity  = InputOutputTexture[uint2(2,0)].rgb; // RGB of (2,0) stores linear velocity
+    rigidbody.angular_velocity = InputOutputTexture[uint2(3,0)].rgb; // RGB of (3,0) stores angular velocity
+
+    rigidbody.mass              = 500.0;
+    rigidbody.moment_of_inertia = 100.0 * rigidbody.mass;
+
+    return rigidbody;
+}
+
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
-    // RGB of (0,0) stores position
-    InputOutputTexture[uint2(0,0)] += SpeedInput * VelocityInput.y * float4(1.0, 0.0, 0.0, 0.0) * 0.01;
-    InputOutputTexture[uint2(0,0)] += SpeedInput * VelocityInput.x * float4(0.0, 1.0, 0.0, 0.0) * 0.01;
+    Rigidbody rigidbody = get_rigidbody();
 
-    InputOutputTexture[uint2(0,0)].z = sample_elevation(ElevationTexture, InputOutputTexture[uint2(0,0)].xy * M_TO_CM);
+    // rigidbody.position += SpeedInput * VelocityInput.y * float4(1.0, 0.0, 0.0, 0.0) * 0.01;
+    // rigidbody.position += SpeedInput * VelocityInput.x * float4(0.0, 1.0, 0.0, 0.0) * 0.01;
 
-    // RGBA of (1,0) stores orientation
-    InputOutputTexture[uint2(1,0)] = float4(0.0, 0.0, 0.0, 1.0);
+    float elevation = sample_elevation(ElevationTexture, rigidbody.position.xy * M_TO_CM) / M_TO_CM;
+    float height = rigidbody.position.y - elevation;
+
+    // rigidbody.position.z = elevation;
+
+    // Gravity
+    // float3 gravity_force = GRAVITY * rigidbody.mass * float3(0.0, -1.0, 0.0);
+    // add_force_at_position(rigidbody, gravity_force, rigidbody.position);
+
+    // Buoyancy
+    // float area = 0.1;
+    // float3 buoyancy_force = DENSITY_OF_WATER * GRAVITY * height * area * float3(0.0, 1.0, 0.0);
+    // add_force_at_position(rigidbody, buoyancy_force, rigidbody.position);
+
+    // rigidbody.position = float3(0.0, 0.0, 0.0);
+
+    add_force_at_position(rigidbody, float3(0.0, -height * 10.0, 0.0), rigidbody.position);
+    update_rigidbody(rigidbody);
+
+    // Store results
+    InputOutputTexture[uint2(0,0)].rgb = rigidbody.position;
+    InputOutputTexture[uint2(1,0)]     = rigidbody.orientation;
+    InputOutputTexture[uint2(2,0)].rgb = rigidbody.linear_velocity;
+    InputOutputTexture[uint2(3,0)].rgb = rigidbody.angular_velocity;
 
 }
