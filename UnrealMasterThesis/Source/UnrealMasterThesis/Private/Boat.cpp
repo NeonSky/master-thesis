@@ -378,8 +378,6 @@ void ABoat::ApplyResistanceForces() {
 
 void ABoat::ApplyUserInput() {
 
-  FTransform transform = engine->GetActorTransform();
-
   float submerged_area = 0.0f;
   for (auto& t : m_submerged_triangles) {
     submerged_area += t.area;
@@ -387,22 +385,24 @@ void ABoat::ApplyUserInput() {
   // float r_s = submerged_area / m_collision_mesh_surface_area;
   float r_s = 0.2f;
 
-  if (m_velocity_input.Y > 0.0f) {
+  FVector forward = GetActorForwardVector();
+  FVector right = GetActorRightVector();
+  FVector up = GetActorUpVector();
 
-    FVector engine_pos = transform.TransformPosition(FVector(-210.0f, 0.0f, -30.0f)) / METERS_TO_UNREAL_UNITS;
+  if (m_velocity_input.Y > 0.0f) {
+    FVector engine_pos = (-forward) * 2.1f + (-up) * 0.3f;
+    engine_pos += m_rigidbody.position;
+
     float engine_power = HORSEPOWER_TO_NEWTON * m_speed_input * sqrt(r_s);
 
-    // m_rigidbody.AddForceAtPosition(engine_power * velocity_input.Y * GetActorForwardVector(), engine_pos);
-    m_rigidbody.AddForceAtPosition(engine_power * m_velocity_input.Y * GetActorForwardVector(), m_rigidbody.position);
-
+    m_rigidbody.AddForceAtPosition(engine_power * m_velocity_input.Y * forward, engine_pos);
   }
 
   if (m_velocity_input.X != 0.0f) {
-
-    FVector steer_pos = m_rigidbody.position + 100.0f * GetActorForwardVector();
+    FVector steer_pos = m_rigidbody.position + 100.0f * forward;
     float engine_power = HORSEPOWER_TO_NEWTON * sqrt(m_speed_input) * sqrt(r_s); // Nerf sideways movement
+    m_rigidbody.AddForceAtPosition(engine_power * m_velocity_input.X * right, steer_pos);
 
-    m_rigidbody.AddForceAtPosition(engine_power * m_velocity_input.X * GetActorRightVector(), steer_pos);
   }
 
 }

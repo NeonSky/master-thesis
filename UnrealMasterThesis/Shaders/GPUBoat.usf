@@ -51,19 +51,17 @@ void apply_user_input(inout Rigidbody rigidbody) {
 
     float3 forward = rotate_vector_by_quat(float3(1.0, 0.0, 0.0), rigidbody.orientation);
     float3 right   = rotate_vector_by_quat(float3(0.0, 1.0, 0.0), rigidbody.orientation);
+    float3 up      = rotate_vector_by_quat(float3(0.0, 0.0, 1.0), rigidbody.orientation);
 
     float r_s = 0.2; // TODO
 
     if (VelocityInput.y > 0.0) {
-        float3 engine_pos = float3(-210.0, 0.0, -30.0) / M_TO_CM;
-
-        // TODO: transform (i.e. also rotate) engine_pos
+        float3 engine_pos = (-forward) * 2.1 + (-up) * 0.3;
         engine_pos += rigidbody.position;
 
         float engine_power = HORSEPOWER_TO_NEWTON * SpeedInput * sqrt(r_s);
 
-        // add_force_at_position(rigidbody, engine_power * VelocityInput.y * forward, engine_pos);
-        add_force_at_position(rigidbody, engine_power * VelocityInput.y * forward, rigidbody.position);
+        add_force_at_position(rigidbody, engine_power * VelocityInput.y * forward, engine_pos);
     }
 
     if (VelocityInput.x != 0.0) {
@@ -71,7 +69,6 @@ void apply_user_input(inout Rigidbody rigidbody) {
         float engine_power = HORSEPOWER_TO_NEWTON * sqrt(SpeedInput) * sqrt(r_s); // Nerf sideways movement
 
         add_force_at_position(rigidbody, engine_power * VelocityInput.x * right, steer_pos);
-        // add_force_at_position(rigidbody, engine_power * VelocityInput.x * right, rigidbody.position);
     }
 }
 
