@@ -17,9 +17,6 @@ void ABoat::BeginPlay() {
 
   m_rigidbody = Rigidbody(mass); // kg (wet weight, i.e. including fuel). Our boat should be similar to a cabin cruiser: https://www.godownsize.com/how-much-do-boats-weigh/
 
-  m_velocity_input = FVector2D(0.0f);
-  m_speed_input = slow_speed;
-
   m_requested_elevations_on_frame = 0;
   m_cur_frame = 0;
 
@@ -79,12 +76,13 @@ void ABoat::Tick(float DeltaTime) {
   UpdateReadbackQueue();
   UpdateSubmergedTriangles();
 
-  ApplyGravity();
-  ApplyBuoyancy();
+  // ApplyGravity();
+  // ApplyBuoyancy();
   ApplyResistanceForces();
   ApplyUserInput();
 
   m_rigidbody.Update(0.02f); // We use a fixed delta time for physics
+  m_rigidbody.position.Z = 0.0f;
 
   // DebugDrawVelocities();
 
@@ -371,6 +369,9 @@ void ABoat::ApplyResistanceForces() {
 
 void ABoat::ApplyUserInput() {
 
+  float speed_input = input_pawn->SpeedInput();
+  FVector2D velocity_input = input_pawn->VelocityInput();
+
   FTransform transform = engine->GetActorTransform();
 
   float submerged_area = 0.0f;
@@ -379,44 +380,21 @@ void ABoat::ApplyUserInput() {
   }
   float r_s = submerged_area / m_collision_mesh_surface_area;
 
-  if (m_velocity_input.Y > 0.0f) {
+  if (velocity_input.Y > 0.0f) {
 
     FVector engine_pos = transform.TransformPosition(FVector(-210.0f, 0.0f, -30.0f)) / METERS_TO_UNREAL_UNITS;
-    float engine_power = HORSEPOWER_TO_NEWTON * m_speed_input * sqrt(r_s);
+    float engine_power = HORSEPOWER_TO_NEWTON * speed_input * sqrt(r_s);
 
-    m_rigidbody.AddForceAtPosition(engine_power * m_velocity_input.Y * GetActorForwardVector(), engine_pos);
+    m_rigidbody.AddForceAtPosition(engine_power * velocity_input.Y * GetActorForwardVector(), engine_pos);
 
   }
 
-  if (m_velocity_input.X != 0.0f) {
+  if (velocity_input.X != 0.0f) {
 
     FVector steer_pos = m_rigidbody.position + 100.0f * GetActorForwardVector();
-    float engine_power = HORSEPOWER_TO_NEWTON * sqrt(m_speed_input) * sqrt(r_s); // Nerf sideways movement
+    float engine_power = HORSEPOWER_TO_NEWTON * sqrt(speed_input) * sqrt(r_s); // Nerf sideways movement
 
-    m_rigidbody.AddForceAtPosition(engine_power * m_velocity_input.X * GetActorRightVector(), steer_pos);
+    m_rigidbody.AddForceAtPosition(engine_power * velocity_input.X * GetActorRightVector(), steer_pos);
   }
 
-}
-
-void ABoat::SetupPlayerInputComponent(class UInputComponent* inputComponent) {
-  Super::SetupPlayerInputComponent(inputComponent);
-
-  inputComponent->BindAction("Speed1", IE_Pressed, this, &ABoat::UseSlowSpeed);
-  inputComponent->BindAction("Speed2", IE_Pressed, this, &ABoat::UseNormalSpeed);
-  inputComponent->BindAction("Speed3", IE_Pressed, this, &ABoat::UseFastSpeed);
-
-  inputComponent->BindAxis("HorizontalAxis", this, &ABoat::HorizontalAxis);
-  inputComponent->BindAxis("VerticalAxis", this, &ABoat::VerticalAxis);
-}
-
-void ABoat::UseSlowSpeed()   { m_speed_input = slow_speed; }
-void ABoat::UseNormalSpeed() { m_speed_input = normal_speed; }
-void ABoat::UseFastSpeed()   { m_speed_input = fast_speed; }
-
-void ABoat::HorizontalAxis(float input) {
-  m_velocity_input.X = input;
-}
-
-void ABoat::VerticalAxis(float input) {
-  m_velocity_input.Y = input;
 }

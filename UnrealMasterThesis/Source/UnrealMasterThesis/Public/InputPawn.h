@@ -2,20 +2,23 @@
 
 #pragma once
 
-#include "ShaderModels.h"
-#include "InputPawn.h"
-
-#include "GPUBoat.generated.h"
+#include "InputPawn.generated.h"
 
 UCLASS(Blueprintable)
-class UNREALMASTERTHESIS_API AGPUBoat : public AActor {
+class UNREALMASTERTHESIS_API AInputPawn : public APawn {
 	GENERATED_BODY()
 	
 public:	
-	AGPUBoat();
+	AInputPawn();
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
+
+	FVector2D VelocityInput();
+	float SpeedInput();
 
 protected:
 
@@ -25,19 +28,24 @@ protected:
 private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	AInputPawn* input_pawn;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	AActor* camera_target;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	bool camera_follow;
+	float slow_speed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* elevation_rtt;
+	float normal_speed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* boat_rtt;
+	float fast_speed;
 
-	ShaderModelsModule m_shader_models_module; // Reference to the ShaderModels module
+	FVector2D m_velocity_input;
+	float m_speed_input;
+
+	void UseSlowSpeed();
+	void UseNormalSpeed();
+	void UseFastSpeed();
+
+	void HorizontalAxis(float input);
+	void VerticalAxis(float input);
 };

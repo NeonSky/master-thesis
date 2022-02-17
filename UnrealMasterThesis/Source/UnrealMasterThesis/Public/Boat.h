@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "InputPawn.h"
 #include "OceanSurfaceSimulation.h"
 #include "ShaderModels.h"
 #include "Rigidbody.h"
@@ -28,7 +29,7 @@ struct SubmergedTriangle {
 };
 
 UCLASS(Blueprintable)
-class UNREALMASTERTHESIS_API ABoat : public APawn {
+class UNREALMASTERTHESIS_API ABoat : public AActor {
 	GENERATED_BODY()
 	
 public:	
@@ -37,15 +38,15 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
-
 protected:
 
 	// Called once on "Play"
 	virtual void BeginPlay() override;
 
 private:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	AInputPawn* input_pawn;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	AOceanSurfaceSimulation* ocean_surface_simulation;
@@ -63,22 +64,10 @@ private:
 	int artificial_frame_skip; // The number of consecutive frames we don't perform a readback
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float slow_speed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float normal_speed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float fast_speed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float mass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float angular_drag;
-
-	FVector2D m_velocity_input;
-	float m_speed_input;
 
 	Rigidbody m_rigidbody;
 
