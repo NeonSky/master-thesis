@@ -76,13 +76,12 @@ void ABoat::Update(UpdatePayload update_payload) {
   UpdateReadbackQueue();
   UpdateSubmergedTriangles();
 
-  // ApplyGravity();
-  // ApplyBuoyancy();
-  // ApplyResistanceForces();
+  ApplyGravity();
+  ApplyBuoyancy();
+  ApplyResistanceForces();
   ApplyUserInput();
 
   m_rigidbody.Update(0.02f); // We use a fixed delta time for physics
-  // m_rigidbody.position += FVector(0.1f, 0.0f, 0.0f);
 
   // DebugDrawVelocities();
 
@@ -332,16 +331,25 @@ void ABoat::ApplyGravity() {
 
 void ABoat::ApplyBuoyancy() {
 
-  for (auto& t : m_submerged_triangles) {
 
-    // (kg / m^3) * (m / s^2) * (m) * (m^2) = kg * (m / s^2) = N
-    FVector buoyancy_force = -DENSITY_OF_WATER * GRAVITY * t.height * t.area * t.normal;
-    buoyancy_force = FVector(0.0, 0.0, abs(buoyancy_force.Z));
-
-    m_rigidbody.AddForceAtPosition(buoyancy_force, t.centroid);
-
-    // DebugDrawForce(t.centroid, buoyancy_force / METERS_TO_UNREAL_UNITS, FColor::Purple);
+  float height = m_rigidbody.position.Z;
+  if (height < 0.0) {
+      height = -height;
+      float area = 27.045519;
+      FVector buoyancy_force = FVector(0.0, 0.0, DENSITY_OF_WATER * GRAVITY * height * area);
+      m_rigidbody.AddForceAtPosition(buoyancy_force, m_rigidbody.position);
   }
+
+  // for (auto& t : m_submerged_triangles) {
+
+  //   // (kg / m^3) * (m / s^2) * (m) * (m^2) = kg * (m / s^2) = N
+  //   FVector buoyancy_force = -DENSITY_OF_WATER * GRAVITY * t.height * t.area * t.normal;
+  //   buoyancy_force = FVector(0.0, 0.0, abs(buoyancy_force.Z));
+
+  //   m_rigidbody.AddForceAtPosition(buoyancy_force, t.centroid);
+
+  //   // DebugDrawForce(t.centroid, buoyancy_force / METERS_TO_UNREAL_UNITS, FColor::Purple);
+  // }
 
 }
 
