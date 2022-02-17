@@ -25,9 +25,6 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
-	FVector2D VelocityInput(); // TODO: remove
-	float SpeedInput();
-
     FOnFixedUpdate on_fixed_update;
 
 protected:

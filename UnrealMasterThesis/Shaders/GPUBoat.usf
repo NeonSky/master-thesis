@@ -65,11 +65,13 @@ void apply_user_input(inout Rigidbody rigidbody) {
         add_force_at_position(rigidbody, engine_power * VelocityInput.y * forward, rigidbody.position);
     }
 
-    // float3 steer_pos = rigidbody.position + 100.0f * forward;
-    // float engine_power = HORSEPOWER_TO_NEWTON * sqrt(SpeedInput) * sqrt(r_s); // Nerf sideways movement
+    if (VelocityInput.x != 0.0) {
+        float3 steer_pos = rigidbody.position + 100.0f * forward;
+        float engine_power = HORSEPOWER_TO_NEWTON * sqrt(SpeedInput) * sqrt(r_s); // Nerf sideways movement
 
-    // add_force_at_position(rigidbody, engine_power * VelocityInput.x * right, steer_pos);
-    // add_force_at_position(rigidbody, engine_power * VelocityInput.x * right, rigidbody.position);
+        add_force_at_position(rigidbody, engine_power * VelocityInput.x * right, steer_pos);
+        // add_force_at_position(rigidbody, engine_power * VelocityInput.x * right, rigidbody.position);
+    }
 }
 
 void apply_resistance_forces(inout Rigidbody rigidbody) {

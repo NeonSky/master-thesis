@@ -12,9 +12,6 @@ void AGPUBoat::BeginPlay() {
     m_shader_models_module.ResetGPUBoat(boat_rtt);
 }
 
-// void AGPUBoat::Tick(float DeltaTime) {
-//     Super::Tick(DeltaTime);
-
 void AGPUBoat::Update(UpdatePayload update_payload) {
 
     m_shader_models_module.UpdateGPUBoat(

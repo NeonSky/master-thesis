@@ -37,14 +37,6 @@ void AInputPawn::SetupPlayerInputComponent(class UInputComponent* inputComponent
   inputComponent->BindAxis("VerticalAxis", this, &AInputPawn::VerticalAxis);
 }
 
-FVector2D AInputPawn::VelocityInput() {
-    return m_velocity_input;
-}
-
-float AInputPawn::SpeedInput() {
-    return m_speed_input;
-}
-
 void AInputPawn::UseSlowSpeed()   { m_speed_input = slow_speed; }
 void AInputPawn::UseNormalSpeed() { m_speed_input = normal_speed; }
 void AInputPawn::UseFastSpeed()   { m_speed_input = fast_speed; }

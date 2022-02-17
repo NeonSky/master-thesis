@@ -11,8 +11,7 @@ ABoat::ABoat() {}
 void ABoat::BeginPlay() {
 	Super::BeginPlay();
 
-  // input_pawn->on_fixed_update.BindUObject(this, &ABoat::Update);
-    input_pawn->on_fixed_update.AddUObject<ABoat>(this, &ABoat::Update);
+  input_pawn->on_fixed_update.AddUObject<ABoat>(this, &ABoat::Update);
 
   m_rigidbody = Rigidbody(mass); // kg (wet weight, i.e. including fuel). Our boat should be similar to a cabin cruiser: https://www.godownsize.com/how-much-do-boats-weigh/
 
@@ -390,12 +389,12 @@ void ABoat::ApplyUserInput() {
 
   }
 
-  // if (m_velocity_input.X != 0.0f) {
+  if (m_velocity_input.X != 0.0f) {
 
-  //   FVector steer_pos = m_rigidbody.position + 100.0f * GetActorForwardVector();
-  //   float engine_power = HORSEPOWER_TO_NEWTON * sqrt(m_speed_input) * sqrt(r_s); // Nerf sideways movement
+    FVector steer_pos = m_rigidbody.position + 100.0f * GetActorForwardVector();
+    float engine_power = HORSEPOWER_TO_NEWTON * sqrt(m_speed_input) * sqrt(r_s); // Nerf sideways movement
 
-  //   m_rigidbody.AddForceAtPosition(engine_power * m_velocity_input.X * GetActorRightVector(), steer_pos);
-  // }
+    m_rigidbody.AddForceAtPosition(engine_power * m_velocity_input.X * GetActorRightVector(), steer_pos);
+  }
 
 }
