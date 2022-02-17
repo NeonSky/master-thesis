@@ -63,6 +63,25 @@ TArray<FFloat16Color> readback_RTT(FRHICommandListImmediate &RHI_cmd_list, UText
     return data;
 }
 
+void GPUBoatShader::ResetBoatTexture(FRHICommandListImmediate &RHI_cmd_list, UTextureRenderTarget2D* input_output) {
+	FTexture2DRHIRef tex_ref = input_output->GetRenderTargetResource()->GetTextureRenderTarget2DResource()->GetTextureRHI();
+
+	TArray<FLinearColor> pixel_data = {
+		FLinearColor(0.0f, 0.0f, 0.0f, 0.0f), // position
+		FLinearColor(0.0f, 0.0f, 0.0f, 1.0f), // orientation
+		FLinearColor(0.0f, 0.0f, 0.0f, 0.0f), // linear velocity
+		FLinearColor(0.0f, 0.0f, 0.0f, 0.0f), // angular velocity
+	};
+
+	int N = input_output->SizeX;
+	pixel_data.SetNum(N);
+
+	uint32 DestStride = 0;
+	FLinearColor* data = (FLinearColor*) RHILockTexture2D(tex_ref, 0, RLM_WriteOnly, DestStride, false);
+	FMemory::Memcpy(data, pixel_data.GetData(), sizeof(FLinearColor) * pixel_data.Num());
+	RHIUnlockTexture2D(tex_ref, 0, false);
+}
+
 void GPUBoatShader::BuildAndExecuteGraph(
     FRHICommandListImmediate &RHI_cmd_list,
     float speed_input,

@@ -117,6 +117,19 @@ void ShaderModelsModule::SampleElevationPoints(UTextureRenderTarget2D* elevation
 
 }
 
+void ShaderModelsModule::ResetGPUBoat(UTextureRenderTarget2D* input_output) {
+
+ 	TShaderMapRef<GPUBoatShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+	ENQUEUE_RENDER_COMMAND()([shader, input_output](FRHICommandListImmediate& RHI_cmd_list) {
+		shader->ResetBoatTexture(RHI_cmd_list, input_output);
+	});
+
+	FRenderCommandFence fence;
+	fence.BeginFence();
+	fence.Wait();
+
+}
+
 void ShaderModelsModule::UpdateGPUBoat(
     float speed_input,
     FVector2D velocity_input,

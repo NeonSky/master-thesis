@@ -4,16 +4,18 @@
 
 AGPUBoat::AGPUBoat() {
 
-	// Configure Tick() to be called every frame.
-	PrimaryActorTick.bCanEverTick = true;
+    // Configure Tick() to be called every frame.
+    PrimaryActorTick.bCanEverTick = true;
 }
 
 void AGPUBoat::BeginPlay() {
-	Super::BeginPlay();
+	  Super::BeginPlay();
+
+    m_shader_models_module.ResetGPUBoat(boat_rtt);
 }
 
 void AGPUBoat::Tick(float DeltaTime) {
-	Super::Tick(DeltaTime);
+    Super::Tick(DeltaTime);
 
     m_shader_models_module.UpdateGPUBoat(
         input_pawn->SpeedInput(),

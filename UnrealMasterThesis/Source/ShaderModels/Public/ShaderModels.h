@@ -25,6 +25,8 @@ public:
 
 	void SampleElevationPoints(UTextureRenderTarget2D* elevations, TArray<FVector2D> input_sample_coordinates, TArray<float>* output);
 
+	void ResetGPUBoat(UTextureRenderTarget2D* input_output);
+
 	void UpdateGPUBoat(
 		float speed_input,
 		FVector2D velocity_input,

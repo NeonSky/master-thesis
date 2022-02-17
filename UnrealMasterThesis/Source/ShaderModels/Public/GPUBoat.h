@@ -33,6 +33,8 @@ public:
 		OutEnvironment.SetDefine(TEXT("N_THREADS_Y"), 1);
 	}
 
+	void ResetBoatTexture(FRHICommandListImmediate &RHI_cmd_list, UTextureRenderTarget2D* input_output);
+
 	void BuildAndExecuteGraph(
         FRHICommandListImmediate &RHI_cmd_list,
         float speed_input,
