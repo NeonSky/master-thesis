@@ -4,6 +4,14 @@
 
 #include "InputPawn.generated.h"
 
+struct UpdatePayload {
+    float speed_input;
+    FVector2D velocity_input;
+};
+
+// DECLARE_DELEGATE_OneParam(FOnFixedUpdate, UpdatePayload);
+DECLARE_EVENT_OneParam(AInputPawn, FOnFixedUpdate, UpdatePayload)
+
 UCLASS(Blueprintable)
 class UNREALMASTERTHESIS_API AInputPawn : public APawn {
 	GENERATED_BODY()
@@ -17,8 +25,10 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
-	FVector2D VelocityInput();
+	FVector2D VelocityInput(); // TODO: remove
 	float SpeedInput();
+
+    FOnFixedUpdate on_fixed_update;
 
 protected:
 

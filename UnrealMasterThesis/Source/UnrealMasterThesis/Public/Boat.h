@@ -36,7 +36,7 @@ public:
 	ABoat();
 
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	// virtual void Tick(float DeltaTime) override;
 
 protected:
 
@@ -44,6 +44,8 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+
+	void Update(UpdatePayload update_payload);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	AInputPawn* input_pawn;
@@ -82,6 +84,9 @@ private:
 	TArray<float> m_latest_elevations;
 
 	TArray<SubmergedTriangle> m_submerged_triangles;
+
+	FVector2D m_velocity_input;
+	float m_speed_input;
 
 	void FetchCollisionMeshData();
 

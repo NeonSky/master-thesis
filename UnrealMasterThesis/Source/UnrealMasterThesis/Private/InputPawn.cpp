@@ -17,6 +17,11 @@ void AInputPawn::BeginPlay() {
 void AInputPawn::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
+    UpdatePayload payload;
+    payload.speed_input = m_speed_input;
+    payload.velocity_input = m_velocity_input;
+    on_fixed_update.Broadcast(payload);
+
     APlayerController* controller = UGameplayStatics::GetPlayerController(GetWorld(), 0);
     controller->SetViewTarget(camera_target, FViewTargetTransitionParams());
 }

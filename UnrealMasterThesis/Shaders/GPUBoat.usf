@@ -65,10 +65,10 @@ void apply_user_input(inout Rigidbody rigidbody) {
         add_force_at_position(rigidbody, engine_power * VelocityInput.y * forward, rigidbody.position);
     }
 
-    float3 steer_pos = rigidbody.position + 100.0f * forward;
-    float engine_power = HORSEPOWER_TO_NEWTON * sqrt(SpeedInput) * sqrt(r_s); // Nerf sideways movement
+    // float3 steer_pos = rigidbody.position + 100.0f * forward;
+    // float engine_power = HORSEPOWER_TO_NEWTON * sqrt(SpeedInput) * sqrt(r_s); // Nerf sideways movement
 
-    add_force_at_position(rigidbody, engine_power * VelocityInput.x * right, steer_pos);
+    // add_force_at_position(rigidbody, engine_power * VelocityInput.x * right, steer_pos);
     // add_force_at_position(rigidbody, engine_power * VelocityInput.x * right, rigidbody.position);
 }
 
@@ -105,10 +105,10 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     // apply_gravity(rigidbody);
     // apply_buoyancy(rigidbody);
     // apply_resistance_forces(rigidbody);
-    // apply_user_input(rigidbody);
+    apply_user_input(rigidbody);
 
-    // update_rigidbody(rigidbody);
-    rigidbody.position += float3(0.1, 0.0, 0.0);
+    update_rigidbody(rigidbody);
+    // rigidbody.position += float3(0.1, 0.0, 0.0);
 
     // Store results
     InputOutputTexture[uint2(0,0)].rgb = rigidbody.position;

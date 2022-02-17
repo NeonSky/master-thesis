@@ -2,24 +2,24 @@
 
 #include "Kismet/GameplayStatics.h"
 
-AGPUBoat::AGPUBoat() {
-
-    // Configure Tick() to be called every frame.
-    PrimaryActorTick.bCanEverTick = true;
-}
+AGPUBoat::AGPUBoat() {}
 
 void AGPUBoat::BeginPlay() {
 	  Super::BeginPlay();
 
+    input_pawn->on_fixed_update.AddUObject<AGPUBoat>(this, &AGPUBoat::Update);
+
     m_shader_models_module.ResetGPUBoat(boat_rtt);
 }
 
-void AGPUBoat::Tick(float DeltaTime) {
-    Super::Tick(DeltaTime);
+// void AGPUBoat::Tick(float DeltaTime) {
+//     Super::Tick(DeltaTime);
+
+void AGPUBoat::Update(UpdatePayload update_payload) {
 
     m_shader_models_module.UpdateGPUBoat(
-        input_pawn->SpeedInput(),
-        input_pawn->VelocityInput(),
+        update_payload.speed_input,
+        update_payload.velocity_input,
         elevation_rtt,
         boat_rtt,
         readback_rtt,

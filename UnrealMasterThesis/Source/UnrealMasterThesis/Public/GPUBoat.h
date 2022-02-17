@@ -14,15 +14,14 @@ class UNREALMASTERTHESIS_API AGPUBoat : public AActor {
 public:	
 	AGPUBoat();
 
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 protected:
 
 	// Called once on "Play"
 	virtual void BeginPlay() override;
 
 private:
+
+	void Update(UpdatePayload update_payload);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	AInputPawn* input_pawn;
