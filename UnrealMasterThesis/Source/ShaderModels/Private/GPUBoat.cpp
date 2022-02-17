@@ -69,14 +69,19 @@ void GPUBoatShader::BuildAndExecuteGraph(
     FVector2D velocity_input,
     UTextureRenderTarget2D* elevation_texture,
     UTextureRenderTarget2D* input_output,
+    UTextureRenderTarget2D* readback_rt,
 	TArray<FFloat16Color>* readback_target) {
 
 	// We will use this to build a Rendering Dependency Graph (RDG).
 	FRDGBuilder graph_builder(RHI_cmd_list);
 
 	FRDGTextureRef h_tex_ref = register_texture3(graph_builder, elevation_texture, "ElevationRenderTarget");
-	FRDGTextureRef io_tex_ref = register_texture3(graph_builder, input_output, "InputOutputRenderTarget");
+
+	FRDGTextureRef io_tex_ref    = register_texture3(graph_builder, input_output, "InputOutputRenderTarget");
 	FRDGTextureUAVRef io_tex_UAV = graph_builder.CreateUAV(io_tex_ref);
+
+	FRDGTextureRef readback_tex_ref    = register_texture3(graph_builder, readback_rt, "ReadbackRenderTarget");
+	FRDGTextureUAVRef readback_tex_UAV = graph_builder.CreateUAV(readback_tex_ref);
 
 	TShaderMapRef<GPUBoatShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
@@ -85,6 +90,7 @@ void GPUBoatShader::BuildAndExecuteGraph(
     PassParameters->VelocityInput      = velocity_input;
     PassParameters->ElevationTexture   = h_tex_ref;
     PassParameters->InputOutputTexture = io_tex_UAV;
+    PassParameters->ReadbackTexture    = readback_tex_UAV;
 
     FComputeShaderUtils::AddPass(
         graph_builder,
@@ -96,7 +102,7 @@ void GPUBoatShader::BuildAndExecuteGraph(
 
 	TRefCountPtr<IPooledRenderTarget> PooledComputeTarget;
     if (readback_target) {
-        graph_builder.QueueTextureExtraction(io_tex_ref, &PooledComputeTarget);
+        graph_builder.QueueTextureExtraction(readback_tex_ref, &PooledComputeTarget);
     }
 
 	graph_builder.Execute();
@@ -104,10 +110,10 @@ void GPUBoatShader::BuildAndExecuteGraph(
     if (readback_target) {
         RHI_cmd_list.CopyToResolveTarget(
             PooledComputeTarget.GetReference()->GetRenderTargetItem().TargetableTexture,
-            input_output->GetRenderTargetResource()->TextureRHI,
+            readback_rt->GetRenderTargetResource()->TextureRHI,
             FResolveParams()
         );
-       *readback_target = readback_RTT(RHI_cmd_list, input_output);
+       *readback_target = readback_RTT(RHI_cmd_list, readback_rt);
     }
 
 }

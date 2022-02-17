@@ -78,11 +78,11 @@ void ABoat::Tick(float DeltaTime) {
 
   // ApplyGravity();
   // ApplyBuoyancy();
-  ApplyResistanceForces();
+  // ApplyResistanceForces();
   ApplyUserInput();
 
-  m_rigidbody.Update(0.02f); // We use a fixed delta time for physics
-  m_rigidbody.position.Z = 0.0f;
+  // m_rigidbody.Update(0.02f); // We use a fixed delta time for physics
+  m_rigidbody.position += FVector(0.1f, 0.0f, 0.0f);
 
   // DebugDrawVelocities();
 
@@ -351,7 +351,8 @@ void ABoat::ApplyResistanceForces() {
   for (auto& t : m_submerged_triangles) {
     submerged_area += t.area;
   }
-  float r_s = submerged_area / m_collision_mesh_surface_area;
+  // float r_s = submerged_area / m_collision_mesh_surface_area;
+  float r_s = 0.2f;
 
   float c_damp = 500.0f;
 
@@ -378,14 +379,16 @@ void ABoat::ApplyUserInput() {
   for (auto& t : m_submerged_triangles) {
     submerged_area += t.area;
   }
-  float r_s = submerged_area / m_collision_mesh_surface_area;
+  // float r_s = submerged_area / m_collision_mesh_surface_area;
+  float r_s = 0.2f;
 
   if (velocity_input.Y > 0.0f) {
 
     FVector engine_pos = transform.TransformPosition(FVector(-210.0f, 0.0f, -30.0f)) / METERS_TO_UNREAL_UNITS;
     float engine_power = HORSEPOWER_TO_NEWTON * speed_input * sqrt(r_s);
 
-    m_rigidbody.AddForceAtPosition(engine_power * velocity_input.Y * GetActorForwardVector(), engine_pos);
+    // m_rigidbody.AddForceAtPosition(engine_power * velocity_input.Y * GetActorForwardVector(), engine_pos);
+    m_rigidbody.AddForceAtPosition(engine_power * velocity_input.Y * GetActorForwardVector(), m_rigidbody.position);
 
   }
 

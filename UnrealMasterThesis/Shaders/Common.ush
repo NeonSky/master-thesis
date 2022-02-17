@@ -86,14 +86,14 @@ void update_rigidbody(inout Rigidbody rigidbody) {
     rigidbody.linear_velocity += linear_acceleration * dt;
     rigidbody.position        += rigidbody.linear_velocity * dt;
 
-    float3 angular_acceleration = rigidbody.torque / rigidbody.moment_of_inertia;
-    rigidbody.angular_velocity += angular_acceleration * dt;
+    // float3 angular_acceleration = rigidbody.torque / rigidbody.moment_of_inertia;
+    // rigidbody.angular_velocity += angular_acceleration * dt;
 
-    // Angular velocity orientation
-    float3 v = 0.5 * rigidbody.angular_velocity * dt;
-    float4 avo = float4(v, 0.0);
+    // // Angular velocity orientation
+    // float3 v = 0.5 * rigidbody.angular_velocity * dt;
+    // float4 avo = float4(v, 0.0);
 
-    rigidbody.orientation = normalize(rigidbody.orientation + qmul(avo, rigidbody.orientation));
+    // rigidbody.orientation = normalize(rigidbody.orientation + qmul(avo, rigidbody.orientation));
 }
 
 /* Ocean stuff */

@@ -122,6 +122,7 @@ void ShaderModelsModule::UpdateGPUBoat(
     FVector2D velocity_input,
 	UTextureRenderTarget2D* elevation_texture,
 	UTextureRenderTarget2D* input_output,
+	UTextureRenderTarget2D* readback_texture,
 	AActor* camera_target) {
 
  	TShaderMapRef<GPUBoatShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
@@ -129,13 +130,14 @@ void ShaderModelsModule::UpdateGPUBoat(
 	TArray<FFloat16Color> data;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, speed_input, velocity_input, elevation_texture, input_output, camera_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, speed_input, velocity_input, elevation_texture, input_output, readback_texture, camera_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
 			shader->BuildAndExecuteGraph(
 				RHI_cmd_list,
 				speed_input,
 				velocity_input,
 				elevation_texture,
 				input_output,
+				readback_texture,
 				camera_target ? (&data) : nullptr
 			);
 		}); 
@@ -148,7 +150,7 @@ void ShaderModelsModule::UpdateGPUBoat(
 		FVector pos = FVector(data[0].R, data[0].G, data[0].B);
 		FQuat rot   = FQuat(data[1].R, data[1].G, data[1].B, data[1].A);
 
-		UE_LOG(LogTemp, Warning, TEXT("Debug output: (%f, %f, %f, %f)"), data[4].R.GetFloat(), data[4].G.GetFloat(), data[4].B.GetFloat(), data[4].A.GetFloat());
+		UE_LOG(LogTemp, Warning, TEXT("Debug output: (%f, %f, %f, %f)"), data[2].R.GetFloat(), data[2].G.GetFloat(), data[2].B.GetFloat(), data[2].A.GetFloat());
 
 		camera_target->SetActorLocation(METERS_TO_UNREAL_UNITS * pos);
 		camera_target->SetActorRotation(rot, ETeleportType::None);

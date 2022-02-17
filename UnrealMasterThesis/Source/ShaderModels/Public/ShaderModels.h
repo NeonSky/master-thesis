@@ -25,6 +25,12 @@ public:
 
 	void SampleElevationPoints(UTextureRenderTarget2D* elevations, TArray<FVector2D> input_sample_coordinates, TArray<float>* output);
 
-	void UpdateGPUBoat(float speed_input, FVector2D velocity_input, UTextureRenderTarget2D* elevation_texture, UTextureRenderTarget2D* input_output, AActor* camera_target);
+	void UpdateGPUBoat(
+		float speed_input,
+		FVector2D velocity_input,
+		UTextureRenderTarget2D* elevation_texture,
+		UTextureRenderTarget2D* input_output,
+		UTextureRenderTarget2D* readback_texture,
+		AActor* camera_target);
 
 };

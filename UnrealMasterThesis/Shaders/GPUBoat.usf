@@ -6,6 +6,7 @@ float SpeedInput;
 float2 VelocityInput;
 Texture2D<float4> ElevationTexture;
 RWTexture2D<float4> InputOutputTexture;
+RWTexture2D<float4> ReadbackTexture;
 
 Rigidbody get_rigidbody() {
     Rigidbody rigidbody;
@@ -47,9 +48,10 @@ void apply_buoyancy(inout Rigidbody rigidbody) {
 
 void apply_user_input(inout Rigidbody rigidbody) {
 
-    // TODO: transform these
     float3 forward = rotate_vector_by_quat(float3(1.0, 0.0, 0.0), rigidbody.orientation);
     float3 right   = rotate_vector_by_quat(float3(0.0, 1.0, 0.0), rigidbody.orientation);
+
+    float r_s = 0.2; // TODO
 
     if (VelocityInput.y > 0.0) {
         float3 engine_pos = float3(-210.0, 0.0, -30.0) / M_TO_CM;
@@ -57,14 +59,14 @@ void apply_user_input(inout Rigidbody rigidbody) {
         // TODO: transform (i.e. also rotate) engine_pos
         engine_pos += rigidbody.position;
 
-        float engine_power = HORSEPOWER_TO_NEWTON * SpeedInput;
+        float engine_power = HORSEPOWER_TO_NEWTON * SpeedInput * sqrt(r_s);
 
         // add_force_at_position(rigidbody, engine_power * VelocityInput.y * forward, engine_pos);
         add_force_at_position(rigidbody, engine_power * VelocityInput.y * forward, rigidbody.position);
     }
 
     float3 steer_pos = rigidbody.position + 100.0f * forward;
-    float engine_power = HORSEPOWER_TO_NEWTON * sqrt(SpeedInput); // Nerf sideways movement
+    float engine_power = HORSEPOWER_TO_NEWTON * sqrt(SpeedInput) * sqrt(r_s); // Nerf sideways movement
 
     add_force_at_position(rigidbody, engine_power * VelocityInput.x * right, steer_pos);
     // add_force_at_position(rigidbody, engine_power * VelocityInput.x * right, rigidbody.position);
@@ -95,27 +97,27 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     Rigidbody rigidbody = get_rigidbody();
 
     // Debug: reset
-    // rigidbody.position = float3(5.0, 0.0, 0.0);
+    // rigidbody.position = float3(0.0, 0.0, 0.0);
     // rigidbody.orientation = float4(0.0, 0.0, 0.0, 1.0);
     // rigidbody.linear_velocity = float3(0.0, 0.0, 0.0);
     // rigidbody.angular_velocity = float3(0.0, 0.0, 0.0);
 
     // apply_gravity(rigidbody);
     // apply_buoyancy(rigidbody);
-    apply_resistance_forces(rigidbody);
-    apply_user_input(rigidbody);
+    // apply_resistance_forces(rigidbody);
+    // apply_user_input(rigidbody);
 
-    update_rigidbody(rigidbody);
-
-    // Debug
-    // InputOutputTexture[uint2(4,0)].rgb = M_TO_CM * rigidbody.linear_velocity;
-    InputOutputTexture[uint2(4,0)] = rigidbody.orientation;
-    // InputOutputTexture[uint2(4,0)].rgb = rigidbody.angular_velocity;
+    // update_rigidbody(rigidbody);
+    rigidbody.position += float3(0.1, 0.0, 0.0);
 
     // Store results
     InputOutputTexture[uint2(0,0)].rgb = rigidbody.position;
     InputOutputTexture[uint2(1,0)]     = rigidbody.orientation;
     InputOutputTexture[uint2(2,0)].rgb = rigidbody.linear_velocity;
     InputOutputTexture[uint2(3,0)].rgb = rigidbody.angular_velocity;
+
+    ReadbackTexture[uint2(0,0)].rgb = rigidbody.position;
+    ReadbackTexture[uint2(1,0)]     = rigidbody.orientation;
+    ReadbackTexture[uint2(2,0)]     = float4(0.1, 0.2, 0.3, 1.0); // debug
 
 }

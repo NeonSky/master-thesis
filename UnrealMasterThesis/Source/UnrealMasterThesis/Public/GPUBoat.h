@@ -39,5 +39,8 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UTextureRenderTarget2D* boat_rtt;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UTextureRenderTarget2D* readback_rtt;
+
 	ShaderModelsModule m_shader_models_module; // Reference to the ShaderModels module
 };

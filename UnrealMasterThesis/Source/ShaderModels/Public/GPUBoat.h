@@ -17,6 +17,7 @@ public:
 		SHADER_PARAMETER(FVector2D, VelocityInput)
 
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, ElevationTexture)
+		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, ReadbackTexture)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, InputOutputTexture)
 
 	END_SHADER_PARAMETER_STRUCT()
@@ -38,6 +39,7 @@ public:
         FVector2D velocity_input,
         UTextureRenderTarget2D* elevation_texture,
         UTextureRenderTarget2D* input_output,
+        UTextureRenderTarget2D* readback_texture,
         TArray<FFloat16Color>* readback_target);
 
 };

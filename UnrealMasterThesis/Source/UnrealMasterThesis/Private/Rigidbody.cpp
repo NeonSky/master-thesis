@@ -29,14 +29,14 @@ void Rigidbody::Update(float dt) {
   this->linear_velocity += linear_acceleration * dt;
   this->position += linear_velocity * dt;
 
-  FVector angular_acceleration = this->torque / this->moment_of_inertia;
-  this->angular_velocity += angular_acceleration * dt;
+  // FVector angular_acceleration = this->torque / this->moment_of_inertia;
+  // this->angular_velocity += angular_acceleration * dt;
 
-  // Angular velocity orientation
-  auto v = 0.5f * this->angular_velocity * dt;
-  FQuat avo = FQuat(v.X, v.Y, v.Z, 0.0);
+  // // Angular velocity orientation
+  // auto v = 0.5f * this->angular_velocity * dt;
+  // FQuat avo = FQuat(v.X, v.Y, v.Z, 0.0);
 
-  this->orientation = (this->orientation + avo * this->orientation).GetNormalized();
+  // this->orientation = (this->orientation + avo * this->orientation).GetNormalized();
 
   // Reset forces
   this->force = FVector(0.0f);
