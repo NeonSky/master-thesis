@@ -7,10 +7,12 @@ int L;
 RWTexture2D<float4> obstructionMap_rtt;
 RWTexture2D<float4> h_rtt;
 RWTexture2D<float4> v_rtt;
+RWTexture2D<float4> hPrev_rtt;
+RWTexture2D<float4> vPrev_rtt;
 float xPos;
 float yPos;
-int offsetSign_x;
-int offsetSign_y;
+int offset_x;
+int offset_y;
 
 
 float T(float x_y){
@@ -46,7 +48,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	float2 IDxy = float2(id.xy) - float(N);// / 2.0;
 	float xx = xPos - N / 2.0;
 	float yy = yPos - N / 2.0;
-
+	int2 offID = int2(id.x + offset_x + 1, id.y + offset_y);
 
 
 	obstructionMap_rtt[id.xy] = float4(1.0, 0.0, 0.0, 1.0);
@@ -73,24 +75,17 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 			
 	}
 
-	//obstructionMap_rtt[id.xy] = float4(submergedTriangleVertices[0][0], submergedTriangleVertices[0][1], submergedTriangleVertices[1][0], submergedTriangleVertices[1][1]);
-	//obstructionMap_rtt[id.xy] = float4(id.x, id.y, submergedTriangleVertices[2][0], submergedTriangleVertices[2][1]);
-
-
-
-
-
-	
-	float obs = 1;
-	float r = 8;
-	if (((IDxy.x - xx)*(IDxy.x - xx) + (IDxy.y -yy)*(IDxy.y - yy)) < r * r){
-		obs = 0;
-	}
-	
+	// Centered circle obstruction.
+	//float obs = 1;
+	//float r = 8;
+	//if (((IDxy.x - xx)*(IDxy.x - xx) + (IDxy.y -yy)*(IDxy.y - yy)) < r * r){
+	//	obs = 0;
+	//}
 	//obstructionMap_rtt[id.xy] = float4(obs, 0.0, 0.0, 1.0);
-	float h = h_rtt[id.xy].r;
-	float v = v_rtt[id.xy].r;
-	float hIm = h_rtt[id.xy].g; // TODO: this should not be here...
+	
+	float h = h_rtt[offID.xy].r;
+	float v = v_rtt[offID.xy].r;
+	float hIm = h_rtt[offID.xy].g; // TODO: This should not be here. Previous step (scale) puts g = 0... but for some reason it does not work without it...
 	h *= obstructionMap_rtt[id.xy].r;
 	float scale = 0.15;
 	float obsCompliment = 1.0 - obstructionMap_rtt[id.xy];
@@ -104,8 +99,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 
 	h = h * T_x * T_y;
 
-	// when the simulation moves, 
-	int2 offID = int2(id.x + offsetSign_x * N / 3, id.y + offsetSign_y * N / 3);
+	// when the simulation moves
 	if((offID.x >= 0 && offID.x <= 255) && (offID.y >= 0 && offID.y <= 255)){
 		h = h;
 		v = v;	
@@ -115,11 +109,6 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 		v = 0.0;
 	}
 
-
-
-	h_rtt[id.xy] = float4(h, hIm, xPos / 256.0, yPos / 256.0);
-
-	float4 vv = v_rtt[id.xy];
-	vv.r = v;
-	v_rtt[id.xy] = vv;
+	h_rtt[id.xy] = float4(h, hIm, 0.0, 1.0);
+	v_rtt[id.xy] = float4(v, 0, 0.0, 1.0);
 }

@@ -42,16 +42,22 @@ public:
 		UTextureRenderTarget2D* result
 	);
 
-	void ComputeScale(UTextureRenderTarget2D* input_output_rtt, float scale);
+	void ComputeScale(
+		UTextureRenderTarget2D* input_output_rtt, 
+		UTextureRenderTarget2D* copy_rtt,
+		float scale);
+
 	void ComputeObstruction(
 		TArray<FVector4> SubmergedTriangles,
 		int L,
 		UTextureRenderTarget2D* obstructionMap_rtt,
 		UTextureRenderTarget2D* h_rtt,
 		UTextureRenderTarget2D* v_rtt,
+		UTextureRenderTarget2D* hPrev_rtt,
+		UTextureRenderTarget2D* vPrev_rtt,
 		float xPos, 
 		float yPos,
-		int offsetSign_x,
-		int offsetSign_y);
+		int offset_x,
+		int offset_y);
 
 };
