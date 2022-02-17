@@ -188,18 +188,23 @@ void ShaderModelsModule::ComputeAdd(
 
 }
 
-void ShaderModelsModule::ComputeScale(UTextureRenderTarget2D* input_output_rtt, float scale) {
+void ShaderModelsModule::ComputeScale(
+	UTextureRenderTarget2D* input_output_rtt, 
+	UTextureRenderTarget2D* copy_rtt,
+	float scale) {
 
 	TShaderMapRef<ScaleShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	UTextureRenderTarget2D* input_output_rtt_param = input_output_rtt;
+	UTextureRenderTarget2D* copy_rtt_param = input_output_rtt;
 	float scale_param = scale;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, input_output_rtt_param, scale_param](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, input_output_rtt_param, copy_rtt_param, scale_param](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
 			input_output_rtt_param,
+			copy_rtt_param,
 			scale_param
 		);
 	});
@@ -212,22 +217,26 @@ void ShaderModelsModule::ComputeObstruction(
 	UTextureRenderTarget2D* obstructionMap_rtt, 
 	UTextureRenderTarget2D* h_rtt, 
 	UTextureRenderTarget2D* v_rtt,
+	UTextureRenderTarget2D* hPrev_rtt,
+	UTextureRenderTarget2D* vPrev_rtt,
 	float xPos, 
 	float yPos,
-	int offsetSign_x,
-	int offsetSign_y) {
+	int offset_x,
+	int offset_y) {
 
 	TShaderMapRef<ObstructionShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	UTextureRenderTarget2D* obstructionMap_rtt_param = obstructionMap_rtt;
 	UTextureRenderTarget2D* h_rtt_param = h_rtt;
 	UTextureRenderTarget2D* v_rtt_param = v_rtt;
+	UTextureRenderTarget2D* hPrev_rtt_param = h_rtt;
+	UTextureRenderTarget2D* vPrev_rtt_param = v_rtt;
 	float xPos_param = xPos;
 	float yPos_param = yPos;
 	int L_param = L;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, SubmergedTriangles, L_param, obstructionMap_rtt_param, h_rtt_param, v_rtt_param, xPos_param, yPos_param, offsetSign_x, offsetSign_y](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, SubmergedTriangles, L_param, obstructionMap_rtt_param, h_rtt_param, v_rtt_param, hPrev_rtt_param, vPrev_rtt_param, xPos_param, yPos_param, offset_x, offset_y](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
 			SubmergedTriangles,
@@ -236,10 +245,12 @@ void ShaderModelsModule::ComputeObstruction(
 			obstructionMap_rtt_param,
 			h_rtt_param,
 			v_rtt_param,
+			hPrev_rtt_param,
+			vPrev_rtt_param,
 			xPos_param,
 			yPos_param,
-			offsetSign_x,
-			offsetSign_y
+			offset_x,
+			offset_y
 		);
 	});
 

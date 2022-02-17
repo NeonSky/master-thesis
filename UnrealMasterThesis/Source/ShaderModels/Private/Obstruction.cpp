@@ -109,10 +109,12 @@ void ObstructionShader::BuildAndExecuteGraph(
     UTextureRenderTarget2D* obstructionMap_rtt,
     UTextureRenderTarget2D* h_rtt,
     UTextureRenderTarget2D* v_rtt,
+    UTextureRenderTarget2D* hPrev_rtt,
+    UTextureRenderTarget2D* vPrev_rtt,
     float xPos,
     float yPos,
-    int offsetSign_x,
-    int offsetSign_y) {
+    int offset_x,
+    int offset_y) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
 
@@ -133,8 +135,8 @@ void ObstructionShader::BuildAndExecuteGraph(
 
     PassParameters->numTriangles = numTriangles;
 	PassParameters->L = L;
-    PassParameters->offsetSign_x = offsetSign_x;
-    PassParameters->offsetSign_y = offsetSign_y;
+    PassParameters->offset_x = offset_x;
+    PassParameters->offset_y = offset_y;
 
 
 
@@ -145,9 +147,17 @@ void ObstructionShader::BuildAndExecuteGraph(
     FRDGTextureRef io_tex_ref3 = register_texture4_obs(graph_builder, v_rtt, "InputOutputRenderTarget3");
     auto uav3 = graph_builder.CreateUAV(io_tex_ref3);
 
+    FRDGTextureRef io_tex_ref4 = register_texture4_obs(graph_builder, hPrev_rtt, "InputOutputRenderTarget4");
+    auto uav4 = graph_builder.CreateUAV(io_tex_ref4);
+
+    FRDGTextureRef io_tex_ref5 = register_texture4_obs(graph_builder, vPrev_rtt, "InputOutputRenderTarget4");
+    auto uav5 = graph_builder.CreateUAV(io_tex_ref5);
+
     PassParameters->obstructionMap_rtt = uav;
     PassParameters->h_rtt = uav2;
     PassParameters->v_rtt = uav3;
+    PassParameters->hPrev_rtt = uav4;
+    PassParameters->vPrev_rtt = uav5;
     PassParameters->xPos = xPos;
     PassParameters->yPos = yPos;
     

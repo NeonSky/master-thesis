@@ -14,7 +14,7 @@ public:
 		BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, input_output_rtt)
-		//SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, output_rtt)
+		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, copy_rtt)
 		SHADER_PARAMETER(float, scale)
 
 	END_SHADER_PARAMETER_STRUCT()
@@ -35,6 +35,7 @@ public:
 	void BuildAndExecuteGraph(
 		FRHICommandListImmediate& RHI_cmd_list,
 		UTextureRenderTarget2D* input_output_rtt,
+		UTextureRenderTarget2D* copy_rtt,
 		float scale
 	);
 private:

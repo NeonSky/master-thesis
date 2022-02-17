@@ -139,6 +139,7 @@ void ReadbackRTT3(FRHICommandListImmediate& RHI_cmd_list, UTextureRenderTarget2D
 void ScaleShader::BuildAndExecuteGraph(
     FRHICommandListImmediate& RHI_cmd_list,
     UTextureRenderTarget2D* input_output_rtt,
+    UTextureRenderTarget2D* copy_rtt,
     float scale) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
@@ -148,8 +149,11 @@ void ScaleShader::BuildAndExecuteGraph(
 
 	FRDGTextureRef io_tex_ref = register_texture4(graph_builder, input_output_rtt, "InputOutputRenderTarget");
     auto uav = graph_builder.CreateUAV(io_tex_ref);
+    FRDGTextureRef io_tex_ref2 = register_texture4(graph_builder, copy_rtt, "CopyRenderTarget");
+    auto uav2 = graph_builder.CreateUAV(io_tex_ref2);
 
     PassParameters->input_output_rtt = uav;
+    PassParameters->copy_rtt = uav2;
     PassParameters->scale = scale;
     
 
@@ -163,14 +167,21 @@ void ScaleShader::BuildAndExecuteGraph(
         FIntVector(TEMP_TEXTURE_N, TEMP_TEXTURE_N, 1)
     );
 
-    TRefCountPtr<IPooledRenderTarget> PooledComputeTarget2_Scale;
-    graph_builder.QueueTextureExtraction(io_tex_ref, &PooledComputeTarget2_Scale);
+    TRefCountPtr<IPooledRenderTarget> PooledComputeTarget_Scale;
+    graph_builder.QueueTextureExtraction(io_tex_ref, &PooledComputeTarget_Scale);
+    TRefCountPtr<IPooledRenderTarget> PooledComputeTarget_Scale2;
+    graph_builder.QueueTextureExtraction(io_tex_ref2, &PooledComputeTarget_Scale2);
 
     graph_builder.Execute();
 
     RHI_cmd_list.CopyToResolveTarget(
-        PooledComputeTarget2_Scale.GetReference()->GetRenderTargetItem().TargetableTexture,
+        PooledComputeTarget_Scale.GetReference()->GetRenderTargetItem().TargetableTexture,
         input_output_rtt->GetRenderTargetResource()->TextureRHI,
+        FResolveParams()
+    );
+    RHI_cmd_list.CopyToResolveTarget(
+        PooledComputeTarget_Scale2.GetReference()->GetRenderTargetItem().TargetableTexture,
+        copy_rtt->GetRenderTargetResource()->TextureRHI,
         FResolveParams()
     );
    
