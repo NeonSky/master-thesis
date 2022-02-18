@@ -281,6 +281,9 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, scale);
 		//UE_LOG(LogTemp, Error, TEXT("Submerged size: %d"), submerged.Num());
 		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, x, y, off_x, off_y);
+
+		x += 39.06f * 2.0f;
+		//y += 20;
 	}
 	
 		
