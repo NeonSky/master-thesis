@@ -19,8 +19,10 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 
 	// TODO: rewrite logic... we should not need so many If/Else
 
-	eWave_hPrev[id.xy] = eWave_h[id.xy];
-	eWave_vPrev[id.xy] = eWave_v[id.xy];
+	//eWave_hPrev[id.xy] = eWave_h[id.xy];
+	//eWave_vPrev[id.xy] = eWave_v[id.xy];
+	float4 hPrev = eWave_h[id.xy];
+	float4 vPrev = eWave_v[id.xy];
 
 	float LL = L;
 	LL = 1.0f;
@@ -50,11 +52,11 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	int2 offID = int2(id.x + offsetSign_x * 128, id.y + offsetSign_y * 128);
 	if (m_k != 0)
 	{
-		float hRe = coswk*eWave_hPrev[offID.xy].r + (m_k / w)*sinwk*eWave_vPrev[offID.xy].r; // eq 19
-		float hIm = coswk*eWave_hPrev[offID.xy].g + (m_k / w)*sinwk*eWave_vPrev[offID.xy].g; // eq 19
+		float hRe = coswk*hPrev.r + (m_k / w)*sinwk*vPrev.r; // eq 19
+		float hIm = coswk*hPrev.g + (m_k / w)*sinwk*vPrev.g; // eq 19
 
-		float vRe = coswk*eWave_vPrev[offID.xy].r - (gravity / w)*sinwk*eWave_hPrev[offID.xy].r; // eq 20	
-		float vIm = coswk*eWave_vPrev[offID.xy].g - (gravity / w)*sinwk*eWave_hPrev[offID.xy].g; // eq 20
+		float vRe = coswk*vPrev.r - (gravity / w)*sinwk*hPrev.r; // eq 20	
+		float vIm = coswk*vPrev.g - (gravity / w)*sinwk*hPrev.g; // eq 20
 		
 		eWave_h[id.xy] = float4(hRe, hIm, 0.0, 1.0);
 		eWave_v[id.xy] = float4(vRe, vIm, 0.0, 1.0);
