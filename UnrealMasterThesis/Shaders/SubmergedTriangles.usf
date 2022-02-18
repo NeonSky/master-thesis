@@ -1,0 +1,18 @@
+#include "/Engine/Public/Platform.ush"
+
+#include "Common.ush"
+
+RWStructuredBuffer<float> OutputBuffer;
+
+[numthreads(N_THREADS_X, 1, 1)]
+void MainCompute(uint3 id : SV_DispatchThreadID) {
+
+    OutputBuffer[id.x] = 2.0 * id.x;
+
+    // OutputBuffer[0] = 0.0;
+    // OutputBuffer[1] = 1.0;
+    // OutputBuffer[2] = 2.0;
+    // OutputBuffer[3] = 3.0;
+    // OutputBuffer[4] = 4.0;
+
+}

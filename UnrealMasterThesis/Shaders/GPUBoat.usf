@@ -4,9 +4,25 @@
 
 float SpeedInput;
 float2 VelocityInput;
+
 Texture2D<float4> ElevationTexture;
+StructuredBuffer<float> SubmergedTrianglesBuffer;
+
 RWTexture2D<float4> InputOutputTexture;
 RWTexture2D<float4> ReadbackTexture;
+
+// struct SubmergedTriangle {
+// 	float3 v_L;
+// 	float3 v_M;
+// 	float3 v_H;
+
+// 	float3 normal;
+// 	float3 centroid;
+// 	float height;
+// 	float area;
+// 	float velocity;
+// };
+// SubmergedTriangle submerged_triangles;
 
 Rigidbody get_rigidbody() {
     Rigidbody rigidbody;
@@ -117,6 +133,6 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     ReadbackTexture[uint2(0,0)].rgb = rigidbody.position;
     ReadbackTexture[uint2(1,0)]     = rigidbody.orientation;
-    // ReadbackTexture[uint2(2,0)]     = float4(0.1, 0.2, 0.3, 1.0); // debug
+    ReadbackTexture[uint2(2,0)]     = SubmergedTrianglesBuffer[2];
 
 }

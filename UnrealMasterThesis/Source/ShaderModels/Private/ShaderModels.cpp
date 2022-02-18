@@ -3,11 +3,12 @@
 #include "Globals/StatelessHelpers.h"
 
 #include "Butterfly.h"
-#include "ButterflyTexture.h"
-#include "FourierComponents.h"
 #include "ButterflyPostProcess.h"
+#include "ButterflyTexture.h"
 #include "ElevationSampler.h"
+#include "FourierComponents.h"
 #include "GPUBoat.h"
+#include "SubmergedTriangles.h"
 
 #include "GlobalShader.h"
 #include "ShaderCore.h" 
@@ -138,22 +139,39 @@ void ShaderModelsModule::UpdateGPUBoat(
 	UTextureRenderTarget2D* readback_texture,
 	AActor* camera_target) {
 
- 	TShaderMapRef<GPUBoatShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+	TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer;
+	{
+		TShaderMapRef<SubmergedTrianglesShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+		ENQUEUE_RENDER_COMMAND(shader)(
+			[shader, &submerged_triangles_buffer](FRHICommandListImmediate& RHI_cmd_list) {
+				shader->BuildAndExecuteGraph(
+					RHI_cmd_list,
+					&submerged_triangles_buffer
+				);
+			}); 
+		// TODO: Maybe not needed? In Vulkan we would use a semaphore here instead of a fence.
+		FRenderCommandFence fence;
+		fence.BeginFence();
+		fence.Wait();
+	}
 
 	TArray<FFloat16Color> data;
-
-	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, speed_input, velocity_input, elevation_texture, input_output, readback_texture, camera_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
-			shader->BuildAndExecuteGraph(
-				RHI_cmd_list,
-				speed_input,
-				velocity_input,
-				elevation_texture,
-				input_output,
-				readback_texture,
-				camera_target ? (&data) : nullptr
-			);
-		}); 
+	{
+		TShaderMapRef<GPUBoatShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+		ENQUEUE_RENDER_COMMAND(shader)(
+			[shader, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, input_output, readback_texture, camera_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
+				shader->BuildAndExecuteGraph(
+					RHI_cmd_list,
+					speed_input,
+					velocity_input,
+					elevation_texture,
+					submerged_triangles_buffer,
+					input_output,
+					readback_texture,
+					camera_target ? (&data) : nullptr
+				);
+			}); 
+	}
 
 	if (camera_target) {
 		FRenderCommandFence fence;

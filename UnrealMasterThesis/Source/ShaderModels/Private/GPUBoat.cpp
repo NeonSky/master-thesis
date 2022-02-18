@@ -32,6 +32,46 @@ FRDGTextureRef register_texture3(
 	return RDG_tex_ref;
 }
 
+FRDGBufferSRVRef register_buffer(
+	FRDGBuilder& graph_builder,
+    TRefCountPtr<FRDGPooledBuffer> buffer,
+	FString name) {
+
+	// FRenderTarget* RenderTargetResource = render_target->GetRenderTargetResource();
+	// FTexture2DRHIRef RenderTargetRHI = RenderTargetResource->GetRenderTargetTexture();
+
+	// FPooledRenderTargetDesc RenderTargetDesc = FPooledRenderTargetDesc::Create2DDesc(
+	// 	RenderTargetResource->GetSizeXY(),
+	// 	RenderTargetRHI->GetFormat(),
+	// 	FClearValueBinding::Black,
+	// 	TexCreate_None,
+	// 	TexCreate_RenderTargetable | TexCreate_ShaderResource | TexCreate_UAV,
+	// 	false);
+    // NOTE: there is also FRDGBufferDesc::CreateStructuredDesc
+    // FRDGBufferDesc BufferDesc = FRDGBufferDesc::CreateBufferDesc(4, 5); // https://docs.unrealengine.com/4.26/en-US/API/Runtime/RenderCore/FRDGBufferDesc/CreateBufferDesc/
+
+	// TRefCountPtr<IPooledRenderTarget> PooledRenderTarget;
+    // TRefCountPtr<FPooledRDGBuffer> PooledBuffer;
+
+	// FSceneRenderTargetItem RenderTargetItem;
+	// RenderTargetItem.TargetableTexture = RenderTargetRHI;
+	// RenderTargetItem.ShaderResourceTexture = RenderTargetRHI;
+
+	// GRenderTargetPool.CreateUntrackedElement(RenderTargetDesc, PooledRenderTarget, RenderTargetItem);
+
+    // FRDGBufferRef RDG_ref = graph_builder.RegisterExternalBuffer(PooledBuffer, *name, ERDGBufferFlags::MultiFrame);
+    FRDGBufferRef RDG_ref = graph_builder.RegisterExternalBuffer(buffer, *name, ERDGBufferFlags::MultiFrame);
+	// FRDGTextureRef RDG_tex_ref = graph_builder.RegisterExternalTexture(PooledRenderTarget, *name);
+
+   // https://docs.unrealengine.com/4.27/en-US/API/Runtime/RenderCore/FRDGBuilder/RegisterExternalBuffer/
+   // https://docs.unrealengine.com/4.27/en-US/API/Runtime/RenderCore/CreateStructuredBuffer/
+
+   // THIS: https://github.com/n-isaeff/UE4_FluidSim/blob/654a4b204be378f00610cbcf702dcb2d8eebf614/Plugins/BeachSimulation/Source/BeachSimulation/Private/CSSimulationComponent.cpp#L108
+
+
+	return graph_builder.CreateSRV(RDG_ref);
+}
+
 TArray<FFloat16Color> readback_RTT(FRHICommandListImmediate &RHI_cmd_list, UTextureRenderTarget2D* rtt) {
 	FRHIResourceCreateInfo CreateInfo;
 	FTexture2DRHIRef readback_tex = RHICreateTexture2D(
@@ -63,7 +103,10 @@ TArray<FFloat16Color> readback_RTT(FRHICommandListImmediate &RHI_cmd_list, UText
     return data;
 }
 
-void GPUBoatShader::ResetBoatTexture(FRHICommandListImmediate &RHI_cmd_list, UTextureRenderTarget2D* input_output) {
+void GPUBoatShader::ResetBoatTexture(
+	FRHICommandListImmediate &RHI_cmd_list,
+	UTextureRenderTarget2D* input_output) {
+
 	FTexture2DRHIRef tex_ref = input_output->GetRenderTargetResource()->GetTextureRenderTarget2DResource()->GetTextureRHI();
 
 	TArray<FLinearColor> pixel_data = {
@@ -87,6 +130,7 @@ void GPUBoatShader::BuildAndExecuteGraph(
     float speed_input,
     FVector2D velocity_input,
     UTextureRenderTarget2D* elevation_texture,
+	TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer,
     UTextureRenderTarget2D* input_output,
     UTextureRenderTarget2D* readback_rt,
 	TArray<FFloat16Color>* readback_target) {
@@ -105,9 +149,13 @@ void GPUBoatShader::BuildAndExecuteGraph(
 	TShaderMapRef<GPUBoatShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
     FParameters* PassParameters = graph_builder.AllocParameters<GPUBoatShader::FParameters>();
-    PassParameters->SpeedInput         = speed_input;
-    PassParameters->VelocityInput      = velocity_input;
-    PassParameters->ElevationTexture   = h_tex_ref;
+
+    PassParameters->SpeedInput    = speed_input;
+    PassParameters->VelocityInput = velocity_input;
+
+    PassParameters->ElevationTexture         = h_tex_ref;
+    PassParameters->SubmergedTrianglesBuffer = register_buffer(graph_builder, submerged_triangles_buffer, "SubmergedTrianglesBuffer");
+
     PassParameters->InputOutputTexture = io_tex_UAV;
     PassParameters->ReadbackTexture    = readback_tex_UAV;
 

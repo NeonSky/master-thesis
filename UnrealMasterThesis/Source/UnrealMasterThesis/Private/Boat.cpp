@@ -382,8 +382,8 @@ void ABoat::ApplyUserInput() {
   for (auto& t : m_submerged_triangles) {
     submerged_area += t.area;
   }
-  // float r_s = submerged_area / m_collision_mesh_surface_area;
-  float r_s = 0.2f;
+  float r_s = submerged_area / m_collision_mesh_surface_area;
+  // float r_s = 0.2f;
 
   FVector forward = GetActorForwardVector();
   FVector right = GetActorRightVector();
