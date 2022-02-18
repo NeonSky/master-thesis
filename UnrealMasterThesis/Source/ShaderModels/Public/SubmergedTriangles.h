@@ -5,6 +5,11 @@
 #include "ShaderParameterStruct.h"
 #include "Modules/ModuleManager.h"
 
+struct GPUSumbergedTriangle {
+	FVector4 normal_and_height;
+	FVector4 center_and_area;
+};
+
 class SHADERMODELS_API SubmergedTrianglesShader : public FGlobalShader {
 public:
 
@@ -13,7 +18,7 @@ public:
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, ) 
 
-		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<float>, OutputBuffer)
+		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<GPUSumbergedTriangle>, OutputBuffer)
 
 	END_SHADER_PARAMETER_STRUCT()
 
@@ -31,8 +36,4 @@ public:
         FRHICommandListImmediate &RHI_cmd_list,
         TRefCountPtr<FRDGPooledBuffer>* output_buffer);
 
-private:
-
-  // https://forums.unrealengine.com/t/assertion-failed-alignedoffset-typelayout-size/243865
-  // LAYOUT_FIELD(TRefCountPtr<FRDGPooledBuffer>, m_triangle_data)
 };

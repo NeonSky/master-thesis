@@ -2,17 +2,16 @@
 
 #include "Common.ush"
 
-RWStructuredBuffer<float> OutputBuffer;
+RWStructuredBuffer<SubmergedTriangle> OutputBuffer;
 
 [numthreads(N_THREADS_X, 1, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
-    OutputBuffer[id.x] = 2.0 * id.x;
+    SubmergedTriangle t;
 
-    // OutputBuffer[0] = 0.0;
-    // OutputBuffer[1] = 1.0;
-    // OutputBuffer[2] = 2.0;
-    // OutputBuffer[3] = 3.0;
-    // OutputBuffer[4] = 4.0;
+    t.normal_and_height = float4(id.x, 2.3, 3.0, 1.0);
+    t.center_and_area   = float4(4.8, 5.5, 6.0, 1.0);
+
+    OutputBuffer[id.x] = t;
 
 }

@@ -37,38 +37,7 @@ FRDGBufferSRVRef register_buffer(
     TRefCountPtr<FRDGPooledBuffer> buffer,
 	FString name) {
 
-	// FRenderTarget* RenderTargetResource = render_target->GetRenderTargetResource();
-	// FTexture2DRHIRef RenderTargetRHI = RenderTargetResource->GetRenderTargetTexture();
-
-	// FPooledRenderTargetDesc RenderTargetDesc = FPooledRenderTargetDesc::Create2DDesc(
-	// 	RenderTargetResource->GetSizeXY(),
-	// 	RenderTargetRHI->GetFormat(),
-	// 	FClearValueBinding::Black,
-	// 	TexCreate_None,
-	// 	TexCreate_RenderTargetable | TexCreate_ShaderResource | TexCreate_UAV,
-	// 	false);
-    // NOTE: there is also FRDGBufferDesc::CreateStructuredDesc
-    // FRDGBufferDesc BufferDesc = FRDGBufferDesc::CreateBufferDesc(4, 5); // https://docs.unrealengine.com/4.26/en-US/API/Runtime/RenderCore/FRDGBufferDesc/CreateBufferDesc/
-
-	// TRefCountPtr<IPooledRenderTarget> PooledRenderTarget;
-    // TRefCountPtr<FPooledRDGBuffer> PooledBuffer;
-
-	// FSceneRenderTargetItem RenderTargetItem;
-	// RenderTargetItem.TargetableTexture = RenderTargetRHI;
-	// RenderTargetItem.ShaderResourceTexture = RenderTargetRHI;
-
-	// GRenderTargetPool.CreateUntrackedElement(RenderTargetDesc, PooledRenderTarget, RenderTargetItem);
-
-    // FRDGBufferRef RDG_ref = graph_builder.RegisterExternalBuffer(PooledBuffer, *name, ERDGBufferFlags::MultiFrame);
     FRDGBufferRef RDG_ref = graph_builder.RegisterExternalBuffer(buffer, *name, ERDGBufferFlags::MultiFrame);
-	// FRDGTextureRef RDG_tex_ref = graph_builder.RegisterExternalTexture(PooledRenderTarget, *name);
-
-   // https://docs.unrealengine.com/4.27/en-US/API/Runtime/RenderCore/FRDGBuilder/RegisterExternalBuffer/
-   // https://docs.unrealengine.com/4.27/en-US/API/Runtime/RenderCore/CreateStructuredBuffer/
-
-   // THIS: https://github.com/n-isaeff/UE4_FluidSim/blob/654a4b204be378f00610cbcf702dcb2d8eebf614/Plugins/BeachSimulation/Source/BeachSimulation/Private/CSSimulationComponent.cpp#L108
-
-
 	return graph_builder.CreateSRV(RDG_ref);
 }
 

@@ -5,6 +5,8 @@
 #include "ShaderParameterStruct.h"
 #include "Modules/ModuleManager.h"
 
+#include "SubmergedTriangles.h"
+
 class SHADERMODELS_API GPUBoatShader : public FGlobalShader {
 public:
 
@@ -17,7 +19,7 @@ public:
 		SHADER_PARAMETER(FVector2D, VelocityInput)
 
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, ElevationTexture)
-		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<float>, SubmergedTrianglesBuffer)
+		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<GPUSumbergedTriangle>, SubmergedTrianglesBuffer)
 
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, InputOutputTexture)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, ReadbackTexture)
@@ -31,8 +33,7 @@ public:
 	static inline void ModifyCompilationEnvironment(const FGlobalShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment) {
 		FGlobalShader::ModifyCompilationEnvironment(Parameters, OutEnvironment);
 
-		OutEnvironment.SetDefine(TEXT("N_THREADS_X"), 1);
-		OutEnvironment.SetDefine(TEXT("N_THREADS_Y"), 1);
+		OutEnvironment.SetDefine(TEXT("N_TRIANGLES"), 140);
 	}
 
 	void ResetBoatTexture(FRHICommandListImmediate &RHI_cmd_list, UTextureRenderTarget2D* input_output);

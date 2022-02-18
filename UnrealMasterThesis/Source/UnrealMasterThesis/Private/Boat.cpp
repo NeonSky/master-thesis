@@ -383,7 +383,8 @@ void ABoat::ApplyUserInput() {
     submerged_area += t.area;
   }
   float r_s = submerged_area / m_collision_mesh_surface_area;
-  // float r_s = 0.2f;
+  // float r_s = 0.2f; // TODO: test this first
+  UE_LOG(LogTemp, Warning, TEXT("CPU r_s: %f"), r_s);
 
   FVector forward = GetActorForwardVector();
   FVector right = GetActorRightVector();

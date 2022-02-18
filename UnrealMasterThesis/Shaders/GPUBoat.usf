@@ -6,23 +6,11 @@ float SpeedInput;
 float2 VelocityInput;
 
 Texture2D<float4> ElevationTexture;
-StructuredBuffer<float> SubmergedTrianglesBuffer;
+StructuredBuffer<SubmergedTriangle> SubmergedTrianglesBuffer;
 
 RWTexture2D<float4> InputOutputTexture;
 RWTexture2D<float4> ReadbackTexture;
 
-// struct SubmergedTriangle {
-// 	float3 v_L;
-// 	float3 v_M;
-// 	float3 v_H;
-
-// 	float3 normal;
-// 	float3 centroid;
-// 	float height;
-// 	float area;
-// 	float velocity;
-// };
-// SubmergedTriangle submerged_triangles;
 
 Rigidbody get_rigidbody() {
     Rigidbody rigidbody;
@@ -53,8 +41,6 @@ void apply_buoyancy(inout Rigidbody rigidbody) {
     // float height = rigidbody.position.z - elevation;
     float height = rigidbody.position.z;
 
-    ReadbackTexture[uint2(2,0)] = float4(height, 0.0, 0.0, 1.0); // debug
-
     if (height < 0.0) {
         height = -height;
         float area = 27.045519; // manually copied from CPU
@@ -69,7 +55,20 @@ void apply_user_input(inout Rigidbody rigidbody) {
     float3 right   = rotate_vector_by_quat(float3(0.0, 1.0, 0.0), rigidbody.orientation);
     float3 up      = rotate_vector_by_quat(float3(0.0, 0.0, 1.0), rigidbody.orientation);
 
-    float r_s = 0.2; // TODO
+    float tot_area = 27.045519; // manually copied from CPU
+    float submerged_area = 0.0f;
+    for (int i = 0; i < N_TRIANGLES; i++) {
+        SubmergedTriangle t = SubmergedTrianglesBuffer[i];
+        float area = t.center_and_area.w;
+
+        // Ignore non-positive areas
+        if (area > 0.0) {
+            submerged_area += area;
+        }
+    }
+    float r_s = submerged_area / tot_area;
+    // float r_s = 0.2; // TODO
+    ReadbackTexture[uint2(2,0)] = float4(r_s, 0.0, 0.0, 1.0); // debug
 
     if (VelocityInput.y > 0.0) {
         float3 engine_pos = (-forward) * 2.1 + (-up) * 0.3;
@@ -107,7 +106,7 @@ void apply_resistance_forces(inout Rigidbody rigidbody) {
     rigidbody.angular_velocity -= angular_drag * rigidbody.angular_velocity * (1.0f - r_s);
 }
 
-[numthreads(N_THREADS_X, N_THREADS_Y, 1)]
+[numthreads(1, 1, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     Rigidbody rigidbody = get_rigidbody();
@@ -133,6 +132,6 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     ReadbackTexture[uint2(0,0)].rgb = rigidbody.position;
     ReadbackTexture[uint2(1,0)]     = rigidbody.orientation;
-    ReadbackTexture[uint2(2,0)]     = SubmergedTrianglesBuffer[2];
+    // ReadbackTexture[uint2(2,0)]     = SubmergedTrianglesBuffer[2];
 
 }

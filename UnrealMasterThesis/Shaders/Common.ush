@@ -115,3 +115,8 @@ float sample_elevation(Texture2D<float4> elevation_texture, float2 ws_coord) {
 
     return elevation;
 }
+
+struct SubmergedTriangle {
+	float4 normal_and_height;
+	float4 center_and_area;
+};
