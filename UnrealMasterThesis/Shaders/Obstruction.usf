@@ -110,5 +110,5 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	}
 
 	h_rtt[id.xy] = float4(h, hIm, 0.0, 1.0);
-	v_rtt[id.xy] = float4(v, 0, 0.0, 1.0);
+	v_rtt[id.xy] = float4(v, 0, xPos, yPos);
 }
