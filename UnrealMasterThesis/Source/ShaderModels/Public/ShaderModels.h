@@ -60,4 +60,6 @@ public:
 		int offset_x,
 		int offset_y);
 
+	void SampleElevationPoints(UTextureRenderTarget2D* elevations, TArray<FVector2D> input_sample_coordinates, TArray<float>* output);
+
 };

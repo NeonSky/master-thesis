@@ -9,6 +9,7 @@
 #include "Add.h"
 #include "Scale.h"
 #include "Obstruction.h"
+#include "ElevationSampler.h"
 #include "GlobalShader.h"
 #include "ShaderCore.h" 
 #include "Engine/TextureRenderTarget2D.h"
@@ -214,12 +215,12 @@ void ShaderModelsModule::ComputeScale(
 void ShaderModelsModule::ComputeObstruction(
 	TArray<FVector4> SubmergedTriangles,
 	int L,
-	UTextureRenderTarget2D* obstructionMap_rtt, 
-	UTextureRenderTarget2D* h_rtt, 
+	UTextureRenderTarget2D* obstructionMap_rtt,
+	UTextureRenderTarget2D* h_rtt,
 	UTextureRenderTarget2D* v_rtt,
 	UTextureRenderTarget2D* hPrev_rtt,
 	UTextureRenderTarget2D* vPrev_rtt,
-	float xPos, 
+	float xPos,
 	float yPos,
 	int offset_x,
 	int offset_y) {
@@ -253,7 +254,26 @@ void ShaderModelsModule::ComputeObstruction(
 			offset_y
 		);
 	});
+}
+	
+void ShaderModelsModule::SampleElevationPoints(UTextureRenderTarget2D* elevations, TArray<FVector2D> input_sample_coordinates, TArray<float>* output) {
 
+ 	TShaderMapRef<ElevationSamplerShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+
+	FRenderCommandFence fence;
+	ENQUEUE_RENDER_COMMAND(shader)(
+		[shader, elevations, input_sample_coordinates, output](FRHICommandListImmediate& RHI_cmd_list) {
+			shader->BuildAndExecuteGraph(
+				RHI_cmd_list,
+				elevations,
+				input_sample_coordinates,
+				output
+			);
+		}); 
+
+	// Force the output to be ready since UE will not allow the render thread to get 2 frames behind the game thread anyway. 
+	fence.BeginFence();
+	fence.Wait();
 }
 
 IMPLEMENT_MODULE(ShaderModelsModule, ShaderModels);
