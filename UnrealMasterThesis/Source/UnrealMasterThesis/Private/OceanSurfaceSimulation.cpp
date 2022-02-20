@@ -13,6 +13,7 @@
 // The NewObject function could potentially work, but it does not appear to give visible results in our case.
 const int TILES_COUNT = 9; // Should be 1 or higher
 int counter = 0;
+TArray<float> elevation_output;
 
 AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
 	// Configure Tick() to be called every frame.
