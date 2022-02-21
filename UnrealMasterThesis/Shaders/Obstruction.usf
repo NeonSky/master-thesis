@@ -44,16 +44,81 @@ bool ptInTriangle(float4 p, float4 p0, float4 p1, float4 p2){
 
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void eWaveCompute(uint3 id : SV_DispatchThreadID) {
+	
+	// ----------------------------------------------------------------------------------
+	// Pre processing steps:
+	// 		sample the previous frames height and velocity potential fields from copies.
+	// 		compute the obstruction map from the submerged triangles.
+	// ----------------------------------------------------------------------------------
+	// TODO: offset when sampling from prev textures to move the simulation.
 	float h = hPrev_rtt[id.xy].r;
 	float v = vPrev_rtt[id.xy].r;
-
-
-	// Apply boundary conditions
+	int preFFT = offset_y;
+	
+	
+	// Compute the obstruction map
+	// it should be 0.0 where the boats submerged triangles are. Rest should be 1.0
+	float half_L_in_metres = 50.0f;
+	float oldMinX = 0 - half_L_in_metres; // TODO: replace 0 with offset to move with the boat.
+	float oldMaxX = 0 + half_L_in_metres;
+	float oldMinY = 0 - half_L_in_metres;
+	float oldMaxY = 0 + half_L_in_metres;
+	int N = 256;
+	obstructionMap_rtt[id.xy] = float4(1.0, 0.0, 0.0, 1.0);
+	for(int i = 0; i < (numTriangles * 3); i+=3){
+		float4 v0 = submergedTriangleVertices[i + 0];
+		v0.x = remap(v0.x, oldMinX, oldMaxX, 0, N);
+		v0.y = remap(v0.y, oldMinY, oldMaxY, 0, N);
+		float4 v1 = submergedTriangleVertices[i + 1];
+		v1.x = remap(v1.x, oldMinX, oldMaxX, 0, N);
+		v1.y = remap(v1.y, oldMinY, oldMaxY, 0, N); 
+		float4 v2 = submergedTriangleVertices[i + 2];
+		v2.x = remap(v2.x, oldMinX, oldMaxX, 0, N);
+		v2.y = remap(v2.y, oldMinY, oldMaxY, 0, N); // we can ignore z
+		
+		if(ptInTriangle(float4(id.x, id.y, 0.0, 1.0), v0, v1, v2)){
+			obstructionMap_rtt[id.xy] = float4(0.0, 0.0, 0.0, 1.0);
+		}	
+	}
+	// ----------------------------------------------------------------------------------
+	// Step 1, Apply obstruction:
+	// ----------------------------------------------------------------------------------
+	h *= obstructionMap_rtt[id.xy].r;
+	
+	// ----------------------------------------------------------------------------------
+	// Step 2, Apply ambient waves: (TODO: the entire step)
+	//		Note: this should only be done before FFT
+	// ----------------------------------------------------------------------------------
+	//if(preFFT == 1){
+	//	
+		
+	//}
+	
+	// ----------------------------------------------------------------------------------
+	// Step 3, Apply trim (boundary ocnditions)
+	// ----------------------------------------------------------------------------------
 	float T_x = T(id.x);
 	float T_y = T(id.y);
 	h = h * T_x * T_y;
 	v = v * T_x * T_y;
 	
+	
+	// ----------------------------------------------------------------------------------
+	// Step 4, Add sources
+	//		Note: this should only be done before FFT
+	// ----------------------------------------------------------------------------------
+	if(preFFT == 1){
+		int speedScaleFactor = offset_x;
+		float scale = 0.65 * speedScaleFactor;
+		float obsCompliment = 1.0 - obstructionMap_rtt[id.xy];
+		h += scale * obsCompliment;
+	}
+	
+	
+	// ----------------------------------------------------------------------------------
+	// Write results.
+	// ----------------------------------------------------------------------------------
+	// TODO: as a last step, make sure that when the simulation moved it leaves 0s behind.
 	
 	h_rtt[id.xy] = float4(h, 0.0, 0.0, 1.0);
 	v_rtt[id.xy] = float4(v, 0.0, xPos, yPos);

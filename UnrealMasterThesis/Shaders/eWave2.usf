@@ -25,7 +25,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	float4 vPrev = eWave_v[id.xy];
 
 	float LL = L;
-	LL = 1.0f;
+	LL = 100.0f;
 	float dkx = 2 * PI / LL;
 	float dky = dkx;
 
