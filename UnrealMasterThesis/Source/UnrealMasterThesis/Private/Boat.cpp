@@ -214,9 +214,9 @@ void ABoat::UpdateSubmergedTriangles() {
     FVector v2 = m_collision_mesh_vertices[i2];
 
     // Convert vertices to world space
-    v0 = transform.TransformPosition(v0);
-    v1 = transform.TransformPosition(v1);
-    v2 = transform.TransformPosition(v2);
+    // v0 = transform.TransformPosition(v0);
+    // v1 = transform.TransformPosition(v1);
+    // v2 = transform.TransformPosition(v2);
 
     // Compute normal (which is identical regardless of cut)
     t.normal = FVector::CrossProduct(v2 - v0, v1 - v0).GetSafeNormal();
@@ -279,53 +279,53 @@ void ABoat::UpdateSubmergedTriangles() {
       m_submerged_triangles.Push(t);
     }
 
-    // Only one vertex above water (the H vertex)
-    else if (h_M < 0.0f) {
+    // // Only one vertex above water (the H vertex)
+    // else if (h_M < 0.0f) {
 
-      // Approximate the intermediate points where the triangle should be cut.
-      float t_M = -h_M / (h_H - h_M);
-      float t_L = -h_L / (h_H - h_L);
+    //   // Approximate the intermediate points where the triangle should be cut.
+    //   float t_M = -h_M / (h_H - h_M);
+    //   float t_L = -h_L / (h_H - h_L);
 
-      FVector I_M = v_M + t_M * (v_H - v_M);
-      FVector I_L = v_L + t_L * (v_H - v_L);
+    //   FVector I_M = v_M + t_M * (v_H - v_M);
+    //   FVector I_L = v_L + t_L * (v_H - v_L);
 
-      // Debug draw partially submerged triangles
-      // DebugDrawTriangle(v_L, I_L, I_M, FColor::Yellow);
-      // DebugDrawTriangle(v_L, v_M, I_M, FColor::Yellow);
+    //   // Debug draw partially submerged triangles
+    //   // DebugDrawTriangle(v_L, I_L, I_M, FColor::Yellow);
+    //   // DebugDrawTriangle(v_L, v_M, I_M, FColor::Yellow);
 
-      // We will end up with a quad in this case. We will treat as two triangles.
+    //   // We will end up with a quad in this case. We will treat as two triangles.
 
-      // Triangle #1
-      t.centroid = (v_L + I_L + v_M) / 3.0;
-      t.height   = abs(h_L + h_M + 0.0f) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
-      t.area     = FVector::CrossProduct(I_L - v_L, v_M - v_L).Size() / 2.0f;
-      m_submerged_triangles.Push(t);
+    //   // Triangle #1
+    //   t.centroid = (v_L + I_L + v_M) / 3.0;
+    //   t.height   = abs(h_L + h_M + 0.0f) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
+    //   t.area     = FVector::CrossProduct(I_L - v_L, v_M - v_L).Size() / 2.0f;
+    //   m_submerged_triangles.Push(t);
 
-      // Triangle #2
-      t.centroid = (v_M + I_M + I_L) / 3.0;
-      t.height   = abs(h_M + 0.0f + 0.0f) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
-      t.area     = FVector::CrossProduct(I_M - v_M, I_L - v_M).Size() / 2.0f;
-      m_submerged_triangles.Push(t);
-    }
+    //   // Triangle #2
+    //   t.centroid = (v_M + I_M + I_L) / 3.0;
+    //   t.height   = abs(h_M + 0.0f + 0.0f) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
+    //   t.area     = FVector::CrossProduct(I_M - v_M, I_L - v_M).Size() / 2.0f;
+    //   m_submerged_triangles.Push(t);
+    // }
 
-    // Only one vertex below water (the L vertex)
-    else if (h_L < 0.0f) {
+    // // Only one vertex below water (the L vertex)
+    // else if (h_L < 0.0f) {
 
-      // Approximate the intermediate points where the triangle should be cut.
-      float t_M = -h_L / (h_M - h_L);
-      float t_H = -h_L / (h_H - h_L);
+    //   // Approximate the intermediate points where the triangle should be cut.
+    //   float t_M = -h_L / (h_M - h_L);
+    //   float t_H = -h_L / (h_H - h_L);
 
-      FVector J_M = v_L + t_M * (v_M - v_L);
-      FVector J_H = v_L + t_H * (v_H - v_L);
+    //   FVector J_M = v_L + t_M * (v_M - v_L);
+    //   FVector J_H = v_L + t_H * (v_H - v_L);
 
-      // Debug draw partially submerged triangles
-      // DebugDrawTriangle(v_L, J_M, J_H, FColor::Yellow);
+    //   // Debug draw partially submerged triangles
+    //   // DebugDrawTriangle(v_L, J_M, J_H, FColor::Yellow);
 
-      t.centroid = (v_L + J_M + J_H) / 3.0;
-      t.height   = abs(h_L + 0.0f + 0.0f) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
-      t.area     = FVector::CrossProduct(J_M - v_L, J_H - v_L).Size() / 2.0f;
-      m_submerged_triangles.Push(t);
-    }
+    //   t.centroid = (v_L + J_M + J_H) / 3.0;
+    //   t.height   = abs(h_L + 0.0f + 0.0f) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
+    //   t.area     = FVector::CrossProduct(J_M - v_L, J_H - v_L).Size() / 2.0f;
+    //   m_submerged_triangles.Push(t);
+    // }
 
   }
 
@@ -387,11 +387,12 @@ void ABoat::ApplyUserInput() {
 
   float submerged_area = 0.0f;
   for (auto& t : m_submerged_triangles) {
+    UE_LOG(LogTemp, Warning, TEXT("sub area: %f"), t.area);
     submerged_area += t.area;
   }
   float r_s = submerged_area / m_collision_mesh_surface_area;
   // float r_s = 0.2f; // TODO: test this first
-  UE_LOG(LogTemp, Warning, TEXT("CPU r_s: %f"), r_s);
+  UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f, %f"), r_s, submerged_area, m_collision_mesh_surface_area);
 
   FVector forward = GetActorForwardVector();
   FVector right = GetActorRightVector();

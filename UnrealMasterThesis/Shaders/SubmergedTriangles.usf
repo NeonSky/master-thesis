@@ -4,7 +4,28 @@
 
 Buffer<uint> IndexBuffer;
 Buffer<float> PositionBuffer;
+// Texture2D<float4> ElevationTexture;
 RWStructuredBuffer<SubmergedTriangle> OutputBuffer;
+
+struct SortItem {
+    float h;
+    float3 v;
+};
+
+void swap(inout SortItem a, inout SortItem b) {
+    SortItem temp = a;
+    a = b;
+    b = temp;
+}
+
+void sort(inout SortItem s[3]) {
+    // Min at index 0
+    if (s[0].h > s[1].h) swap(s[0], s[1]);
+    if (s[0].h > s[2].h) swap(s[0], s[2]);
+
+    // Next min at index 1
+    if (s[1].h > s[2].h) swap(s[1], s[2]);
+}
 
 [numthreads(N_THREADS_X, 1, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
@@ -18,18 +39,67 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     float3 v1 = float3(PositionBuffer[i1], PositionBuffer[i1+1], PositionBuffer[i1+2]) / M_TO_CM;
     float3 v2 = float3(PositionBuffer[i2], PositionBuffer[i2+1], PositionBuffer[i2+2]) / M_TO_CM;
 
-    float height = (v0 + v1 + v2).z / 3.0f;
-    float area = length(cross(v1 - v0, v2 - v0)) / 2.0f;
+    float3 normal = normalize(cross(v2 - v0, v1 - v0));
+
+    float e0 = 0.0;//sample_elevation(ElevationTexture, v0.xy * M_TO_CM) / M_TO_CM;
+    float e1 = 0.0;//sample_elevation(ElevationTexture, v1.xy * M_TO_CM) / M_TO_CM;
+    float e2 = 0.0;//sample_elevation(ElevationTexture, v2.xy * M_TO_CM) / M_TO_CM;
+
+    float h0 = v0.z - e0;
+    float h1 = v1.z - e0;
+    float h2 = v2.z - e0;
+
+    // Sort by relative height
+    SortItem s[3];
+    s[0].h = h0; s[0].v = v0;
+    s[1].h = h1; s[1].v = v1;
+    s[2].h = h2; s[2].v = v2;
+    sort(s);
+
+    // Extract back
+    float h_L = s[0].h;
+    float h_M = s[1].h;
+    float h_H = s[2].h;
+
+    float3 v_L = s[0].v;
+    float3 v_M = s[1].v;
+    float3 v_H = s[2].v;
+
+    ////////////////////////////////////////////
+    /* Cut into submerged triangles (3 cases) */
+    ////////////////////////////////////////////
 
     SubmergedTriangle t;
+    t.center_and_area.w = 0.0; // Ignore this triangle by default
 
-    t.normal_and_height = float4(id.x, 2.3, 3.0, height);
+    // No vertex above water (assume fully submerged)
+    if (h_H < 0.0) {
 
-    t.center_and_area   = float4(v1, area);
-    // t.center_and_area   = float4((v0 + v1 + v2) / 3.0, area);
+        float3 center = (v_L + v_M + v_H) / 3.0;
+        float height  = abs(h_L + h_M + h_H) / 3.0;
+        float area    = length(cross(v_H - v_L, v_M - v_L)) / 2.0;
+        // float area    = length(v_H - v_L);
+        // float area    = 0.318;
 
-    // Store results
-    OutputBuffer[2*id.x]   = t;
-    OutputBuffer[2*id.x+1] = t;
+        // float3 center = v0; // -1.662109, -3.054688, -0.225830
+        // float3 center = v1; // -0.166138, -2.718750, -0.668945
+        // float3 center = v2; // -1.580078, -1.342773, -0.225830
+
+        // float3 center = v_L;
+
+        t.normal_and_height = float4(normal, height);
+        t.center_and_area   = float4(center, area);
+
+        // Store results
+        OutputBuffer[2*id.x]   = t;
+
+        // No second triangle, so ignore it (by setting zero area)
+        t.center_and_area.w = 0.0;
+        OutputBuffer[2*id.x+1] = t;
+    }
+    else {
+        OutputBuffer[2*id.x]   = t;
+        OutputBuffer[2*id.x+1] = t;
+    }
 
 }

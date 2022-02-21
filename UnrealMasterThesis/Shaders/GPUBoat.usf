@@ -55,7 +55,7 @@ void apply_user_input(inout Rigidbody rigidbody) {
     float3 right   = rotate_vector_by_quat(float3(0.0, 1.0, 0.0), rigidbody.orientation);
     float3 up      = rotate_vector_by_quat(float3(0.0, 0.0, 1.0), rigidbody.orientation);
 
-    float tot_area = 27.045519; // manually copied from CPU
+    float tot_area = 100.020439; //27.045519; // manually copied from CPU
     float submerged_area = 0.0f;
     for (int i = 0; i < N_TRIANGLES; i++) {
         SubmergedTriangle t = SubmergedTrianglesBuffer[i];
@@ -66,11 +66,12 @@ void apply_user_input(inout Rigidbody rigidbody) {
             submerged_area += area;
         }
     }
-    // float r_s = submerged_area / tot_area;
-    float r_s = 0.2; // TODO
+    float r_s = submerged_area / tot_area;
+    // float r_s = 0.2; // TODO
 
-    // ReadbackTexture[uint2(2,0)] = float4(r_s, 0.0, 0.0, 1.0); // debug
-    ReadbackTexture[uint2(2,0)] = SubmergedTrianglesBuffer[0].center_and_area; // debug
+    ReadbackTexture[uint2(2,0)] = float4(r_s, submerged_area, tot_area, 1.0); // debug
+    // ReadbackTexture[uint2(2,0)] = SubmergedTrianglesBuffer[2].center_and_area;
+    // ReadbackTexture[uint2(2,0)] = SubmergedTrianglesBuffer[0].center_and_area; // debug
 
     if (VelocityInput.y > 0.0) {
         float3 engine_pos = (-forward) * 2.1 + (-up) * 0.3;
