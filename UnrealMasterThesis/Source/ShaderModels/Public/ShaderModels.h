@@ -53,6 +53,8 @@ public:
 		UTextureRenderTarget2D* vPrev_rtt,
 		float xPos, 
 		float yPos,
+		float boat_dx,
+		float boat_dy,
 		int speedScale,
 		int preFFT);
 
