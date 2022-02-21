@@ -242,8 +242,8 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	//	first = false;
 	//}
 
-	//	static float x = 0.0;
-	//	static float y = 0.0;
+		static float x = 0.0;
+		static float y = 0.0;
 	//	//x = 0.025;
 	//	/*y = 0.25;
 	//	submerged[0][0] += x;
@@ -253,41 +253,41 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	//	submerged[1][1] += y;
 	//	submerged[2][1] += y;*/
 
-	//	int off_x = 0;
-	//	int off_y = 0;
+		int off_x = 0;
+		int off_y = 0;
 	//	
-	//	if (submerged.Num() == 0) {
-	//		submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
-	//		submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
-	//		submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
-	//	}
-	//if (realtimeSeconds - last_ran >= 0.001) {
-	//	counter += 1;
-	//	if (counter == 5) {
-	//		UE_LOG(LogTemp, Error, TEXT("SHIFT!, off_x and off_y = 1\n"));
-	//		//counter = 0;
-	//		off_x = 1;
-	//		off_y = 1;
-	//	}
-	//	//UE_LOG(LogTemp, Error, TEXT("2 seconds passed\n"));
-	//	last_ran = realtimeSeconds;
-	//	float scale = 1.0f / ((float)N * (float)N);
-	//	m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, x, y, off_x, off_y);
-	//	m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt);
-	//	m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
-	//	m_shader_models_module.ComputeeWave(0.016, L, off_x, off_y, this->ewave_h_rtt, this->ewave_hPrev_rtt, this->ewave_v_rtt, this->ewave_vPrev_rtt);
-	//	m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt, 0);
-	//	m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt, 0);
-	//	m_shader_models_module.ComputeScale(this->ewave_h_rtt, this->ewave_hPrev_rtt, scale);
-	//	m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, scale);
-	//	//UE_LOG(LogTemp, Error, TEXT("Submerged size: %d"), submerged.Num());
-	//	//UE_LOG(LogTemp, Error, TEXT("Submerged triangle[0]:  v1(%f, %f)   v2(%f, %f)   v3(%f, %f)"), submerged[0].X, submerged[0].Y, submerged[1].X, submerged[1].Y, submerged[2].X, submerged[2].Y);
-	//	//UE_LOG(LogTemp, Error, TEXT("Submerged triangle[1]:  v1(%f, %f)   v2(%f, %f)   v3(%f, %f)\n\n"), submerged[3].X, submerged[3].Y, submerged[4].X, submerged[4].Y, submerged[5].X, submerged[5].Y);
-	//	m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, x, y, off_x, off_y);
+	if (submerged.Num() == 0) {
+			submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
+			submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
+			submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
+	}
+	if (realtimeSeconds - last_ran >= 0.001) {
+		counter += 1;
+		if (counter == 5) {
+			UE_LOG(LogTemp, Error, TEXT("SHIFT!, off_x and off_y = 1\n"));
+			//counter = 0;
+			off_x = 1;
+			off_y = 1;
+		}
+		//UE_LOG(LogTemp, Error, TEXT("2 seconds passed\n"));
+		last_ran = realtimeSeconds;
+		float scale = 1.0f / ((float)N * (float)N);
+		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, x, y, off_x, off_y);
+		/*m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt);
+		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
+		m_shader_models_module.ComputeeWave(0.016, L, off_x, off_y, this->ewave_h_rtt, this->ewave_hPrev_rtt, this->ewave_v_rtt, this->ewave_vPrev_rtt);
+		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt, 0);
+		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt, 0);
+		m_shader_models_module.ComputeScale(this->ewave_h_rtt, this->ewave_hPrev_rtt, scale);
+		m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, scale);*/
+		//UE_LOG(LogTemp, Error, TEXT("Submerged size: %d"), submerged.Num());
+		//UE_LOG(LogTemp, Error, TEXT("Submerged triangle[0]:  v1(%f, %f)   v2(%f, %f)   v3(%f, %f)"), submerged[0].X, submerged[0].Y, submerged[1].X, submerged[1].Y, submerged[2].X, submerged[2].Y);
+		//UE_LOG(LogTemp, Error, TEXT("Submerged triangle[1]:  v1(%f, %f)   v2(%f, %f)   v3(%f, %f)\n\n"), submerged[3].X, submerged[3].Y, submerged[4].X, submerged[4].Y, submerged[5].X, submerged[5].Y);
+		//m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, x, y, off_x, off_y);
 
-	//	x += 39.06f * 2.0f;
-	//	//y += 20;
-	//}
+		x += 39.06f * 2.0f;
+		//y += 20;
+	}
 	
 		
 	
