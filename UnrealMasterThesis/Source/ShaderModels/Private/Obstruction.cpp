@@ -113,6 +113,8 @@ void ObstructionShader::BuildAndExecuteGraph(
     UTextureRenderTarget2D* vPrev_rtt,
     float xPos,
     float yPos,
+    float boat_dx,
+    float boat_dy,
     int offset_x,
     int offset_y) {
 
@@ -140,6 +142,7 @@ void ObstructionShader::BuildAndExecuteGraph(
 
 
 
+
 	FRDGTextureRef io_tex_ref = register_texture4_obs(graph_builder, obstructionMap_rtt, "InputOutputRenderTarget");
     auto uav = graph_builder.CreateUAV(io_tex_ref);
     FRDGTextureRef io_tex_ref2 = register_texture4_obs(graph_builder, h_rtt, "InputOutputRenderTarget2");
@@ -160,6 +163,8 @@ void ObstructionShader::BuildAndExecuteGraph(
     PassParameters->vPrev_rtt = uav5;
     PassParameters->xPos = xPos;
     PassParameters->yPos = yPos;
+    PassParameters->boat_dx = boat_dx;
+    PassParameters->boat_dy = boat_dy;
     
 
     TShaderMapRef<ObstructionShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));

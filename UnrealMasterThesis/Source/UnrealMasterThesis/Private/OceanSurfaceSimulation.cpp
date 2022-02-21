@@ -221,11 +221,16 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
 
+	static float boatPrevX = 0.0;
+	static float boatPrevY = 0.0;
 	
 	if (first) {
 		last_ran = realtimeSeconds;
-		// m_shader_models_module.ComputeAdd(this->ewave_h_rtt, this->eWave_addition_texture, this->ewave_h_rtt);
+		m_shader_models_module.ComputeAdd(this->ewave_h_rtt, this->eWave_addition_texture, this->ewave_h_rtt);
 		first = false;
+		boatPrevX = boatX;
+		boatPrevY = boatY;
+
 	}
 
 	if (true) {
@@ -237,8 +242,9 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		}
 
 		float scale = 1.0f / ((float)N * (float)N);
-
-		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, boatX, boatY, speed, 1);
+		float dx = boatX - boatPrevX;
+		float dy = boatY - boatPrevY;
+		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, boatX, boatY, dx, dy, speed, 1);
 		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
 		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
 		m_shader_models_module.ComputeeWave(0.016, L, this->ewave_h_rtt, this->ewave_v_rtt);
@@ -246,7 +252,9 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt, 0);
 		m_shader_models_module.ComputeScale(this->ewave_h_rtt, this->ewave_hPrev_rtt, scale);
 		m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, scale);
-		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, boatX, boatY, speed, 0);
+		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, boatX, boatY, dx, dy, speed, 0);
 		last_ran = realtimeSeconds;
-	}	
+	}
+	boatPrevX = boatX;
+	boatPrevY = boatY;
 }

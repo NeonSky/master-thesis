@@ -212,6 +212,8 @@ void ShaderModelsModule::ComputeObstruction(
 	UTextureRenderTarget2D* vPrev_rtt,
 	float xPos,
 	float yPos,
+	float boat_dx,
+	float boat_dy,
 	int speedScale,
 	int preFFT) {
 
@@ -224,10 +226,12 @@ void ShaderModelsModule::ComputeObstruction(
 	UTextureRenderTarget2D* vPrev_rtt_param = v_rtt;
 	float xPos_param = xPos;
 	float yPos_param = yPos;
+	float boat_dx_param = boat_dx;
+	float boat_dy_param = boat_dy;
 	int L_param = L;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, SubmergedTriangles, L_param, obstructionMap_rtt_param, h_rtt_param, v_rtt_param, hPrev_rtt_param, vPrev_rtt_param, xPos_param, yPos_param, speedScale, preFFT](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, SubmergedTriangles, L_param, obstructionMap_rtt_param, h_rtt_param, v_rtt_param, hPrev_rtt_param, vPrev_rtt_param, xPos_param, yPos_param, boat_dx_param, boat_dy_param, speedScale, preFFT](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
 			SubmergedTriangles,
@@ -240,6 +244,8 @@ void ShaderModelsModule::ComputeObstruction(
 			vPrev_rtt_param,
 			xPos_param,
 			yPos_param,
+			boat_dx_param,
+			boat_dy_param,
 			speedScale,
 			preFFT
 		);

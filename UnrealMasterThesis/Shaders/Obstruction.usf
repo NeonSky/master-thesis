@@ -9,10 +9,13 @@ RWTexture2D<float4> h_rtt;
 RWTexture2D<float4> v_rtt;
 RWTexture2D<float4> hPrev_rtt;
 RWTexture2D<float4> vPrev_rtt;
-float xPos;
+float xPos; // Boat position in metres
 float yPos;
-int offset_x;
-int offset_y;
+float boat_dx;
+float boat_dy;
+int offset_x; // TODO: rename, this toggles wakes depending on if the boat is driving or not. TODO: make it a float depending on speed or something
+int offset_y; // TODO: rename, this toggles steps that should only be performed before the FFTs, not the second time.
+
 
 
 float T(float x_y){
@@ -55,7 +58,10 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	int2 sampleCoordinates = int2(id.x, id.y);
 	if(preFFT == 1){
 		// TODO: offset when sampling from prev textures to move the simulation.
-		sampleCoordinates = int2(id.x, id.y);
+		float metres_per_pixel = 0.390625f;
+		float dx_in_pixels = 0.0; //boat_dx / metres_per_pixel;
+		float dy_in_pixels = 0.0; //boat_dy / metres_per_pixel;
+		sampleCoordinates = int2(id.x + dx_in_pixels, id.y + dy_in_pixels);
 	}
 	float h = hPrev_rtt[sampleCoordinates.xy].r;
 	float v = vPrev_rtt[sampleCoordinates.xy].r;
@@ -64,10 +70,10 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 		// Compute the obstruction map
 		// it should be 0.0 where the boats submerged triangles are. Rest should be 1.0
 		float half_L_in_metres = 50.0f;
-		float oldMinX = 0 - half_L_in_metres; // TODO: replace 0 with offset to move with the boat.
-		float oldMaxX = 0 + half_L_in_metres;
-		float oldMinY = 0 - half_L_in_metres;
-		float oldMaxY = 0 + half_L_in_metres;
+		float oldMinX = xPos - half_L_in_metres; // TODO: replace 0 with offset to move with the boat.
+		float oldMaxX = xPos + half_L_in_metres;
+		float oldMinY = yPos - half_L_in_metres;
+		float oldMaxY = yPos + half_L_in_metres;
 		int N = 256;
 		obstructionMap_rtt[id.xy] = float4(1.0, 0.0, 0.0, 1.0);
 		for(int i = 0; i < (numTriangles * 3); i+=3){
@@ -81,6 +87,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 			v2.x = remap(v2.x, oldMinX, oldMaxX, 0, N);
 			v2.y = remap(v2.y, oldMinY, oldMaxY, 0, N); // we can ignore z
 			
+			// TODO: ?
 			if(ptInTriangle(float4(id.x, id.y, 0.0, 1.0), v0, v1, v2)){
 				obstructionMap_rtt[id.xy] = float4(0.0, 0.0, 0.0, 1.0);
 			}	
@@ -89,7 +96,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	// ----------------------------------------------------------------------------------
 	// Step 1, Apply obstruction:
 	// ----------------------------------------------------------------------------------
-	h *= obstructionMap_rtt[id.xy].r;
+	// h *= obstructionMap_rtt[id.xy].r;
 	
 	// ----------------------------------------------------------------------------------
 	// Step 2, Apply ambient waves: (TODO: the entire step)
@@ -117,15 +124,24 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 		int speedScaleFactor = offset_x;
 		float scale = 0.65 * speedScaleFactor;
 		float obsCompliment = 1.0 - obstructionMap_rtt[id.xy];
-		h += scale * obsCompliment;
+		// h += scale * obsCompliment;
 	}
 	
 	
 	// ----------------------------------------------------------------------------------
 	// Write results.
 	// ----------------------------------------------------------------------------------
-	// TODO: as a last step, make sure that when the simulation moved it leaves 0s behind.
+	// As a last step, make sure that when the simulation moved it leaves 0s behind.
+	if(    (sampleCoordinates.x >= 0 && sampleCoordinates.x <= 255) 
+		&& (sampleCoordinates.y >= 0 && sampleCoordinates.y <= 255)){
+		h = h;
+		v = v;	
+	}
+	else{
+		h = 0.0;
+		v = 0.0;
+	}
 	
-	h_rtt[id.xy] = float4(h, 0.0, 0.0, 1.0);
-	v_rtt[id.xy] = float4(v, 0.0, xPos, yPos);
+	h_rtt[sampleCoordinates.xy] = float4(h, 0.0, 0.0, 1.0);
+	v_rtt[sampleCoordinates.xy] = float4(v, 0.0, xPos * 100.0, yPos* 100.0);
 }
