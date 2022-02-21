@@ -359,7 +359,7 @@ void ABoat::UpdateSubmergedTriangles() {
 
 
 
-  UE_LOG(LogTemp, Error, TEXT("Submerged triangle[0]:  v1(%f, %f)   v2(%f, %f)   v3(%f, %f)"), m_submerged_triangles[0].v_H.X, m_submerged_triangles[0].v_H.Y, m_submerged_triangles[0].v_M.X, m_submerged_triangles[0].v_M.Y, m_submerged_triangles[0].v_L.X, m_submerged_triangles[0].v_L.Y);
+  //UE_LOG(LogTemp, Error, TEXT("Submerged triangle[0]:  v1(%f, %f)   v2(%f, %f)   v3(%f, %f)"), m_submerged_triangles[0].v_H.X, m_submerged_triangles[0].v_H.Y, m_submerged_triangles[0].v_M.X, m_submerged_triangles[0].v_M.Y, m_submerged_triangles[0].v_L.X, m_submerged_triangles[0].v_L.Y);
 
   if (ocean_surface_simulation) {
       ocean_surface_simulation->submerged.Empty();
