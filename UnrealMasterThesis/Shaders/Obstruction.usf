@@ -16,13 +16,13 @@ int offset_y;
 
 
 float T(float x_y){
-	float L = 256; // TODO: make these in parameters to the shader
-	float taper_size = 5.0;
+	float L_in_pixels = 256.0; // TODO: make these in parameters to the shader
+	float taper_size = 32.0;
 	if(x_y / taper_size < 1.0){
 		return x_y / taper_size;
 	}
-	else if(abs(x_y - L) / taper_size < 1.0){
-		return abs(x_y - L) / taper_size < 1.0;
+	else if(abs(x_y - L_in_pixels) / taper_size < 1.0){
+		return abs(x_y - L_in_pixels) / taper_size;
 	}
 	else{
 		return 1.0;
@@ -44,72 +44,17 @@ bool ptInTriangle(float4 p, float4 p0, float4 p1, float4 p2){
 
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void eWaveCompute(uint3 id : SV_DispatchThreadID) {
-	int N = 256;
-	float2 IDxy = float2(id.xy) - float(N);// / 2.0;
-	float xx = xPos - N / 2.0;
-	float yy = yPos - N / 2.0;
-	int2 offID = int2(id.x + offset_x + 1, id.y + offset_y);
+	float h = hPrev_rtt[id.xy].r;
+	float v = vPrev_rtt[id.xy].r;
 
-	int L_neg = -50;
-	int L_pos = 50;
-	obstructionMap_rtt[id.xy] = float4(1.0, 0.0, 0.0, 1.0);
-	for(int i = 0; i < (numTriangles * 3); i+=3){
-		float4 v0 = submergedTriangleVertices[i + 0];
-		v0.x = remap(v0.x, L_neg, L_pos, 0, N);
-		v0.y = remap(v0.y, L_neg, L_pos, 0, N);
-		//v0.x = v0.x + 50;
-		//v0.y = v0.y + 50;
-		float4 v1 = submergedTriangleVertices[i + 1];
-		v1.x = remap(v1.x, L_neg, L_pos, 0, N);
-		v1.y = remap(v1.y, L_neg, L_pos, 0, N); 
-		//v1.x = v1.x + 50;
-		//v1.y = v1.y + 50;
-		float4 v2 = submergedTriangleVertices[i + 2];
-		v2.x = remap(v2.x, L_neg, L_pos, 0, N);
-		v2.y = remap(v2.y, L_neg, L_pos, 0, N); // we can ignore z
-		//v2.x = v2.x + 50;
-		//v2.y = v2.y + 50;
-		
-		if(ptInTriangle(float4(id.x, id.y, 0.0, 1.0), v0, v1, v2)){
-			obstructionMap_rtt[id.xy] = float4(0.0, 0.0, 0.0, 1.0);
-		}
-			
-	}
 
-	// Centered circle obstruction.
-	//float obs = 1;
-	//float r = 8;
-	//if (((IDxy.x - xx)*(IDxy.x - xx) + (IDxy.y -yy)*(IDxy.y - yy)) < r * r){
-	//	obs = 0;
-	//}
-	//obstructionMap_rtt[id.xy] = float4(obs, 0.0, 0.0, 1.0);
-	
-	float h = h_rtt[offID.xy].r;
-	float v = v_rtt[offID.xy].r;
-	float hIm = h_rtt[offID.xy].g; // TODO: This should not be here. Previous step (scale) puts g = 0... but for some reason it does not work without it...
-	h *= obstructionMap_rtt[id.xy].r;
-	float scale = 0.15;
-	float obsCompliment = 1.0 - obstructionMap_rtt[id.xy];
-	h += scale * obsCompliment;
-	
-
-	// Boundry conditions
-
+	// Apply boundary conditions
 	float T_x = T(id.x);
 	float T_y = T(id.y);
-
 	h = h * T_x * T_y;
-
-	// when the simulation moves
-	if((offID.x >= 0 && offID.x <= 255) && (offID.y >= 0 && offID.y <= 255)){
-		h = h;
-		v = v;	
-	}
-	else{
-		h = 0.0;
-		v = 0.0;
-	}
-
-	h_rtt[id.xy] = float4(h, hIm, 0.0, 1.0);
-	v_rtt[id.xy] = float4(v, 0, xPos, yPos);
+	v = v * T_x * T_y;
+	
+	
+	h_rtt[id.xy] = float4(h, 0.0, 0.0, 1.0);
+	v_rtt[id.xy] = float4(v, 0.0, xPos, yPos);
 }

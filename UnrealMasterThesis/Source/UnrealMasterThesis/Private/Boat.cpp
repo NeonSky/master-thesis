@@ -371,6 +371,10 @@ void ABoat::UpdateSubmergedTriangles() {
               ocean_surface_simulation->submerged.Add(t.v_H);
           }
   }
+  ocean_surface_simulation->boatX = m_rigidbody.position.X;
+  ocean_surface_simulation->boatY = m_rigidbody.position.Y;
+
+  UE_LOG(LogTemp, Error, TEXT("Boat pos: %f, %f"), m_rigidbody.position.X, m_rigidbody.position.Y);
 }
 
 void ABoat::ApplyGravity() {
@@ -425,14 +429,14 @@ void ABoat::ApplyUserInput() {
     submerged_area += t.area;
   }
   float r_s = submerged_area / m_collision_mesh_surface_area;
-
+  ocean_surface_simulation->speed = 0;
   if (m_velocity_input.Y > 0.0f) {
 
     FVector engine_pos = transform.TransformPosition(FVector(-210.0f, 0.0f, -30.0f)) / METERS_TO_UNREAL_UNITS;
     float engine_power = HORSEPOWER_TO_NEWTON * m_speed_input * sqrt(r_s);
 
     m_rigidbody.AddForceAtPosition(engine_power * m_velocity_input.Y * GetActorForwardVector(), engine_pos);
-
+    ocean_surface_simulation->speed = 1;
   }
 
   if (m_velocity_input.X != 0.0f) {
@@ -441,6 +445,7 @@ void ABoat::ApplyUserInput() {
     float engine_power = HORSEPOWER_TO_NEWTON * sqrt(m_speed_input) * sqrt(r_s); // Nerf sideways movement
 
     m_rigidbody.AddForceAtPosition(engine_power * m_velocity_input.X * GetActorRightVector(), steer_pos);
+    ocean_surface_simulation->speed = 1;
   }
 
 }

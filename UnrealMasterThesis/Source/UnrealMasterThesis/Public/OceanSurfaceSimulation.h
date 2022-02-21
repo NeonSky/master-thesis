@@ -35,6 +35,9 @@ public:
 
 	TArray<float> sample_elevation_points(TArray<FVector2D> sample_points);
 	TArray<FVector4> submerged;
+	float boatX = 0.0f;
+	float boatY = 0.0f;
+	int speed = 0;
 
 protected:
 
