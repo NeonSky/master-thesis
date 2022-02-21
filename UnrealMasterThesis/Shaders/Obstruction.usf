@@ -50,35 +50,41 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	// 		sample the previous frames height and velocity potential fields from copies.
 	// 		compute the obstruction map from the submerged triangles.
 	// ----------------------------------------------------------------------------------
-	// TODO: offset when sampling from prev textures to move the simulation.
-	float h = hPrev_rtt[id.xy].r;
-	float v = vPrev_rtt[id.xy].r;
+	
 	int preFFT = offset_y;
+	int2 sampleCoordinates = int2(id.x, id.y);
+	if(preFFT == 1){
+		// TODO: offset when sampling from prev textures to move the simulation.
+		sampleCoordinates = int2(id.x, id.y);
+	}
+	float h = hPrev_rtt[sampleCoordinates.xy].r;
+	float v = vPrev_rtt[sampleCoordinates.xy].r;
 	
-	
-	// Compute the obstruction map
-	// it should be 0.0 where the boats submerged triangles are. Rest should be 1.0
-	float half_L_in_metres = 50.0f;
-	float oldMinX = 0 - half_L_in_metres; // TODO: replace 0 with offset to move with the boat.
-	float oldMaxX = 0 + half_L_in_metres;
-	float oldMinY = 0 - half_L_in_metres;
-	float oldMaxY = 0 + half_L_in_metres;
-	int N = 256;
-	obstructionMap_rtt[id.xy] = float4(1.0, 0.0, 0.0, 1.0);
-	for(int i = 0; i < (numTriangles * 3); i+=3){
-		float4 v0 = submergedTriangleVertices[i + 0];
-		v0.x = remap(v0.x, oldMinX, oldMaxX, 0, N);
-		v0.y = remap(v0.y, oldMinY, oldMaxY, 0, N);
-		float4 v1 = submergedTriangleVertices[i + 1];
-		v1.x = remap(v1.x, oldMinX, oldMaxX, 0, N);
-		v1.y = remap(v1.y, oldMinY, oldMaxY, 0, N); 
-		float4 v2 = submergedTriangleVertices[i + 2];
-		v2.x = remap(v2.x, oldMinX, oldMaxX, 0, N);
-		v2.y = remap(v2.y, oldMinY, oldMaxY, 0, N); // we can ignore z
-		
-		if(ptInTriangle(float4(id.x, id.y, 0.0, 1.0), v0, v1, v2)){
-			obstructionMap_rtt[id.xy] = float4(0.0, 0.0, 0.0, 1.0);
-		}	
+	if(preFFT == 1){
+		// Compute the obstruction map
+		// it should be 0.0 where the boats submerged triangles are. Rest should be 1.0
+		float half_L_in_metres = 50.0f;
+		float oldMinX = 0 - half_L_in_metres; // TODO: replace 0 with offset to move with the boat.
+		float oldMaxX = 0 + half_L_in_metres;
+		float oldMinY = 0 - half_L_in_metres;
+		float oldMaxY = 0 + half_L_in_metres;
+		int N = 256;
+		obstructionMap_rtt[id.xy] = float4(1.0, 0.0, 0.0, 1.0);
+		for(int i = 0; i < (numTriangles * 3); i+=3){
+			float4 v0 = submergedTriangleVertices[i + 0];
+			v0.x = remap(v0.x, oldMinX, oldMaxX, 0, N);
+			v0.y = remap(v0.y, oldMinY, oldMaxY, 0, N);
+			float4 v1 = submergedTriangleVertices[i + 1];
+			v1.x = remap(v1.x, oldMinX, oldMaxX, 0, N);
+			v1.y = remap(v1.y, oldMinY, oldMaxY, 0, N); 
+			float4 v2 = submergedTriangleVertices[i + 2];
+			v2.x = remap(v2.x, oldMinX, oldMaxX, 0, N);
+			v2.y = remap(v2.y, oldMinY, oldMaxY, 0, N); // we can ignore z
+			
+			if(ptInTriangle(float4(id.x, id.y, 0.0, 1.0), v0, v1, v2)){
+				obstructionMap_rtt[id.xy] = float4(0.0, 0.0, 0.0, 1.0);
+			}	
+		}
 	}
 	// ----------------------------------------------------------------------------------
 	// Step 1, Apply obstruction:
