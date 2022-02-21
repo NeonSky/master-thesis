@@ -213,16 +213,12 @@ void AOceanSurfaceSimulation::create_mesh() {
 }
 
 void AOceanSurfaceSimulation::update_mesh(float dt) {
+	static float prevX = 0.0f;
+	static float prevY = 0.0f;
 
 	if (first) {
-		/*submerged.Init(FVector4(0.0), 3 * 1);
-		submerged[0] = FVector4(-2.0, -4.0, 0.0, 1.0);
-		submerged[1] = FVector4(2.0, -4.0, 0.0, 1.0);
-		submerged[2] = FVector4(0.0, 8.0, 0.0, 1.0);*/
-		
-		/*submerged[3] = FVector4(-30.0 + 50, -30.0, 0.0, 1.0);
-		submerged[4] = FVector4(30.0 + 50, -30.0, 0.0, 1.0);
-		submerged[5] = FVector4(0.0 + 50, 30.0, 0.0, 1.0);;*/
+		prevX = 0.0f;
+		prevY = 0.0f;
 	}
 
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
@@ -234,16 +230,14 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
 
 	////// https://www.dsprelated.com/showarticle/800.php
-	//if (first) {
-	//	last_ran = realtimeSeconds;
+	if (first) {
+		last_ran = realtimeSeconds;
 	//	// Note: parameter 2 is overridden in the Add shader, the test texture is passed as parameter 2 to the shader
 	//	// Note: currently does not even add, just writes the test data to a the render target from parameter 3. 
-	//	m_shader_models_module.ComputeAdd(this->ewave_h_rtt, this->eWave_addition_texture, this->ewave_h_rtt);
-	//	first = false;
-	//}
+		m_shader_models_module.ComputeAdd(this->ewave_h_rtt, this->eWave_addition_texture, this->ewave_h_rtt);
+		first = false;
+	}
 
-		static float x = 0.0;
-		static float y = 0.0;
 	//	//x = 0.025;
 	//	/*y = 0.25;
 	//	submerged[0][0] += x;
@@ -272,21 +266,23 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		//UE_LOG(LogTemp, Error, TEXT("2 seconds passed\n"));
 		last_ran = realtimeSeconds;
 		float scale = 1.0f / ((float)N * (float)N);
-		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, x, y, off_x, off_y);
-		/*m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt);
+		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, boatX, boatY, speed, 1);
+		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt);
 		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
-		m_shader_models_module.ComputeeWave(0.016, L, off_x, off_y, this->ewave_h_rtt, this->ewave_hPrev_rtt, this->ewave_v_rtt, this->ewave_vPrev_rtt);
+		m_shader_models_module.ComputeeWave(0.016, L, -1, -1, this->ewave_h_rtt, this->ewave_hPrev_rtt, this->ewave_v_rtt, this->ewave_vPrev_rtt);
 		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt, 0);
 		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt, 0);
 		m_shader_models_module.ComputeScale(this->ewave_h_rtt, this->ewave_hPrev_rtt, scale);
-		m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, scale);*/
+		m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, scale);
 		//UE_LOG(LogTemp, Error, TEXT("Submerged size: %d"), submerged.Num());
 		//UE_LOG(LogTemp, Error, TEXT("Submerged triangle[0]:  v1(%f, %f)   v2(%f, %f)   v3(%f, %f)"), submerged[0].X, submerged[0].Y, submerged[1].X, submerged[1].Y, submerged[2].X, submerged[2].Y);
 		//UE_LOG(LogTemp, Error, TEXT("Submerged triangle[1]:  v1(%f, %f)   v2(%f, %f)   v3(%f, %f)\n\n"), submerged[3].X, submerged[3].Y, submerged[4].X, submerged[4].Y, submerged[5].X, submerged[5].Y);
-		//m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, x, y, off_x, off_y);
+		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, boatX, boatY, speed, 0);
 
-		x += 39.06f * 2.0f;
+		//x += 39.06f * 2.0f;
 		//y += 20;
+		prevX = boatX;
+		prevY = boatY;
 	}
 	
 		
