@@ -28,6 +28,14 @@ void ABoat::BeginPlay() {
   m_rigidbody.orientation = GetActorQuat();
 
   FetchCollisionMeshData();
+  if (ocean_surface_simulation) {
+      for (auto& t : m_submerged_triangles) {
+          ocean_surface_simulation->submerged.Add(t.v_L);
+          ocean_surface_simulation->submerged.Add(t.v_M);
+          ocean_surface_simulation->submerged.Add(t.v_H);
+      }
+  }
+  
 }
 
 void ABoat::FetchCollisionMeshData() {

@@ -34,6 +34,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	TArray<float> sample_elevation_points(TArray<FVector2D> sample_points);
+	TArray<FVector4> submerged;
 
 protected:
 
@@ -105,6 +106,8 @@ private:
 	ShaderModelsModule m_shader_models_module; // Reference to the ShaderModels module
 
 	TArray<UProceduralMeshComponent*> tile_meshes; // Each tile is a separate mesh but they share material
+
+
 
 	void create_mesh();
 	void update_mesh(float dt);

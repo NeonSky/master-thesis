@@ -214,14 +214,11 @@ void AOceanSurfaceSimulation::create_mesh() {
 
 void AOceanSurfaceSimulation::update_mesh(float dt) {
 
-	static TArray<FVector4> submerged;
 	if (first) {
-		submerged.Init(FVector4(0.0), 3 * 1);
+		/*submerged.Init(FVector4(0.0), 3 * 1);
 		submerged[0] = FVector4(-2.0, -4.0, 0.0, 1.0);
 		submerged[1] = FVector4(2.0, -4.0, 0.0, 1.0);
-		submerged[2] = FVector4(0.0, 8.0, 0.0, 1.0);
-
-		
+		submerged[2] = FVector4(0.0, 8.0, 0.0, 1.0);*/
 		
 		/*submerged[3] = FVector4(-30.0 + 50, -30.0, 0.0, 1.0);
 		submerged[4] = FVector4(30.0 + 50, -30.0, 0.0, 1.0);
