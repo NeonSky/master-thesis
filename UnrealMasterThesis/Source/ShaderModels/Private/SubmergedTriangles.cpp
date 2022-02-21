@@ -11,14 +11,18 @@ IMPLEMENT_GLOBAL_SHADER(SubmergedTrianglesShader, "/Project/UnrealMasterThesis/S
 
 void SubmergedTrianglesShader::BuildAndExecuteGraph(
         FRHICommandListImmediate &RHI_cmd_list,
+        AStaticMeshActor* collision_mesh,
         TRefCountPtr<FRDGPooledBuffer>* output_buffer) {
-        // FVertexBuffer* output_buffer) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
 
     // Setup input parameters
     FParameters *PassParameters;
     PassParameters = graph_builder.AllocParameters<SubmergedTrianglesShader::FParameters>();
+
+    FStaticMeshLODResources& mesh_res = collision_mesh->GetStaticMeshComponent()->GetStaticMesh()->RenderData->LODResources[0];
+    PassParameters->IndexBuffer = RHI_cmd_list.CreateShaderResourceView(mesh_res.IndexBuffer.IndexBufferRHI);
+    PassParameters->PositionBuffer = RHI_cmd_list.CreateShaderResourceView(mesh_res.VertexBuffers.PositionVertexBuffer.VertexBufferRHI, sizeof(float), PF_R32_FLOAT);
 
     int N = 140; // 2 times the amount of triangles in the collision mesh
 
@@ -45,7 +49,7 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
         RDG_EVENT_NAME("SubmergedTriangles Pass"),
         ComputeShader,
         PassParameters,
-        FIntVector(N, 1, 1));
+        FIntVector(N/2, 1, 1));
 
     TRefCountPtr<FRDGPooledBuffer> PooledComputeTarget;
     graph_builder.QueueBufferExtraction(rdg_buffer_ref, &PooledComputeTarget);
@@ -53,6 +57,4 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
     graph_builder.Execute();
 
     *output_buffer = PooledComputeTarget;
-
-	UE_LOG(LogTemp, Warning, TEXT("SUBMERGED DONE"));
 }

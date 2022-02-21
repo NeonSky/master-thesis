@@ -3,6 +3,9 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
+#include "Engine/StaticMeshActor.h"
+#include "StaticMeshResources.h"
+
 #include <functional>
 
 class SHADERMODELS_API ShaderModelsModule : public IModuleInterface {
@@ -30,6 +33,7 @@ public:
 	void UpdateGPUBoat(
 		float speed_input,
 		FVector2D velocity_input,
+		AStaticMeshActor* collision_mesh,
 		UTextureRenderTarget2D* elevation_texture,
 		UTextureRenderTarget2D* input_output,
 		UTextureRenderTarget2D* readback_texture,

@@ -66,9 +66,11 @@ void apply_user_input(inout Rigidbody rigidbody) {
             submerged_area += area;
         }
     }
-    float r_s = submerged_area / tot_area;
-    // float r_s = 0.2; // TODO
-    ReadbackTexture[uint2(2,0)] = float4(r_s, 0.0, 0.0, 1.0); // debug
+    // float r_s = submerged_area / tot_area;
+    float r_s = 0.2; // TODO
+
+    // ReadbackTexture[uint2(2,0)] = float4(r_s, 0.0, 0.0, 1.0); // debug
+    ReadbackTexture[uint2(2,0)] = SubmergedTrianglesBuffer[0].center_and_area; // debug
 
     if (VelocityInput.y > 0.0) {
         float3 engine_pos = (-forward) * 2.1 + (-up) * 0.3;
@@ -110,12 +112,6 @@ void apply_resistance_forces(inout Rigidbody rigidbody) {
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     Rigidbody rigidbody = get_rigidbody();
-
-    // Debug: reset
-    // rigidbody.position = float3(0.0, 0.0, 0.0);
-    // rigidbody.orientation = float4(0.0, 0.0, 0.0, 1.0);
-    // rigidbody.linear_velocity = float3(0.0, 0.0, 0.0);
-    // rigidbody.angular_velocity = float3(0.0, 0.0, 0.0);
 
     apply_gravity(rigidbody);
     apply_buoyancy(rigidbody);

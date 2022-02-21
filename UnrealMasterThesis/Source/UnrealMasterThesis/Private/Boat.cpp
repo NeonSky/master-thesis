@@ -43,7 +43,8 @@ void ABoat::FetchCollisionMeshData() {
 
   FTransform transform = collision_mesh->GetActorTransform();
   for (auto& v : m_collision_mesh_vertices) {
-    v = transform.TransformPosition(v) / METERS_TO_UNREAL_UNITS;
+    // v = transform.TransformPosition(v) / METERS_TO_UNREAL_UNITS;
+    v = v / METERS_TO_UNREAL_UNITS;
   }
 
   // Total surface area
@@ -61,6 +62,12 @@ void ABoat::FetchCollisionMeshData() {
     FVector v2 = m_collision_mesh_vertices[i2];
 
     float area = FVector::CrossProduct(v2 - v0, v1 - v0).Size() / 2.0f;
+    
+    UE_LOG(LogTemp, Warning, TEXT("v0: %i, %f, %f, %f"), i0, v0.X, v0.Y, v0.Z);
+    UE_LOG(LogTemp, Warning, TEXT("v1: %i, %f, %f, %f"), i1, v1.X, v1.Y, v1.Z);
+    UE_LOG(LogTemp, Warning, TEXT("v2: %i, %f, %f, %f"), i2, v2.X, v2.Y, v2.Z);
+    UE_LOG(LogTemp, Warning, TEXT("i = %i has area: %f"), i, area);
+
     m_collision_mesh_surface_area += area;
 
   }

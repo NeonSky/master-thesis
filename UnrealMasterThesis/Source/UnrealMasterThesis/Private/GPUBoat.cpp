@@ -17,6 +17,7 @@ void AGPUBoat::Update(UpdatePayload update_payload) {
     m_shader_models_module.UpdateGPUBoat(
         update_payload.speed_input,
         update_payload.velocity_input,
+        collision_mesh,
         elevation_rtt,
         boat_rtt,
         readback_rtt,

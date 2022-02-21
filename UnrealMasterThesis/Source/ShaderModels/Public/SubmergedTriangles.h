@@ -5,6 +5,9 @@
 #include "ShaderParameterStruct.h"
 #include "Modules/ModuleManager.h"
 
+#include "Engine/StaticMeshActor.h"
+#include "StaticMeshResources.h"
+
 struct GPUSumbergedTriangle {
 	FVector4 normal_and_height;
 	FVector4 center_and_area;
@@ -18,6 +21,8 @@ public:
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, ) 
 
+		SHADER_PARAMETER_SRV(Buffer<uint32>, IndexBuffer)
+		SHADER_PARAMETER_SRV(Buffer<float>, PositionBuffer)
 		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<GPUSumbergedTriangle>, OutputBuffer)
 
 	END_SHADER_PARAMETER_STRUCT()
@@ -34,6 +39,7 @@ public:
 
 	void BuildAndExecuteGraph(
         FRHICommandListImmediate &RHI_cmd_list,
+		AStaticMeshActor* collision_mesh,
         TRefCountPtr<FRDGPooledBuffer>* output_buffer);
 
 };

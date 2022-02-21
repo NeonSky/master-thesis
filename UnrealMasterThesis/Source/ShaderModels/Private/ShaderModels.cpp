@@ -134,6 +134,7 @@ void ShaderModelsModule::ResetGPUBoat(UTextureRenderTarget2D* input_output) {
 void ShaderModelsModule::UpdateGPUBoat(
     float speed_input,
     FVector2D velocity_input,
+	AStaticMeshActor* collision_mesh,
 	UTextureRenderTarget2D* elevation_texture,
 	UTextureRenderTarget2D* input_output,
 	UTextureRenderTarget2D* readback_texture,
@@ -143,9 +144,10 @@ void ShaderModelsModule::UpdateGPUBoat(
 	{
 		TShaderMapRef<SubmergedTrianglesShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 		ENQUEUE_RENDER_COMMAND(shader)(
-			[shader, &submerged_triangles_buffer](FRHICommandListImmediate& RHI_cmd_list) {
+			[shader, collision_mesh, &submerged_triangles_buffer](FRHICommandListImmediate& RHI_cmd_list) {
 				shader->BuildAndExecuteGraph(
 					RHI_cmd_list,
+					collision_mesh,
 					&submerged_triangles_buffer
 				);
 			}); 

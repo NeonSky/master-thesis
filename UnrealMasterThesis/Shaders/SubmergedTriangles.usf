@@ -2,16 +2,34 @@
 
 #include "Common.ush"
 
+Buffer<uint> IndexBuffer;
+Buffer<float> PositionBuffer;
 RWStructuredBuffer<SubmergedTriangle> OutputBuffer;
 
 [numthreads(N_THREADS_X, 1, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
+    uint i0 = 3*IndexBuffer[3*id.x+0];
+    uint i1 = 3*IndexBuffer[3*id.x+1];
+    uint i2 = 3*IndexBuffer[3*id.x+2];
+
+    // PF_R32G32B32 nor PF_B32G32R32 supported, so we use PF_R32_FLOAT
+    float3 v0 = float3(PositionBuffer[i0], PositionBuffer[i0+1], PositionBuffer[i0+2]) / M_TO_CM;
+    float3 v1 = float3(PositionBuffer[i1], PositionBuffer[i1+1], PositionBuffer[i1+2]) / M_TO_CM;
+    float3 v2 = float3(PositionBuffer[i2], PositionBuffer[i2+1], PositionBuffer[i2+2]) / M_TO_CM;
+
+    float height = (v0 + v1 + v2).z / 3.0f;
+    float area = length(cross(v1 - v0, v2 - v0)) / 2.0f;
+
     SubmergedTriangle t;
 
-    t.normal_and_height = float4(id.x, 2.3, 3.0, 1.0);
-    t.center_and_area   = float4(4.8, 5.5, 6.0, 1.0);
+    t.normal_and_height = float4(id.x, 2.3, 3.0, height);
 
-    OutputBuffer[id.x] = t;
+    t.center_and_area   = float4(v1, area);
+    // t.center_and_area   = float4((v0 + v1 + v2) / 3.0, area);
+
+    // Store results
+    OutputBuffer[2*id.x]   = t;
+    OutputBuffer[2*id.x+1] = t;
 
 }
