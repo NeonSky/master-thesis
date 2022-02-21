@@ -29,11 +29,17 @@ void ABoat::BeginPlay() {
 
   FetchCollisionMeshData();
   if (ocean_surface_simulation) {
+      ocean_surface_simulation->submerged.Empty();
+      UE_LOG(LogTemp, Error, TEXT("Ocean was not nullptr. Adding triangles"))
       for (auto& t : m_submerged_triangles) {
+          UE_LOG(LogTemp, Error, TEXT("\t...Adding a triangle"))
           ocean_surface_simulation->submerged.Add(t.v_L);
           ocean_surface_simulation->submerged.Add(t.v_M);
           ocean_surface_simulation->submerged.Add(t.v_H);
       }
+  }
+  else {
+      UE_LOG(LogTemp, Error, TEXT("Ocean was NULLPTR"))
   }
   
 }
@@ -234,7 +240,7 @@ void ABoat::UpdateSubmergedTriangles() {
     t.normal = FVector::CrossProduct(v2 - v0, v1 - v0).GetSafeNormal();
 
     // Debug draw the entire collision mesh
-    // DebugDrawTriangle(v0, v1, v2, FColor::Red);
+    DebugDrawTriangle(v0, v1, v2, FColor::Red);
 
     // The relevant ocean elevation samples
     float e0 = m_latest_elevations[i0] / METERS_TO_UNREAL_UNITS;
@@ -282,7 +288,7 @@ void ABoat::UpdateSubmergedTriangles() {
       t.v_H = v_H;
 
       // Debug draw fully submerged triangles
-      // DebugDrawTriangle(v_L, v_M, v_H, FColor::Green);
+      DebugDrawTriangle(v_L, v_M, v_H, FColor::Green);
 
       t.centroid = (v_L + v_M + v_H) / 3.0;
       t.height   = abs(h_L + h_M + h_H) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
@@ -308,12 +314,18 @@ void ABoat::UpdateSubmergedTriangles() {
       // We will end up with a quad in this case. We will treat as two triangles.
 
       // Triangle #1
+      t.v_L = v_L;
+      t.v_M = I_L;
+      t.v_H = v_M;
       t.centroid = (v_L + I_L + v_M) / 3.0;
       t.height   = abs(h_L + h_M + 0.0f) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
       t.area     = FVector::CrossProduct(I_L - v_L, v_M - v_L).Size() / 2.0f;
       m_submerged_triangles.Push(t);
 
       // Triangle #2
+      t.v_L = v_M;
+      t.v_M = I_M;
+      t.v_H = I_L;
       t.centroid = (v_M + I_M + I_L) / 3.0;
       t.height   = abs(h_M + 0.0f + 0.0f) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
       t.area     = FVector::CrossProduct(I_M - v_M, I_L - v_M).Size() / 2.0f;
@@ -331,8 +343,11 @@ void ABoat::UpdateSubmergedTriangles() {
       FVector J_H = v_L + t_H * (v_H - v_L);
 
       // Debug draw partially submerged triangles
-      // DebugDrawTriangle(v_L, J_M, J_H, FColor::Yellow);
+      DebugDrawTriangle(v_L, J_M, J_H, FColor::Yellow);
 
+      t.v_L = v_L;
+      t.v_M = J_M;
+      t.v_H = J_H;
       t.centroid = (v_L + J_M + J_H) / 3.0;
       t.height   = abs(h_L + 0.0f + 0.0f) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
       t.area     = FVector::CrossProduct(J_M - v_L, J_H - v_L).Size() / 2.0f;
@@ -341,6 +356,21 @@ void ABoat::UpdateSubmergedTriangles() {
 
   }
 
+
+
+
+  UE_LOG(LogTemp, Error, TEXT("Submerged triangle[0]:  v1(%f, %f)   v2(%f, %f)   v3(%f, %f)"), m_submerged_triangles[0].v_H.X, m_submerged_triangles[0].v_H.Y, m_submerged_triangles[0].v_M.X, m_submerged_triangles[0].v_M.Y, m_submerged_triangles[0].v_L.X, m_submerged_triangles[0].v_L.Y);
+
+  if (ocean_surface_simulation) {
+      ocean_surface_simulation->submerged.Empty();
+      //UE_LOG(LogTemp, Error, TEXT("Ocean was not nullptr. Adding triangles"))
+          for (auto& t : m_submerged_triangles) {
+              //UE_LOG(LogTemp, Error, TEXT("\t...Adding a triangle"))
+              ocean_surface_simulation->submerged.Add(t.v_L);
+              ocean_surface_simulation->submerged.Add(t.v_M);
+              ocean_surface_simulation->submerged.Add(t.v_H);
+          }
+  }
 }
 
 void ABoat::ApplyGravity() {
