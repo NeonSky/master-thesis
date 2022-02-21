@@ -135,32 +135,22 @@ void ShaderModelsModule::ComputeFourierComponents(
 void ShaderModelsModule::ComputeeWave(
 	float t, 
 	float L, 
-	int offsetSign_x,
-	int offsetSign_y,
 	UTextureRenderTarget2D* eWave_h, 
-	UTextureRenderTarget2D* eWave_hPrev,
-	UTextureRenderTarget2D* eWave_v, 
-	UTextureRenderTarget2D* eWave_vPrev) {
+	UTextureRenderTarget2D* eWave_v) {
 
 	TShaderMapRef<eWaveShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	UTextureRenderTarget2D* eWave_h_param = eWave_h;
-	UTextureRenderTarget2D* eWave_hPrev_param = eWave_hPrev;
 	UTextureRenderTarget2D* eWave_v_param = eWave_v;
-	UTextureRenderTarget2D* eWave_vPrev_dz_param = eWave_vPrev;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, t, L, offsetSign_x, offsetSign_y, eWave_h_param, eWave_hPrev_param, eWave_v_param, eWave_vPrev_dz_param](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, t, L, eWave_h_param, eWave_v_param](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
 			t,
 			L,
-			offsetSign_x,
-			offsetSign_y,
 			eWave_h_param,
-			eWave_hPrev_param,
-			eWave_v_param,
-			eWave_vPrev_dz_param
+			eWave_v_param
 		);
 	});
 
@@ -222,8 +212,8 @@ void ShaderModelsModule::ComputeObstruction(
 	UTextureRenderTarget2D* vPrev_rtt,
 	float xPos,
 	float yPos,
-	int offset_x,
-	int offset_y) {
+	int speedScale,
+	int preFFT) {
 
 	TShaderMapRef<ObstructionShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
@@ -237,7 +227,7 @@ void ShaderModelsModule::ComputeObstruction(
 	int L_param = L;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, SubmergedTriangles, L_param, obstructionMap_rtt_param, h_rtt_param, v_rtt_param, hPrev_rtt_param, vPrev_rtt_param, xPos_param, yPos_param, offset_x, offset_y](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, SubmergedTriangles, L_param, obstructionMap_rtt_param, h_rtt_param, v_rtt_param, hPrev_rtt_param, vPrev_rtt_param, xPos_param, yPos_param, speedScale, preFFT](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
 			SubmergedTriangles,
@@ -250,8 +240,8 @@ void ShaderModelsModule::ComputeObstruction(
 			vPrev_rtt_param,
 			xPos_param,
 			yPos_param,
-			offset_x,
-			offset_y
+			speedScale,
+			preFFT
 		);
 	});
 }

@@ -27,12 +27,8 @@ public:
 	void ComputeeWave(
 		float t,
 		float L,
-		int offsetSign_x,
-		int offsetSign_y,
 		UTextureRenderTarget2D* eWave_h,
-		UTextureRenderTarget2D* eWave_hPrev,
-		UTextureRenderTarget2D* eWave_v,
-		UTextureRenderTarget2D* eWave_vPrev
+		UTextureRenderTarget2D* eWave_v
 	);
 
 	void ComputeAdd(
@@ -57,8 +53,8 @@ public:
 		UTextureRenderTarget2D* vPrev_rtt,
 		float xPos, 
 		float yPos,
-		int offset_x,
-		int offset_y);
+		int speedScale,
+		int preFFT);
 
 	void SampleElevationPoints(UTextureRenderTarget2D* elevations, TArray<FVector2D> input_sample_coordinates, TArray<float>* output);
 
