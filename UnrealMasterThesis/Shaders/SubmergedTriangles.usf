@@ -2,6 +2,8 @@
 
 #include "Common.ush"
 
+float4x4 ModelMatrix;
+
 Buffer<uint> IndexBuffer;
 Buffer<float> PositionBuffer;
 // Texture2D<float4> ElevationTexture;
@@ -27,6 +29,10 @@ void sort(inout SortItem s[3]) {
     if (s[1].h > s[2].h) swap(s[1], s[2]);
 }
 
+float3 homogenize(float4 v) {
+    return v.xyz / v.w;
+}
+
 [numthreads(N_THREADS_X, 1, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
@@ -35,9 +41,35 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     uint i2 = 3*IndexBuffer[3*id.x+2];
 
     // PF_R32G32B32 nor PF_B32G32R32 supported, so we use PF_R32_FLOAT
-    float3 v0 = float3(PositionBuffer[i0], PositionBuffer[i0+1], PositionBuffer[i0+2]) / M_TO_CM;
-    float3 v1 = float3(PositionBuffer[i1], PositionBuffer[i1+1], PositionBuffer[i1+2]) / M_TO_CM;
-    float3 v2 = float3(PositionBuffer[i2], PositionBuffer[i2+1], PositionBuffer[i2+2]) / M_TO_CM;
+    float3 v0 = float3(PositionBuffer[i0], PositionBuffer[i0+1], PositionBuffer[i0+2]);
+    float3 v1 = float3(PositionBuffer[i1], PositionBuffer[i1+1], PositionBuffer[i1+2]);
+    float3 v2 = float3(PositionBuffer[i2], PositionBuffer[i2+1], PositionBuffer[i2+2]);
+
+    // float4x4 model_matrix = {
+    //     0.0, -0.52, -0.0, 0.0,
+    //     0.52, 0.0, 0.0, 0.0,
+    //     0.0, 0.0, 0.52, 0.0,
+    //     57.0, 0.0, -30.0, 1.0,
+    // };
+    // float4x4 model_matrix = {
+    //     1.0 , 0.0, 0.0, 0.0,
+    //     0.0 , 1.0, 0.0, 0.0,
+    //     0.0 , 0.0, 1.0, 0.0,
+    //     57.0, 0.0, -30.0, 1.0,
+    // };
+
+    // float4x4 model_matrix = -ModelMatrix;
+
+    // Convert vertices to world space
+    // v0 = mul(transpose(ModelMatrix), v0).xyz / M_TO_CM; // doesn't work with trans
+    // float4 temp = mul(ModelMatrix, float4(v0, 1.0));
+    // float4 temp = mul(model_matrix, float4(v0, 1.0));
+    v0 = homogenize(mul(float4(v0, 1.0), ModelMatrix)) / M_TO_CM; // doesn't work with trans either
+    v1 = homogenize(mul(float4(v1, 1.0), ModelMatrix)) / M_TO_CM; // doesn't work with trans either
+    v2 = homogenize(mul(float4(v2, 1.0), ModelMatrix)) / M_TO_CM; // doesn't work with trans either
+    // v0 = transform.TransformPosition(v0);
+    // v1 = transform.TransformPosition(v1);
+    // v2 = transform.TransformPosition(v2);
 
     float3 normal = normalize(cross(v2 - v0, v1 - v0));
 

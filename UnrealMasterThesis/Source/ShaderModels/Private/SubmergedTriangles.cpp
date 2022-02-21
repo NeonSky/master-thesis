@@ -20,6 +20,8 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
     FParameters *PassParameters;
     PassParameters = graph_builder.AllocParameters<SubmergedTrianglesShader::FParameters>();
 
+    PassParameters->ModelMatrix = collision_mesh->GetActorTransform().ToMatrixWithScale();
+
     FStaticMeshLODResources& mesh_res = collision_mesh->GetStaticMeshComponent()->GetStaticMesh()->RenderData->LODResources[0];
     PassParameters->IndexBuffer = RHI_cmd_list.CreateShaderResourceView(mesh_res.IndexBuffer.IndexBufferRHI);
     PassParameters->PositionBuffer = RHI_cmd_list.CreateShaderResourceView(mesh_res.VertexBuffers.PositionVertexBuffer.VertexBufferRHI, sizeof(float), PF_R32_FLOAT);

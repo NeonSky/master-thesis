@@ -21,6 +21,8 @@ public:
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, ) 
 
+		SHADER_PARAMETER(FMatrix, ModelMatrix)
+
 		SHADER_PARAMETER_SRV(Buffer<uint32>, IndexBuffer)
 		SHADER_PARAMETER_SRV(Buffer<float>, PositionBuffer)
 		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<GPUSumbergedTriangle>, OutputBuffer)

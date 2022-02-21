@@ -43,8 +43,7 @@ void ABoat::FetchCollisionMeshData() {
 
   FTransform transform = collision_mesh->GetActorTransform();
   for (auto& v : m_collision_mesh_vertices) {
-    // v = transform.TransformPosition(v) / METERS_TO_UNREAL_UNITS;
-    v = v / METERS_TO_UNREAL_UNITS;
+    v = transform.TransformPosition(v) / METERS_TO_UNREAL_UNITS;
   }
 
   // Total surface area
@@ -270,7 +269,7 @@ void ABoat::UpdateSubmergedTriangles() {
       t.v_H = v_H;
 
       // Debug draw fully submerged triangles
-      // DebugDrawTriangle(v_L, v_M, v_H, FColor::Green);
+      DebugDrawTriangle(v_L, v_M, v_H, FColor::Green);
 
       t.centroid = (v_L + v_M + v_H) / 3.0;
       t.height   = abs(h_L + h_M + h_H) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
@@ -387,7 +386,7 @@ void ABoat::ApplyUserInput() {
 
   float submerged_area = 0.0f;
   for (auto& t : m_submerged_triangles) {
-    UE_LOG(LogTemp, Warning, TEXT("sub area: %f"), t.area);
+    // UE_LOG(LogTemp, Warning, TEXT("sub area: %f"), t.area);
     submerged_area += t.area;
   }
   float r_s = submerged_area / m_collision_mesh_surface_area;
