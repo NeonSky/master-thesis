@@ -113,10 +113,10 @@ void ObstructionShader::BuildAndExecuteGraph(
     UTextureRenderTarget2D* vPrev_rtt,
     float xPos,
     float yPos,
-    float boat_dx,
-    float boat_dy,
-    int offset_x,
-    int offset_y) {
+    int boat_dx,
+    int boat_dy,
+    float speedScale,
+    int preFFT) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
 
@@ -137,8 +137,8 @@ void ObstructionShader::BuildAndExecuteGraph(
 
     PassParameters->numTriangles = numTriangles;
 	PassParameters->L = L;
-    PassParameters->offset_x = offset_x;
-    PassParameters->offset_y = offset_y;
+    PassParameters->speedScale = speedScale;
+    PassParameters->preFFT = preFFT;
 
 
 

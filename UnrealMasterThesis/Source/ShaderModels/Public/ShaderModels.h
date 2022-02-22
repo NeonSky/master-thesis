@@ -53,9 +53,9 @@ public:
 		UTextureRenderTarget2D* vPrev_rtt,
 		float xPos, 
 		float yPos,
-		float boat_dx,
-		float boat_dy,
-		int speedScale,
+		int boat_dx,
+		int boat_dy,
+		float speedScale,
 		int preFFT);
 
 	void SampleElevationPoints(UTextureRenderTarget2D* elevations, TArray<FVector2D> input_sample_coordinates, TArray<float>* output);
