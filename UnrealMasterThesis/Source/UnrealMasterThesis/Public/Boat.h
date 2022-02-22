@@ -23,7 +23,7 @@ struct SubmergedTriangle {
 
 	FVector normal;   // Points out from the hull
 	FVector centroid; // The center point of the triangle
-	float height;     // Relative (positive) height below water water for the centroid
+	float height;     // Relative (positive) height below water water for the centroid. TODO: maybe rename to depth?
 	float area;       // The surface area of the triangle
 	float velocity;   // The (point) velocity at which the centroid is moving
 };
@@ -98,8 +98,8 @@ private:
 
 	void ApplyGravity();
 	void ApplyBuoyancy();
-	void ApplyResistanceForces();
-	void ApplyUserInput();
+	void ApplyResistanceForces(float r_s);
+	void ApplyUserInput(float r_s);
 
 	void UseSlowSpeed();
 	void UseNormalSpeed();
