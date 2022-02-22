@@ -225,15 +225,21 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	static float boatPrevY = 0.0;
 	static int boatPrevXp = 0;
 	static int boatPrevYp = 0;
-	
+	static float uvX = boatX;
+	static float uvY = boatY;
 	if (first) {
 		last_ran = realtimeSeconds;
-		//m_shader_models_module.ComputeAdd(this->ewave_h_rtt, this->eWave_addition_texture, this->ewave_h_rtt);
+		m_shader_models_module.ComputeAdd(this->ewave_h_rtt, this->eWave_addition_texture, this->ewave_h_rtt);
+		m_shader_models_module.ComputeAdd(this->ewave_hPrev_rtt, this->eWave_addition_texture, this->ewave_hPrev_rtt);
+		m_shader_models_module.ComputeAdd(this->ewave_v_rtt, this->eWave_addition_texture, this->ewave_v_rtt);
+		m_shader_models_module.ComputeAdd(this->ewave_vPrev_rtt, this->eWave_addition_texture, this->ewave_vPrev_rtt);
 		first = false;
 		boatPrevX = boatX;
 		boatPrevY = boatY;
 		boatPrevXp = 0;
 		boatPrevYp = 0;
+		uvX = boatX;
+		uvY = boatY;
 	}
 
 	if (true) {
@@ -248,18 +254,36 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		int yp = (boatY * 50.0f) / 39.0625f;
 		int dxp = boatPrevXp - xp;
 		int dyp = boatPrevYp - yp;
-		if (dxp != 0) {
+		
+		if (abs(dxp) >= 16) {
 			// move the simulation in the x-direction
-			boatPrevXp = xp; // The last time we moved the simulation, we were on this pixel location.
+			boatPrevXp = xp; 
+			dxp *= -1;
+			uvX = boatX;
 		}
-		dxp *= -1;
-	
+		else {
+			dxp = 0;
+		}
+		if (abs(dyp) >= 16) {
+			// move the simulation in the y-direction
+			boatPrevYp = yp; 
+			dyp *= -1;
+			uvY = boatY;
+		}
+		else {
+			dyp = 0;
+		}
+		float dxm = boatX - boatPrevX;
+		float dym = boatY - boatPrevY;
+
+		float boatSpeed = sqrt((dxm * dxm) + (dym * dym));
+		//UE_LOG(LogTemp, Error, TEXT("speed: %f"), boatSpeed);
 		UE_LOG(LogTemp, Error, TEXT("pixel x: %d,     last move, pixel x: %d,      dxp: %d"), xp, boatPrevXp, dxp);
 
 		float scale = 1.0f / ((float)N * (float)N);
 		float dx = boatX - boatPrevX;
 		float dy = boatY - boatPrevY;
-		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, boatX, boatY, dxp, 0, speed, 1);
+		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, uvX, uvY, dxp, 0, boatSpeed, 1);
 		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
 		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
 		m_shader_models_module.ComputeeWave(0.016, L, this->ewave_h_rtt, this->ewave_v_rtt);
@@ -267,7 +291,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt, 0);
 		m_shader_models_module.ComputeScale(this->ewave_h_rtt, this->ewave_hPrev_rtt, scale);
 		m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, scale);
-		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, boatX, boatY, 0, 0, speed, 0);
+		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, uvX, uvY, 0, 0, 0, 0);
 		last_ran = realtimeSeconds;
 	}
 	boatPrevX = boatX;

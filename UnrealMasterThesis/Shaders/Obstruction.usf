@@ -11,10 +11,10 @@ RWTexture2D<float4> hPrev_rtt;
 RWTexture2D<float4> vPrev_rtt;
 float xPos; // Boat position in metres
 float yPos;
-float boat_dx;
-float boat_dy;
-int offset_x; // TODO: rename, this toggles wakes depending on if the boat is driving or not. TODO: make it a float depending on speed or something
-int offset_y; // TODO: rename, this toggles steps that should only be performed before the FFTs, not the second time.
+int boat_dx;
+int boat_dy;
+float speedScale;
+int preFFT; 
 
 
 
@@ -54,7 +54,6 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	// 		compute the obstruction map from the submerged triangles.
 	// ----------------------------------------------------------------------------------
 	
-	int preFFT = offset_y;
 	int2 sampleCoordinates = int2(id.x, id.y);
 	if(preFFT == 1){
 		// TODO: offset when sampling from prev textures to move the simulation.
@@ -121,8 +120,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	//		Note: this should only be done before FFT
 	// ----------------------------------------------------------------------------------
 	if(preFFT == 1){
-		int speedScaleFactor = offset_x;
-		float scale = 0.02 * speedScaleFactor;
+		float scale = 0.15 * speedScale;
 		float obsCompliment = 1.0 - obstructionMap_rtt[id.xy];
 		h += scale * obsCompliment;
 	}

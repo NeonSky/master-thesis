@@ -28,5 +28,5 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
   }
   float t2 = 0.0;
   // We flip t1 and t2 here since we perform IFFT
-  result[id.xy] = float4(t1, 0.0, 0.0, 1.0);
+  result[id.xy] = float4(0.0, 0.0, 0.0, 1.0);
 }

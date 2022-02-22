@@ -24,10 +24,10 @@ public:
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, vPrev_rtt)
 		SHADER_PARAMETER(float, xPos)
 		SHADER_PARAMETER(float, yPos)
-		SHADER_PARAMETER(float, boat_dx)
-		SHADER_PARAMETER(float, boat_dy)
-		SHADER_PARAMETER(int, offset_x)
-		SHADER_PARAMETER(int, offset_y)
+		SHADER_PARAMETER(int, boat_dx)
+		SHADER_PARAMETER(int, boat_dy)
+		SHADER_PARAMETER(float, speedScale)
+		SHADER_PARAMETER(int, preFFT)
 
 	END_SHADER_PARAMETER_STRUCT()
 
@@ -54,10 +54,10 @@ public:
 		UTextureRenderTarget2D* vPrev_rtt,
 		float xPos,
 		float yPos,
-		float boat_dx,
-		float boat_dy,
-		int offset_x,
-		int offset_y
+		int boat_dx,
+		int boat_dy,
+		float speedScale,
+		int preFFT
 	);
 private:
 };
