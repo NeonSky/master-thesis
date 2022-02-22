@@ -374,7 +374,7 @@ void ABoat::UpdateSubmergedTriangles() {
   ocean_surface_simulation->boatX = m_rigidbody.position.X;
   ocean_surface_simulation->boatY = m_rigidbody.position.Y;
 
-  UE_LOG(LogTemp, Error, TEXT("Boat pos: %f, %f"), m_rigidbody.position.X, m_rigidbody.position.Y);
+  //UE_LOG(LogTemp, Error, TEXT("Boat pos: %f, %f"), m_rigidbody.position.X, m_rigidbody.position.Y);
 }
 
 void ABoat::ApplyGravity() {
