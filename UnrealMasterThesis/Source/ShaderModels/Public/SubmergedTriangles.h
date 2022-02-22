@@ -25,6 +25,10 @@ public:
 
 		SHADER_PARAMETER_SRV(Buffer<uint32>, IndexBuffer)
 		SHADER_PARAMETER_SRV(Buffer<float>, PositionBuffer)
+
+		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, ElevationTexture)
+		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, BoatTexture)
+
 		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<GPUSumbergedTriangle>, OutputBuffer)
 
 	END_SHADER_PARAMETER_STRUCT()
@@ -42,6 +46,8 @@ public:
 	void BuildAndExecuteGraph(
         FRHICommandListImmediate &RHI_cmd_list,
 		AStaticMeshActor* collision_mesh,
+        UTextureRenderTarget2D* elevation_texture,
+        UTextureRenderTarget2D* boat_texture,
         TRefCountPtr<FRDGPooledBuffer>* output_buffer);
 
 };

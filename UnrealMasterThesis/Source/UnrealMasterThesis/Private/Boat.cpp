@@ -213,9 +213,9 @@ void ABoat::UpdateSubmergedTriangles() {
     FVector v2 = m_collision_mesh_vertices[i2];
 
     // Convert vertices to world space
-    // v0 = transform.TransformPosition(v0);
-    // v1 = transform.TransformPosition(v1);
-    // v2 = transform.TransformPosition(v2);
+    v0 = transform.TransformPosition(v0);
+    v1 = transform.TransformPosition(v1);
+    v2 = transform.TransformPosition(v2);
 
     // Compute normal (which is identical regardless of cut)
     t.normal = FVector::CrossProduct(v2 - v0, v1 - v0).GetSafeNormal();

@@ -53,6 +53,28 @@ float3 rotate_vector_by_quat(float3 v, float4 q) {
     return qmul(q, qmul(float4(v, 0), q_conj)).xyz;
 }
 
+// http://www.songho.ca/opengl/gl_quaternion.html
+float4x4 quat_to_mat(float4 q) {
+
+    float x = q.x;
+    float y = q.y;
+    float z = q.z;
+    float w = q.w;
+
+    float x2 = x*x;
+    float y2 = y*y;
+    float z2 = z*z;
+
+    float4x4 rotation_matrix = {
+        1.0 - 2.0*y2 - 2.0*z2, 2.0*x*y - 2.0*w*z    , 2.0*x*z + 2.0*w*y    , 0.0,
+        2.0*x*y + 2.0*w*z    , 1.0 - 2.0*x2 - 2.0*z2, 2.0*y*z - 2.0*w*x    , 0.0,
+        2.0*x*z - 2.0*w*y    , 2.0*y*z + 2.0*w*x    , 1.0 - 2.0*x2 - 2.0*y2, 0.0,
+        0.0                  , 0.0                  , 0.0                  , 1.0,
+    };
+
+    return rotation_matrix;
+}
+
 /* Rigidbody stuff */
 
 struct Rigidbody {

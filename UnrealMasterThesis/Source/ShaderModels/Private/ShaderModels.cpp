@@ -144,10 +144,12 @@ void ShaderModelsModule::UpdateGPUBoat(
 	{
 		TShaderMapRef<SubmergedTrianglesShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 		ENQUEUE_RENDER_COMMAND(shader)(
-			[shader, collision_mesh, &submerged_triangles_buffer](FRHICommandListImmediate& RHI_cmd_list) {
+			[shader, collision_mesh, elevation_texture, input_output, &submerged_triangles_buffer](FRHICommandListImmediate& RHI_cmd_list) {
 				shader->BuildAndExecuteGraph(
 					RHI_cmd_list,
 					collision_mesh,
+					elevation_texture,
+					input_output,
 					&submerged_triangles_buffer
 				);
 			}); 

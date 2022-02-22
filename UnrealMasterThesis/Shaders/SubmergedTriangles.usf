@@ -6,7 +6,8 @@ float4x4 ModelMatrix;
 
 Buffer<uint> IndexBuffer;
 Buffer<float> PositionBuffer;
-// Texture2D<float4> ElevationTexture;
+Texture2D<float4> ElevationTexture;
+Texture2D<float4> BoatTexture;
 RWStructuredBuffer<SubmergedTriangle> OutputBuffer;
 
 struct SortItem {
@@ -36,6 +37,18 @@ float3 homogenize(float4 v) {
 [numthreads(N_THREADS_X, 1, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
+    float3 position    = BoatTexture[uint2(0,0)].rgb; // RGB of (0,0) stores position
+    float4 orientation = BoatTexture[uint2(1,0)]; // RGBA of (1,0) stores orientation
+
+    float4x4 transform_matrix = {
+        1.0, 0.0, 0.0, position.x * M_TO_CM,
+        0.0, 1.0, 0.0, position.y * M_TO_CM,
+        0.0, 0.0, 1.0, position.z * M_TO_CM,
+        0.0, 0.0, 0.0, 1.0,
+    };
+    float4x4 rotation_matrix = quat_to_mat(orientation);
+    float4x4 model_matrix = mul(transform_matrix, mul(rotation_matrix, transpose(ModelMatrix)));
+
     uint i0 = 3*IndexBuffer[3*id.x+0];
     uint i1 = 3*IndexBuffer[3*id.x+1];
     uint i2 = 3*IndexBuffer[3*id.x+2];
@@ -45,31 +58,10 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     float3 v1 = float3(PositionBuffer[i1], PositionBuffer[i1+1], PositionBuffer[i1+2]);
     float3 v2 = float3(PositionBuffer[i2], PositionBuffer[i2+1], PositionBuffer[i2+2]);
 
-    // float4x4 model_matrix = {
-    //     0.0, -0.52, -0.0, 0.0,
-    //     0.52, 0.0, 0.0, 0.0,
-    //     0.0, 0.0, 0.52, 0.0,
-    //     57.0, 0.0, -30.0, 1.0,
-    // };
-    // float4x4 model_matrix = {
-    //     1.0 , 0.0, 0.0, 0.0,
-    //     0.0 , 1.0, 0.0, 0.0,
-    //     0.0 , 0.0, 1.0, 0.0,
-    //     57.0, 0.0, -30.0, 1.0,
-    // };
-
-    // float4x4 model_matrix = -ModelMatrix;
-
     // Convert vertices to world space
-    // v0 = mul(transpose(ModelMatrix), v0).xyz / M_TO_CM; // doesn't work with trans
-    // float4 temp = mul(ModelMatrix, float4(v0, 1.0));
-    // float4 temp = mul(model_matrix, float4(v0, 1.0));
-    v0 = homogenize(mul(float4(v0, 1.0), ModelMatrix)) / M_TO_CM; // doesn't work with trans either
-    v1 = homogenize(mul(float4(v1, 1.0), ModelMatrix)) / M_TO_CM; // doesn't work with trans either
-    v2 = homogenize(mul(float4(v2, 1.0), ModelMatrix)) / M_TO_CM; // doesn't work with trans either
-    // v0 = transform.TransformPosition(v0);
-    // v1 = transform.TransformPosition(v1);
-    // v2 = transform.TransformPosition(v2);
+    v0 = homogenize(mul(model_matrix, float4(v0, 1.0))) / M_TO_CM; // doesn't work with trans either
+    v1 = homogenize(mul(model_matrix, float4(v1, 1.0))) / M_TO_CM; // doesn't work with trans either
+    v2 = homogenize(mul(model_matrix, float4(v2, 1.0))) / M_TO_CM; // doesn't work with trans either
 
     float3 normal = normalize(cross(v2 - v0, v1 - v0));
 
@@ -110,14 +102,6 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
         float3 center = (v_L + v_M + v_H) / 3.0;
         float height  = abs(h_L + h_M + h_H) / 3.0;
         float area    = length(cross(v_H - v_L, v_M - v_L)) / 2.0;
-        // float area    = length(v_H - v_L);
-        // float area    = 0.318;
-
-        // float3 center = v0; // -1.662109, -3.054688, -0.225830
-        // float3 center = v1; // -0.166138, -2.718750, -0.668945
-        // float3 center = v2; // -1.580078, -1.342773, -0.225830
-
-        // float3 center = v_L;
 
         t.normal_and_height = float4(normal, height);
         t.center_and_area   = float4(center, area);
