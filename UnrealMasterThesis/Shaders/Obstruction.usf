@@ -20,7 +20,7 @@ int preFFT;
 
 float T(float x_y){
 	float L_in_pixels = 256.0; // TODO: make these in parameters to the shader
-	float taper_size = 32.0;
+	float taper_size = 8.0;
 	if(x_y / taper_size < 1.0){
 		return x_y / taper_size;
 	}
@@ -58,9 +58,9 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	if(preFFT == 1){
 		// TODO: offset when sampling from prev textures to move the simulation.
 		float metres_per_pixel = 0.390625f;
-		float dx_in_pixels = boat_dx / metres_per_pixel;
-		float dy_in_pixels = boat_dy / metres_per_pixel;
-		sampleCoordinates = int2(id.x + dx_in_pixels, id.y + dy_in_pixels);
+		int dx_in_pixels = 0; //boat_dx / metres_per_pixel;
+		int dy_in_pixels = 0; //boat_dy / metres_per_pixel;
+		sampleCoordinates = int2(id.x, id.y); //int2(id.x + dx_in_pixels, id.y + dy_in_pixels);
 	}
 	float h = hPrev_rtt[sampleCoordinates.xy].r;
 	float v = vPrev_rtt[sampleCoordinates.xy].r;
@@ -69,10 +69,10 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 		// Compute the obstruction map
 		// it should be 0.0 where the boats submerged triangles are. Rest should be 1.0
 		float half_L_in_metres = 50.0f;
-		float oldMinX = xPos - half_L_in_metres; // TODO: replace 0 with offset to move with the boat.
-		float oldMaxX = xPos + half_L_in_metres;
-		float oldMinY = yPos - half_L_in_metres;
-		float oldMaxY = yPos + half_L_in_metres;
+		float oldMinX = 0 - half_L_in_metres; // TODO: replace 0 with offset to move with the boat.
+		float oldMaxX = 0 + half_L_in_metres;
+		float oldMinY = 0 - half_L_in_metres;
+		float oldMaxY = 0 + half_L_in_metres;
 		int N = 256;
 		obstructionMap_rtt[id.xy] = float4(1.0, 0.0, 0.0, 1.0);
 		for(int i = 0; i < (numTriangles * 3); i+=3){
@@ -95,7 +95,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	// ----------------------------------------------------------------------------------
 	// Step 1, Apply obstruction:
 	// ----------------------------------------------------------------------------------
-	// h *= obstructionMap_rtt[id.xy].r;
+	h *= obstructionMap_rtt[id.xy].r;
 	
 	// ----------------------------------------------------------------------------------
 	// Step 2, Apply ambient waves: (TODO: the entire step)
@@ -120,7 +120,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	//		Note: this should only be done before FFT
 	// ----------------------------------------------------------------------------------
 	if(preFFT == 1){
-		float scale = 0.15 * speedScale;
+		float scale = 3.0 * speedScale;
 		float obsCompliment = 1.0 - obstructionMap_rtt[id.xy];
 		h += scale * obsCompliment;
 	}
