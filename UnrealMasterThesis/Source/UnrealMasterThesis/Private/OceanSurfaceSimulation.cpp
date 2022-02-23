@@ -255,7 +255,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		int dxp = boatPrevXp - xp;
 		int dyp = boatPrevYp - yp;
 		
-		if (abs(dxp) >= 16) {
+		if (abs(dxp) >= 1600) {
 			// move the simulation in the x-direction
 			boatPrevXp = xp; 
 			//dxp *= -1;
@@ -264,7 +264,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		else {
 			dxp = 0;
 		}
-		if (abs(dyp) >= 16) {
+		if (abs(dyp) >= 1600) {
 			// move the simulation in the y-direction
 			boatPrevYp = yp; 
 			//dyp *= -1;
@@ -279,6 +279,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		float boatSpeed = sqrt((dxm * dxm) + (dym * dym));
 		//UE_LOG(LogTemp, Error, TEXT("speed: %f"), boatSpeed);
 		UE_LOG(LogTemp, Error, TEXT("pixel x: %d,     last move, pixel x: %d,      dxp: %d"), xp, boatPrevXp, dxp);
+		UE_LOG(LogTemp, Error, TEXT("pixel y: %d,     last move, pixel y: %d,      dyp: %d\n\n\n"), yp, boatPrevYp, dyp);
 
 		float scale = 1.0f / ((float)N * (float)N);
 		float dx = boatX - boatPrevX;
