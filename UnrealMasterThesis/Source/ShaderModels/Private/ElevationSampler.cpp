@@ -63,7 +63,7 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
   // output_texture
 	FRDGTextureDesc OutTextureDesc = FRDGTextureDesc::Create2D(
 		FIntPoint(N, 1),
-		PF_FloatRGBA,
+		PF_FloatRGBA, // TODO: R32?
 		FClearValueBinding(),
 		TexCreate_UAV,
 		1,
@@ -119,10 +119,10 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
     );
 
     // UE_LOG(LogTemp, Warning, TEXT("READBACK START"));
-		output->SetNum(rdata.Num());
-    for (int i = 0; i < rdata.Num(); i++) {
-      // UE_LOG(LogTemp, Warning, TEXT("%i: %f"), i, rdata[i].R.GetFloat());
-			(*output)[i] = rdata[i].R.GetFloat();
+	output->SetNum(rdata.Num());
+	for (int i = 0; i < rdata.Num(); i++) {
+		// UE_LOG(LogTemp, Warning, TEXT("%i: %f"), i, rdata[i].R.GetFloat());
+		(*output)[i] = rdata[i].R.GetFloat();
     }
 
   }

@@ -41,13 +41,14 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     float4 orientation = BoatTexture[uint2(1,0)]; // RGBA of (1,0) stores orientation
 
     float4x4 transform_matrix = {
-        1.0, 0.0, 0.0, position.x * M_TO_CM,
-        0.0, 1.0, 0.0, position.y * M_TO_CM,
-        0.0, 0.0, 1.0, position.z * M_TO_CM,
+        1.0, 0.0, 0.0, position.x,// * M_TO_CM,
+        0.0, 1.0, 0.0, position.y,// * M_TO_CM,
+        0.0, 0.0, 1.0, position.z,// * M_TO_CM,
         0.0, 0.0, 0.0, 1.0,
     };
     float4x4 rotation_matrix = quat_to_mat(orientation);
     float4x4 model_matrix = mul(transform_matrix, mul(rotation_matrix, transpose(ModelMatrix)));
+    float4x4 test = mul(transform_matrix, rotation_matrix);
 
     uint i0 = 3*IndexBuffer[3*id.x+0];
     uint i1 = 3*IndexBuffer[3*id.x+1];
@@ -59,15 +60,25 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     float3 v2 = float3(PositionBuffer[i2], PositionBuffer[i2+1], PositionBuffer[i2+2]);
 
     // Convert vertices to world space
-    v0 = homogenize(mul(model_matrix, float4(v0, 1.0))) / M_TO_CM; // doesn't work with trans either
-    v1 = homogenize(mul(model_matrix, float4(v1, 1.0))) / M_TO_CM; // doesn't work with trans either
-    v2 = homogenize(mul(model_matrix, float4(v2, 1.0))) / M_TO_CM; // doesn't work with trans either
+    v0 = homogenize(mul(transpose(ModelMatrix), float4(v0, 1.0))) / M_TO_CM;
+    v1 = homogenize(mul(transpose(ModelMatrix), float4(v1, 1.0))) / M_TO_CM;
+    v2 = homogenize(mul(transpose(ModelMatrix), float4(v2, 1.0))) / M_TO_CM;
+
+    v0 = homogenize(mul(test, float4(v0, 1.0)));
+    v1 = homogenize(mul(test, float4(v1, 1.0)));
+    v2 = homogenize(mul(test, float4(v2, 1.0)));
 
     float3 normal = normalize(cross(v2 - v0, v1 - v0));
 
-    float e0 = 0.0;//sample_elevation(ElevationTexture, v0.xy * M_TO_CM) / M_TO_CM;
-    float e1 = 0.0;//sample_elevation(ElevationTexture, v1.xy * M_TO_CM) / M_TO_CM;
-    float e2 = 0.0;//sample_elevation(ElevationTexture, v2.xy * M_TO_CM) / M_TO_CM;
+    // float e0 = sample_elevation(ElevationTexture, v0.xy * M_TO_CM);
+    // float e1 = sample_elevation(ElevationTexture, v1.xy * M_TO_CM);
+    // float e2 = sample_elevation(ElevationTexture, v2.xy * M_TO_CM);
+    // float e0 = sample_elevation(ElevationTexture, float2(0.123, 0.307)); // float precision is not an issue
+    // float e1 = sample_elevation(ElevationTexture, float2(0.123, 0.307));
+    // float e2 = sample_elevation(ElevationTexture, float2(0.123, 0.307));
+    float e0 = sample_elevation(ElevationTexture, float2(0.0, 0.0)) / M_TO_CM; // float precision is not an issue
+    float e1 = sample_elevation(ElevationTexture, float2(0.0, 0.0)) / M_TO_CM;
+    float e2 = sample_elevation(ElevationTexture, float2(0.0, 0.0)) / M_TO_CM;
 
     float h0 = v0.z - e0;
     float h1 = v1.z - e0;
@@ -88,6 +99,19 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     float3 v_L = s[0].v;
     float3 v_M = s[1].v;
     float3 v_H = s[2].v;
+
+    // debug
+    // if (id.x == 0) {
+    //     SubmergedTriangle t;
+
+    //     t.normal_and_height = float4(v0, e0);
+    //     // t.normal_and_height = float4(0.1, 0.2, 0.3, 0.0);
+    //     t.center_and_area  = float4(0.0, 0.0, 0.0, 0.0);
+
+    //     OutputBuffer[2*id.x]   = t;
+    //     OutputBuffer[2*id.x+1] = t;
+    //     return;
+    // }
 
     ////////////////////////////////////////////
     /* Cut into submerged triangles (3 cases) */

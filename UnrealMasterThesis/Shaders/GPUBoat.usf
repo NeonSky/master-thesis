@@ -37,15 +37,22 @@ void apply_gravity(inout Rigidbody rigidbody) {
 
 void apply_buoyancy(inout Rigidbody rigidbody) {
 
-    // float elevation = sample_elevation(ElevationTexture, rigidbody.position.xy * M_TO_CM) / M_TO_CM;
-    // float height = rigidbody.position.z - elevation;
-    float height = rigidbody.position.z;
+    for (int i = 0; i < N_TRIANGLES; i++) {
+        SubmergedTriangle t = SubmergedTrianglesBuffer[i];
 
-    if (height < 0.0) {
-        height = -height;
-        float area = 27.045519; // manually copied from CPU
-        float3 buoyancy_force = DENSITY_OF_WATER * GRAVITY * height * area * float3(0.0, 0.0, 1.0);
-        add_force_at_position(rigidbody, buoyancy_force, rigidbody.position);
+        float3 normal = t.normal_and_height.xyz;
+        float height  = t.normal_and_height.w;
+        float3 center = t.center_and_area.xyz;
+        float area    = t.center_and_area.w;
+
+        // Ignore non-positive areas
+        if (area > 0.0) {
+
+            float3 buoyancy_force = DENSITY_OF_WATER * GRAVITY * height * area * normal;
+            buoyancy_force = float3(0.0, 0.0, abs(buoyancy_force.z));
+
+            add_force_at_position(rigidbody, buoyancy_force, center);
+        }
     }
 }
 
@@ -88,7 +95,7 @@ void apply_resistance_forces(inout Rigidbody rigidbody, float r_s) {
 }
 
 float compute_ratio_of_submerge() {
-    float tot_area = 27.045519; // manually copied from CPU
+    float tot_area = 27.045518875122; // manually copied from CPU
     float submerged_area = 0.0f;
 
     for (int i = 0; i < N_TRIANGLES; i++) {
@@ -103,7 +110,7 @@ float compute_ratio_of_submerge() {
 
     float r_s = submerged_area / tot_area;
 
-    ReadbackTexture[uint2(2,0)] = float4(r_s, submerged_area, tot_area, 1.0); // Debug
+    // ReadbackTexture[uint2(2,0)] = float4(r_s, submerged_area, tot_area, 1.0); // Debug
 
     return r_s;
 }
@@ -130,5 +137,6 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     ReadbackTexture[uint2(0,0)].rgb = rigidbody.position;
     ReadbackTexture[uint2(1,0)]     = rigidbody.orientation;
+    ReadbackTexture[uint2(2,0)] = SubmergedTrianglesBuffer[0].normal_and_height; // Debug
 
 }

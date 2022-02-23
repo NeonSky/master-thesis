@@ -62,10 +62,10 @@ void ABoat::FetchCollisionMeshData() {
 
     float area = FVector::CrossProduct(v2 - v0, v1 - v0).Size() / 2.0f;
     
-    UE_LOG(LogTemp, Warning, TEXT("v0: %i, %f, %f, %f"), i0, v0.X, v0.Y, v0.Z);
-    UE_LOG(LogTemp, Warning, TEXT("v1: %i, %f, %f, %f"), i1, v1.X, v1.Y, v1.Z);
-    UE_LOG(LogTemp, Warning, TEXT("v2: %i, %f, %f, %f"), i2, v2.X, v2.Y, v2.Z);
-    UE_LOG(LogTemp, Warning, TEXT("i = %i has area: %f"), i, area);
+    // UE_LOG(LogTemp, Warning, TEXT("v0: %i, %f, %f, %f"), i0, v0.X, v0.Y, v0.Z);
+    // UE_LOG(LogTemp, Warning, TEXT("v1: %i, %f, %f, %f"), i1, v1.X, v1.Y, v1.Z);
+    // UE_LOG(LogTemp, Warning, TEXT("v2: %i, %f, %f, %f"), i2, v2.X, v2.Y, v2.Z);
+    // UE_LOG(LogTemp, Warning, TEXT("i = %i has area: %f"), i, area);
 
     m_collision_mesh_surface_area += area;
 
@@ -73,6 +73,8 @@ void ABoat::FetchCollisionMeshData() {
 }
 
 void ABoat::Update(UpdatePayload update_payload) {
+
+  UE_LOG(LogTemp, Warning, TEXT("07:41"));
 
   m_speed_input = update_payload.speed_input;
   m_velocity_input = update_payload.velocity_input;
@@ -87,9 +89,9 @@ void ABoat::Update(UpdatePayload update_payload) {
     submerged_area += t.area;
   }
   float r_s = submerged_area / m_collision_mesh_surface_area;
-  UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f, %f"), m_rigidbody.position.X, m_rigidbody.position.Y, m_rigidbody.position.Z);
-  UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f, %f, %f"), m_rigidbody.orientation.X, m_rigidbody.orientation.Y, m_rigidbody.orientation.Z, m_rigidbody.orientation.W);
-  UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f, %f"), r_s, submerged_area, m_collision_mesh_surface_area);
+  // UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f, %f"), m_rigidbody.position.X, m_rigidbody.position.Y, m_rigidbody.position.Z);
+  // UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f, %f, %f"), m_rigidbody.orientation.X, m_rigidbody.orientation.Y, m_rigidbody.orientation.Z, m_rigidbody.orientation.W);
+  // UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f, %f"), r_s, submerged_area, m_collision_mesh_surface_area);
 
   ApplyGravity();
   ApplyBuoyancy();
@@ -179,9 +181,17 @@ void ABoat::UpdateReadbackQueue() {
     TArray<FVector2D> sample_points;
     for (auto &v : m_collision_mesh_vertices) {
       FVector v_ws = transform.TransformPosition(v) * METERS_TO_UNREAL_UNITS;
-      sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
+      // sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
+      // sample_points.Push(FVector2D(0.123f, 0.307f));
+      sample_points.Push(FVector2D(0.0f, 0.0f));
     }
     TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
+
+    {
+      auto v = m_collision_mesh_vertices[0];
+      FVector v_ws = transform.TransformPosition(v) * METERS_TO_UNREAL_UNITS;
+      UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f, %f -> %f"), v_ws.X, v_ws.Y, v_ws.Z, elevations[0]);
+    }
 
     m_readback_queue.push(elevations);
   }
@@ -346,32 +356,22 @@ void ABoat::ApplyGravity() {
 
 void ABoat::ApplyBuoyancy() {
 
-  float height = m_rigidbody.position.Z;
-  if (height < 0.0) {
-      height = -height;
-      float area = 27.045519;
-      FVector buoyancy_force = FVector(0.0, 0.0, DENSITY_OF_WATER * GRAVITY * height * area);
-      m_rigidbody.AddForceAtPosition(buoyancy_force, m_rigidbody.position);
+  for (auto& t : m_submerged_triangles) {
+
+    // (kg / m^3) * (m / s^2) * (m) * (m^2) = kg * (m / s^2) = N
+    FVector buoyancy_force = -DENSITY_OF_WATER * GRAVITY * t.height * t.area * t.normal;
+    buoyancy_force = FVector(0.0, 0.0, abs(buoyancy_force.Z));
+
+    m_rigidbody.AddForceAtPosition(buoyancy_force, t.centroid);
+
+    // DebugDrawForce(t.centroid, buoyancy_force / METERS_TO_UNREAL_UNITS, FColor::Purple);
   }
-
-  // for (auto& t : m_submerged_triangles) {
-
-  //   // (kg / m^3) * (m / s^2) * (m) * (m^2) = kg * (m / s^2) = N
-  //   FVector buoyancy_force = -DENSITY_OF_WATER * GRAVITY * t.height * t.area * t.normal;
-  //   buoyancy_force = FVector(0.0, 0.0, abs(buoyancy_force.Z));
-
-  //   m_rigidbody.AddForceAtPosition(buoyancy_force, t.centroid);
-
-  //   // DebugDrawForce(t.centroid, buoyancy_force / METERS_TO_UNREAL_UNITS, FColor::Purple);
-  // }
 
 }
 
 void ABoat::ApplyResistanceForces(float r_s) {
 
   float c_damp = 500.0f;
-
-  UE_LOG(LogTemp, Warning, TEXT("10:48"));
 
   // Linear damping of linear velocity
   m_rigidbody.AddForceAtPosition(-c_damp * r_s * m_rigidbody.linear_velocity, m_rigidbody.position);
