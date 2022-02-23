@@ -107,27 +107,24 @@ void GPUBoatShader::BuildAndExecuteGraph(
 	// We will use this to build a Rendering Dependency Graph (RDG).
 	FRDGBuilder graph_builder(RHI_cmd_list);
 
-	FRDGTextureRef h_tex_ref = register_texture3(graph_builder, elevation_texture, "ElevationRenderTarget");
-
 	FRDGTextureRef io_tex_ref    = register_texture3(graph_builder, input_output, "InputOutputRenderTarget");
 	FRDGTextureUAVRef io_tex_UAV = graph_builder.CreateUAV(io_tex_ref);
 
 	FRDGTextureRef readback_tex_ref    = register_texture3(graph_builder, readback_rt, "ReadbackRenderTarget");
 	FRDGTextureUAVRef readback_tex_UAV = graph_builder.CreateUAV(readback_tex_ref);
 
-	TShaderMapRef<GPUBoatShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
-
     FParameters* PassParameters = graph_builder.AllocParameters<GPUBoatShader::FParameters>();
 
     PassParameters->SpeedInput    = speed_input;
     PassParameters->VelocityInput = velocity_input;
 
-    PassParameters->ElevationTexture         = h_tex_ref;
+    PassParameters->ElevationTexture         = register_texture3(graph_builder, elevation_texture, "ElevationRenderTarget");
     PassParameters->SubmergedTrianglesBuffer = register_buffer(graph_builder, submerged_triangles_buffer, "SubmergedTrianglesBuffer");
 
     PassParameters->InputOutputTexture = io_tex_UAV;
     PassParameters->ReadbackTexture    = readback_tex_UAV;
 
+	TShaderMapRef<GPUBoatShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
     FComputeShaderUtils::AddPass(
         graph_builder,
         RDG_EVENT_NAME("GPU Boat Pass"),

@@ -139,12 +139,18 @@ float sample_elevation(Texture2D<float4> elevation_texture, float2 ws_coord) {
         AddressV = Wrap;
     };
     float elevation = elevation_texture.SampleLevel(Sampler, coord, 0).r;
+    // float elevation = elevation_texture.SampleLevel(Sampler, float2(0.0, 0.0), 0).r;
 
-    // return elevation;
+    return elevation;
     // return 0.0; // work, but no precision concers for 0
     // return 1.3693; // precision problem, becomes 136.875000 on CPU
     // return min16float(1.3693); // still precision problem..?
 
     // return f16tof32(asuint(asfloat(f32tof16(1.0))));
-    return f16tof32(asuint(asfloat(f32tof16(M_TO_CM * 1.3693)))); // https://forum.unity.com/threads/storing-two-16-bits-halfs-in-one-32-bits-float.987531/#:~:text=You%20can%20totally%20do%20that.%20The%20hard%20part%20is%20the%20conversion%20between%2032%20bit%20and%2016%20bit%20float%20still
+    // return f16tof32(asuint(asfloat(f32tof16(M_TO_CM * -10.369321)))); // https://forum.unity.com/threads/storing-two-16-bits-halfs-in-one-32-bits-float.987531/#:~:text=You%20can%20totally%20do%20that.%20The%20hard%20part%20is%20the%20conversion%20between%2032%20bit%20and%2016%20bit%20float%20still
+    // return f16tof32(asuint(asfloat(f32tof16(M_TO_CM * 1.369321)))); // https://forum.unity.com/threads/storing-two-16-bits-halfs-in-one-32-bits-float.987531/#:~:text=You%20can%20totally%20do%20that.%20The%20hard%20part%20is%20the%20conversion%20between%2032%20bit%20and%2016%20bit%20float%20still
+    // return f16tof32(asuint(asfloat(f32tof16(M_TO_CM * -101.120003)))); // https://forum.unity.com/threads/storing-two-16-bits-halfs-in-one-32-bits-float.987531/#:~:text=You%20can%20totally%20do%20that.%20The%20hard%20part%20is%20the%20conversion%20between%2032%20bit%20and%2016%20bit%20float%20still
+    // return f16tof32(asuint(asfloat(f32tof16(100.0 * M_TO_CM * elevation)))); // https://forum.unity.com/threads/storing-two-16-bits-halfs-in-one-32-bits-float.987531/#:~:text=You%20can%20totally%20do%20that.%20The%20hard%20part%20is%20the%20conversion%20between%2032%20bit%20and%2016%20bit%20float%20still
+
+    // return sign(elevation) * f16tof32(asuint(asfloat(f32tof16(M_TO_CM * abs(elevation))))); // https://forum.unity.com/threads/storing-two-16-bits-halfs-in-one-32-bits-float.987531/#:~:text=You%20can%20totally%20do%20that.%20The%20hard%20part%20is%20the%20conversion%20between%2032%20bit%20and%2016%20bit%20float%20still
 }

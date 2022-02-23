@@ -74,7 +74,7 @@ void ABoat::FetchCollisionMeshData() {
 
 void ABoat::Update(UpdatePayload update_payload) {
 
-  UE_LOG(LogTemp, Warning, TEXT("07:41"));
+  UE_LOG(LogTemp, Warning, TEXT("08:55"));
 
   m_speed_input = update_payload.speed_input;
   m_velocity_input = update_payload.velocity_input;
@@ -188,9 +188,8 @@ void ABoat::UpdateReadbackQueue() {
     TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
 
     {
-      auto v = m_collision_mesh_vertices[0];
-      FVector v_ws = transform.TransformPosition(v) * METERS_TO_UNREAL_UNITS;
-      UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f, %f -> %f"), v_ws.X, v_ws.Y, v_ws.Z, elevations[0]);
+      FVector2D v_ws = sample_points[0];
+      UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f -> %f"), v_ws.X, v_ws.Y, elevations[0] / METERS_TO_UNREAL_UNITS);
     }
 
     m_readback_queue.push(elevations);
