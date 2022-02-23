@@ -1,32 +1,13 @@
 #include "/Engine/Public/Platform.ush"
 
-RWTexture2D<float4> term1;
-// RWTexture2D<float4> term2;
-Texture2D<float4> term2;
 RWTexture2D<float4> result;
 
 
 
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void eWaveCompute(uint3 id : SV_DispatchThreadID) {
-  float4 a = term1[id.xy];
-  float4 b = term2[id.xy];
-  float4 r = a + b;
-  
-  // Since our Butterfly shader performs IFFT, swap real and imaginary part after adding the textures together
-  float temp = r.r;
-  r.r = r.g;
-  r.g = temp;
-  r.a = 1.0;
-
-  // Temporary test data. TODO: remove
-  //float t1 = 2.0 * sin(id.x + id.y + 3.2) + 3.23;
-  //float t2 = 2.3 * cos(id.x + id.y);
-  float t1 = 0.0;
-  if((id.x >= 127 && id.x <= 129) && (id.y >= 127 && id.y <= 129)){
-    t1 = 100.0;
-  }
-  float t2 = 0.0;
+  float t1 = 2.0 * sin(id.x + id.y + 3.2) + 3.23;
+  float t2 = 2.3 * cos(id.x + id.y);
   // We flip t1 and t2 here since we perform IFFT
   result[id.xy] = float4(0.0, 0.0, 0.0, 1.0);
 }

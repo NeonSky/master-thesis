@@ -167,14 +167,14 @@ void ScaleShader::BuildAndExecuteGraph(
         FIntVector(TEMP_TEXTURE_N, TEMP_TEXTURE_N, 1)
     );
 
-    TRefCountPtr<IPooledRenderTarget> PooledComputeTarget_Scale;
+   /* TRefCountPtr<IPooledRenderTarget> PooledComputeTarget_Scale;
     graph_builder.QueueTextureExtraction(io_tex_ref, &PooledComputeTarget_Scale);
     TRefCountPtr<IPooledRenderTarget> PooledComputeTarget_Scale2;
-    graph_builder.QueueTextureExtraction(io_tex_ref2, &PooledComputeTarget_Scale2);
+    graph_builder.QueueTextureExtraction(io_tex_ref2, &PooledComputeTarget_Scale2);*/
 
     graph_builder.Execute();
 
-    RHI_cmd_list.CopyToResolveTarget(
+    /*RHI_cmd_list.CopyToResolveTarget(
         PooledComputeTarget_Scale.GetReference()->GetRenderTargetItem().TargetableTexture,
         input_output_rtt->GetRenderTargetResource()->TextureRHI,
         FResolveParams()
@@ -183,7 +183,7 @@ void ScaleShader::BuildAndExecuteGraph(
         PooledComputeTarget_Scale2.GetReference()->GetRenderTargetItem().TargetableTexture,
         copy_rtt->GetRenderTargetResource()->TextureRHI,
         FResolveParams()
-    );
+    );*/
    
     /*UE_LOG(LogTemp, Warning, TEXT("SCALE OUTPUT START"));
     ReadbackRTT3(RHI_cmd_list, input_output_rtt);

@@ -177,18 +177,18 @@ void ObstructionShader::BuildAndExecuteGraph(
         FIntVector(TEMP_TEXTURE_N, TEMP_TEXTURE_N, 1)
     );
 
-    TRefCountPtr<IPooledRenderTarget> PooledComputeTarget_Obs;
+   /* TRefCountPtr<IPooledRenderTarget> PooledComputeTarget_Obs;
     graph_builder.QueueTextureExtraction(io_tex_ref, &PooledComputeTarget_Obs);
 
     TRefCountPtr<IPooledRenderTarget> PooledComputeTarget2_Obs;
     graph_builder.QueueTextureExtraction(io_tex_ref2, &PooledComputeTarget2_Obs);
 
     TRefCountPtr<IPooledRenderTarget> PooledComputeTarget3_Obs;
-    graph_builder.QueueTextureExtraction(io_tex_ref3, &PooledComputeTarget3_Obs);
+    graph_builder.QueueTextureExtraction(io_tex_ref3, &PooledComputeTarget3_Obs);*/
 
     graph_builder.Execute();
 
-    RHI_cmd_list.CopyToResolveTarget(
+   /* RHI_cmd_list.CopyToResolveTarget(
         PooledComputeTarget_Obs.GetReference()->GetRenderTargetItem().TargetableTexture,
         obstructionMap_rtt->GetRenderTargetResource()->TextureRHI,
         FResolveParams()
@@ -204,7 +204,7 @@ void ObstructionShader::BuildAndExecuteGraph(
         PooledComputeTarget3_Obs.GetReference()->GetRenderTargetItem().TargetableTexture,
         v_rtt->GetRenderTargetResource()->TextureRHI,
         FResolveParams()
-    );
+    );*/
    
     //UE_LOG(LogTemp, Warning, TEXT("OBSTRUCTION OUTPUT START"));
     //ReadbackRTT3_obs(RHI_cmd_list, obstructionMap_rtt);
