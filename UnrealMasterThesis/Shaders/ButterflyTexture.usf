@@ -81,5 +81,4 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
       }
 
     }
-
 }

@@ -13,8 +13,8 @@ public:
 
 		BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 
-		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, term1)
-		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, term2)
+		//SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, term1)
+		// SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, term2)
 		// SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, term2)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, result)
 
@@ -30,8 +30,6 @@ public:
 		OutEnvironment.SetDefine(TEXT("N_THREADS_X"), 1);
 		OutEnvironment.SetDefine(TEXT("N_THREADS_Y"), 1);
 	}
-
-	void BuildTestTextures(int N, float L);
 
 	void BuildAndExecuteGraph(
 		FRHICommandListImmediate& RHI_cmd_list,
