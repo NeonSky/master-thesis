@@ -8,16 +8,42 @@ IMPLEMENT_GLOBAL_SHADER(ButterflyTextureShader, "/Project/UnrealMasterThesis/But
 
 uint32 reverse_bits(uint32 x, uint32 range) {
 	uint32 res = 0;
-	for (int i = range-1; i >= 0; i--){
-			res |= (x & 1) << i;
-			x >>= 1;
+	for (int i = range - 1; i >= 0; i--) {
+		res |= (x & 1) << i;
+		x >>= 1;
 	}
 	return res;
 }
 
+FRDGTextureRef register_texture3(
+	FRDGBuilder& graph_builder,
+	UTextureRenderTarget2D* render_target,
+	FString name) {
+
+	FRenderTarget* RenderTargetResource = render_target->GetRenderTargetResource();
+	FTexture2DRHIRef RenderTargetRHI = RenderTargetResource->GetRenderTargetTexture();
+
+	FSceneRenderTargetItem RenderTargetItem;
+	RenderTargetItem.TargetableTexture = RenderTargetRHI;
+	RenderTargetItem.ShaderResourceTexture = RenderTargetRHI;
+	FPooledRenderTargetDesc RenderTargetDesc = FPooledRenderTargetDesc::Create2DDesc(
+		RenderTargetResource->GetSizeXY(),
+		RenderTargetRHI->GetFormat(),
+		FClearValueBinding::Black,
+		TexCreate_None,
+		TexCreate_RenderTargetable | TexCreate_ShaderResource | TexCreate_UAV,
+		false);
+	TRefCountPtr<IPooledRenderTarget> PooledRenderTarget;
+	GRenderTargetPool.CreateUntrackedElement(RenderTargetDesc, PooledRenderTarget, RenderTargetItem);
+
+	FRDGTextureRef RDG_tex_ref = graph_builder.RegisterExternalTexture(PooledRenderTarget, *name);
+
+	return RDG_tex_ref;
+}
+
 void ButterflyTextureShader::BuildAndExecuteGraph(
-  FRHICommandListImmediate &RHI_cmd_list,
-  UTextureRenderTarget2D* output) {
+	FRHICommandListImmediate& RHI_cmd_list,
+	UTextureRenderTarget2D* output) {
 
 	FRDGBuilder graph_builder(RHI_cmd_list);
 
@@ -44,16 +70,17 @@ void ButterflyTextureShader::BuildAndExecuteGraph(
 	FRDGBufferSRVRef ReverseBitsSRV = graph_builder.CreateSRV(ReverseBitsBuffer, PF_R32_UINT);
 	PassParameters->ReverseBits = ReverseBitsSRV;
 
-	FRDGTextureDesc OutTextureDesc = FRDGTextureDesc::Create2D(
-		FIntPoint(output->SizeX, output->SizeY),
-		PF_FloatRGBA,
-		FClearValueBinding(),
-		TexCreate_UAV,
-		1,
-		1); 
-	FRDGTextureRef OutTextureRef = graph_builder.CreateTexture(OutTextureDesc, TEXT("Compute_Out_Texture"));
-	FRDGTextureUAVDesc OutTextureUAVDesc(OutTextureRef);
-	PassParameters->OutputTexture = graph_builder.CreateUAV(OutTextureUAVDesc);
+	// FRDGTextureDesc OutTextureDesc = FRDGTextureDesc::Create2D(
+	// 	FIntPoint(output->SizeX, output->SizeY),
+	// 	PF_FloatRGBA,
+	// 	FClearValueBinding(),
+	// 	TexCreate_UAV,
+	// 	1,
+	// 	1); 
+	// FRDGTextureRef OutTextureRef = graph_builder.CreateTexture(OutTextureDesc, TEXT("Compute_Out_Texture"));
+	// FRDGTextureUAVDesc OutTextureUAVDesc(OutTextureRef);
+	FRDGTextureRef output_tex_ref = register_texture3(graph_builder, output, "InputOutputRenderTarget");
+	PassParameters->OutputTexture = graph_builder.CreateUAV(output_tex_ref);
 
 
 	// ------ Add the compute pass ------
@@ -61,27 +88,26 @@ void ButterflyTextureShader::BuildAndExecuteGraph(
 	TShaderMapRef<ButterflyTextureShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 	// Add the compute shader pass to the render graph
 	FComputeShaderUtils::AddPass(
-    graph_builder,
-    RDG_EVENT_NAME("Butterfly Texture Pass"),
-    ComputeShader,
-    PassParameters,
-    FIntVector(output->SizeX, output->SizeY, 1) // This gets multiplied by `numthreads` in the .usf shader, kinda.
-  );
+		graph_builder,
+		RDG_EVENT_NAME("Butterfly Texture Pass"),
+		ComputeShader,
+		PassParameters,
+		FIntVector(output->SizeX, output->SizeY, 1) // This gets multiplied by `numthreads` in the .usf shader, kinda.
+	);
 
 
 	// ------ Extracting to pooled render target ------
-	TRefCountPtr<IPooledRenderTarget> PooledComputeTarget;
+	// TRefCountPtr<IPooledRenderTarget> PooledComputeTarget;
 	// Copy the result of compute shader from UAV to pooled render target
-	graph_builder.QueueTextureExtraction(OutTextureRef, &PooledComputeTarget);
+	// graph_builder.QueueTextureExtraction(OutTextureRef, &PooledComputeTarget);
 
 	graph_builder.Execute();
 
 	// Queue the UAV we wrote to for extraction 
 	// I.e. copy UAV result on the GPU to our render target (on the CPU?).
-	RHI_cmd_list.CopyToResolveTarget(
-    PooledComputeTarget.GetReference()->GetRenderTargetItem().TargetableTexture,
-    output->GetRenderTargetResource()->TextureRHI,
-    FResolveParams()
-  );
+	// RHI_cmd_list.CopyToResolveTarget(
+	// PooledComputeTarget.GetReference()->GetRenderTargetItem().TargetableTexture,
+	// output->GetRenderTargetResource()->TextureRHI,
+	// FResolveParams()
 
 }

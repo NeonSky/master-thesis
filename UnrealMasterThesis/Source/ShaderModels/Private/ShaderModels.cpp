@@ -96,12 +96,12 @@ void ShaderModelsModule::Buildh0Textures(int N, float L, std::function<float (FV
 			shader->Buildh0Textures(N, L, wave_spectrum);
 		}); 
 
-	TShaderMapRef<AddShader> shader2(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+	/*TShaderMapRef<AddShader> shader2(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	ENQUEUE_RENDER_COMMAND(shader2)(
 		[shader2, N, L](FRHICommandListImmediate& RHI_cmd_list) {
 		shader2->BuildTestTextures(N, L);
-	});
+	});*/
 
 
 }

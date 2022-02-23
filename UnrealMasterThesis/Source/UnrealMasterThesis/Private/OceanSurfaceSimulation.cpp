@@ -215,11 +215,11 @@ void AOceanSurfaceSimulation::create_mesh() {
 void AOceanSurfaceSimulation::update_mesh(float dt) {
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
 
-	m_shader_models_module.ComputeFourierComponents(realtimeSeconds, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
+	/*m_shader_models_module.ComputeFourierComponents(realtimeSeconds, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
 
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_x_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
-	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
+	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);*/
 
 	static float boatPrevX = 0.0;
 	static float boatPrevY = 0.0;
@@ -255,7 +255,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		int dxp = boatPrevXp - xp;
 		int dyp = boatPrevYp - yp;
 		
-		if (abs(dxp) >= 1600) {
+		if (abs(dxp) >= 32) {
 			// move the simulation in the x-direction
 			boatPrevXp = xp; 
 			//dxp *= -1;
@@ -264,7 +264,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		else {
 			dxp = 0;
 		}
-		if (abs(dyp) >= 1600) {
+		if (abs(dyp) >= 32) {
 			// move the simulation in the y-direction
 			boatPrevYp = yp; 
 			//dyp *= -1;

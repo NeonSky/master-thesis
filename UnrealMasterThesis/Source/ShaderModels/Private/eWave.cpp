@@ -101,15 +101,15 @@ void eWaveShader::BuildAndExecuteGraph(
         FIntVector(NN, NN, 1)
     );
 
-    TRefCountPtr<IPooledRenderTarget> PooledComputeTarget_ewave_h;
+    /*TRefCountPtr<IPooledRenderTarget> PooledComputeTarget_ewave_h;
     graph_builder.QueueTextureExtraction(io_tex_ref_h, &PooledComputeTarget_ewave_h);
     
     TRefCountPtr<IPooledRenderTarget> PooledComputeTarget_ewave_v;
-    graph_builder.QueueTextureExtraction(io_tex_ref_v, &PooledComputeTarget_ewave_v);
+    graph_builder.QueueTextureExtraction(io_tex_ref_v, &PooledComputeTarget_ewave_v);*/
 
     graph_builder.Execute();
 
-    RHI_cmd_list.CopyToResolveTarget(
+    /*RHI_cmd_list.CopyToResolveTarget(
         PooledComputeTarget_ewave_h.GetReference()->GetRenderTargetItem().TargetableTexture,
         eWave_h->GetRenderTargetResource()->TextureRHI,
         FResolveParams()
@@ -119,7 +119,7 @@ void eWaveShader::BuildAndExecuteGraph(
         PooledComputeTarget_ewave_v.GetReference()->GetRenderTargetItem().TargetableTexture,
         eWave_v->GetRenderTargetResource()->TextureRHI,
         FResolveParams()
-    );
+    );*/
 
     // DEBUG READ-BACK
      //{
