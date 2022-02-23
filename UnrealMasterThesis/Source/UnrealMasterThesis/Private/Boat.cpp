@@ -74,7 +74,7 @@ void ABoat::FetchCollisionMeshData() {
 
 void ABoat::Update(UpdatePayload update_payload) {
 
-  UE_LOG(LogTemp, Warning, TEXT("08:55"));
+  UE_LOG(LogTemp, Warning, TEXT("12:33"));
 
   m_speed_input = update_payload.speed_input;
   m_velocity_input = update_payload.velocity_input;
@@ -180,16 +180,17 @@ void ABoat::UpdateReadbackQueue() {
     FTransform transform = m_rigidbody.Transform();
     TArray<FVector2D> sample_points;
     for (auto &v : m_collision_mesh_vertices) {
-      FVector v_ws = transform.TransformPosition(v) * METERS_TO_UNREAL_UNITS;
+      FVector v_ws = transform.TransformPosition(v);
       // sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
-      // sample_points.Push(FVector2D(0.123f, 0.307f));
-      sample_points.Push(FVector2D(0.0f, 0.0f));
+      sample_points.Push(FVector2D(m_rigidbody.position.X, m_rigidbody.position.Y));
     }
     TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
 
     {
-      FVector2D v_ws = sample_points[0];
-      UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f -> %f"), v_ws.X, v_ws.Y, elevations[0] / METERS_TO_UNREAL_UNITS);
+      // FVector2D v_ws = sample_points[0];
+      // UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f -> %f"), v_ws.X, v_ws.Y, elevations[0]);
+      FVector2D v_ws = sample_points[1];
+      UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f -> %f"), v_ws.X, v_ws.Y, elevations[1]);
     }
 
     m_readback_queue.push(elevations);

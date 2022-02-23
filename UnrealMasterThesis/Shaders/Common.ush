@@ -131,15 +131,19 @@ float sample_elevation(Texture2D<float4> elevation_texture, float2 ws_coord) {
     const float world_size = M_TO_CM * L;
 
     // The coordinate of interest in normalized UV space.
-    float2 coord = (world_size * 0.5 + ws_coord) / world_size;
+    float2 coord = (world_size * 0.5 + M_TO_CM * ws_coord) / world_size;
 
     SamplerState Sampler {
         Filter = MIN_MAG_MIP_LINEAR;
         AddressU = Wrap;
         AddressV = Wrap;
     };
-    float elevation = elevation_texture.SampleLevel(Sampler, coord, 0).r; //
-    // float elevation = elevation_texture.SampleLevel(Sampler, float2(0.0, 0.0), 0).r;
+    float elevation = elevation_texture.SampleLevel(Sampler, coord, 0).r;
+    // float elevation = elevation_texture.SampleLevel(Sampler, float2(min16float(coord.x), min16float(coord.y)), 0).r;
+    // float elevation = elevation_texture.SampleLevel(Sampler, float2(13.3445, -30.330), 0).r; // works
+    // float elevation = elevation_texture.SampleLevel(Sampler, float2(0.7589, 0.330), 0).r; // works
+    // float elevation = elevation_texture.SampleLevel(Sampler, float2(0.5, 0.5), 0).r; // works (correct UVs for center)
+    // float elevation = elevation_texture.SampleLevel(Sampler, float2(0.0, 0.0), 0).r; // works
 
     return elevation;
     // return 0.0; // work, but no precision concers for 0
