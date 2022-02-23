@@ -267,7 +267,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		if (abs(dyp) >= 16) {
 			// move the simulation in the y-direction
 			boatPrevYp = yp; 
-			dyp *= -1;
+			//dyp *= -1;
 			uvY = boatY;
 		}
 		else {
@@ -283,7 +283,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		float scale = 1.0f / ((float)N * (float)N);
 		float dx = boatX - boatPrevX;
 		float dy = boatY - boatPrevY;
-		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, uvX, uvY, dxp, 0, boatSpeed, 1);
+		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, uvX, uvY, dxp, dyp, boatSpeed, 1);
 		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
 		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
 		m_shader_models_module.ComputeeWave(0.016, L, this->ewave_h_rtt, this->ewave_v_rtt);

@@ -57,7 +57,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	int2 sampleCoordinates = int2(id.x, id.y);
 	if(preFFT == 1){
 		// TODO: offset when sampling from prev textures to move the simulation.
-		sampleCoordinates = int2(id.x - (boat_dx), id.y); //int2(id.x + dx_in_pixels, id.y + dy_in_pixels);
+		sampleCoordinates = int2(id.x - (boat_dx), id.y - (boat_dy));
 	}
 	float h = hPrev_rtt[sampleCoordinates.xy].r;
 	float v = vPrev_rtt[sampleCoordinates.xy].r;
@@ -68,8 +68,8 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 		float half_L_in_metres = 50.0f;
 		float oldMinX = xPos - half_L_in_metres; // TODO: replace 0 with offset to move with the boat.
 		float oldMaxX = xPos + half_L_in_metres;
-		float oldMinY = 0 - half_L_in_metres;
-		float oldMaxY = 0 + half_L_in_metres;
+		float oldMinY = yPos - half_L_in_metres;
+		float oldMaxY = yPos + half_L_in_metres;
 		int N = 256;
 		obstructionMap_rtt[id.xy] = float4(1.0, 0.0, 0.0, 1.0);
 		for(int i = 0; i < (numTriangles * 3); i+=3){
