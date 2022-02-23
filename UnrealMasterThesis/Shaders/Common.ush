@@ -138,7 +138,7 @@ float sample_elevation(Texture2D<float4> elevation_texture, float2 ws_coord) {
         AddressU = Wrap;
         AddressV = Wrap;
     };
-    float elevation = elevation_texture.SampleLevel(Sampler, coord, 0).r;
+    float elevation = elevation_texture.SampleLevel(Sampler, coord, 0).r; //
     // float elevation = elevation_texture.SampleLevel(Sampler, float2(0.0, 0.0), 0).r;
 
     return elevation;

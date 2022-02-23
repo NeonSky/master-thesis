@@ -242,9 +242,9 @@ void ABoat::UpdateSubmergedTriangles() {
     // DebugDrawTriangle(v0, v1, v2, FColor::Red);
 
     // The relevant ocean elevation samples
-    float e0 = m_latest_elevations[i0] / METERS_TO_UNREAL_UNITS;
-    float e1 = m_latest_elevations[i1] / METERS_TO_UNREAL_UNITS;
-    float e2 = m_latest_elevations[i2] / METERS_TO_UNREAL_UNITS;
+    float e0 = m_latest_elevations[i0];
+    float e1 = m_latest_elevations[i1];
+    float e2 = m_latest_elevations[i2];
 
     // Heights relative to the ocean surface for each vertex
     float h0 = v0.Z - e0;

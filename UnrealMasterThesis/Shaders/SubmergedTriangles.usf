@@ -76,9 +76,9 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     // float e0 = sample_elevation(ElevationTexture, float2(0.123, 0.307)); // float precision is not an issue
     // float e1 = sample_elevation(ElevationTexture, float2(0.123, 0.307));
     // float e2 = sample_elevation(ElevationTexture, float2(0.123, 0.307));
-    float e0 = sample_elevation(ElevationTexture, float2(0.0, 0.0)) / M_TO_CM; // float precision is not an issue
-    float e1 = sample_elevation(ElevationTexture, float2(0.0, 0.0)) / M_TO_CM;
-    float e2 = sample_elevation(ElevationTexture, float2(0.0, 0.0)) / M_TO_CM;
+    float e0 = sample_elevation(ElevationTexture, float2(0.0, 0.0));
+    float e1 = sample_elevation(ElevationTexture, float2(0.0, 0.0));
+    float e2 = sample_elevation(ElevationTexture, float2(0.0, 0.0));
 
     float h0 = v0.z - e0;
     float h1 = v1.z - e0;

@@ -211,9 +211,9 @@ void AOceanSurfaceSimulation::create_mesh() {
 
 bool done = false;
 void AOceanSurfaceSimulation::update_mesh() {
-	if (done) {
-		return;
-	}
+	// if (done) {
+	// 	return;
+	// }
 	UE_LOG(LogTemp, Warning, TEXT("Update Ocean Mesh"));//
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
 
