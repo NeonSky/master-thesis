@@ -42,7 +42,8 @@ bool ptInTriangle(float4 p, float4 p0, float4 p1, float4 p2){
     float s = (p0[1] * p2[0] - p0[0] * p2[1] + (p2[1] - p0[1]) * p[0] + (p0[0] - p2[0]) * p[1]) * tsign;
     float t = (p0[0] * p1[1] - p0[1] * p1[0] + (p0[1] - p1[1]) * p[0] + (p1[0] - p0[0]) * p[1]) * tsign;
 
-    return s > 0.0 && t > 0.0 && (s + t) < 2.0 * A * tsign;
+	float epsilon = 0.001; // Note: without + epsilon we get false positives from this test...
+    return s > epsilon && t > epsilon && (s + t) < 2.0 * A * tsign;
 }
 
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
@@ -55,10 +56,10 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	// ----------------------------------------------------------------------------------
 	
 	int2 sampleCoordinates = int2(id.x, id.y);
-	if(preFFT == 1){
+	//if(preFFT == 1){
 		// TODO: offset when sampling from prev textures to move the simulation.
-		sampleCoordinates = int2(id.x - (boat_dx), id.y - (boat_dy));
-	}
+	//	sampleCoordinates = int2(id.x - (boat_dx), id.y - (boat_dy));
+	//}
 	float h = hPrev_rtt[sampleCoordinates.xy].r;
 	float v = vPrev_rtt[sampleCoordinates.xy].r;
 	
@@ -84,7 +85,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 			v2.y = remap(v2.y, oldMinY, oldMaxY, 0, N); // we can ignore z
 			
 			// TODO: ?
-			if(ptInTriangle(float4(id.x, id.y, 0.0, 1.0), v0, v1, v2)){
+			if(ptInTriangle(float4(id.xy, 0.0, 1.0), v0, v1, v2)){
 				obstructionMap_rtt[id.xy] = float4(0.0, 0.0, 0.0, 1.0);
 			}	
 		}
@@ -117,7 +118,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	//		Note: this should only be done before FFT
 	// ----------------------------------------------------------------------------------
 	if(preFFT == 1){
-		float scale = 6.0 * speedScale;
+		float scale = 2.0 * speedScale;
 		float obsCompliment = 1.0 - obstructionMap_rtt[id.xy];
 		h += scale * obsCompliment;
 	}
