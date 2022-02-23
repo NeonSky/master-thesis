@@ -9,8 +9,8 @@
 #include <complex>
 #include <random>
 
-#define NN 256
-#define TEMP_TEXTURE_N 8
+#define NN 128
+#define TEMP_TEXTURE_N 128
 
 IMPLEMENT_GLOBAL_SHADER(AddShader, "/Project/UnrealMasterThesis/Add.usf", "eWaveCompute", SF_Compute);
 
@@ -174,7 +174,7 @@ void AddShader::BuildAndExecuteGraph(
        );
 
        UE_LOG(LogTemp, Warning, TEXT("Amount of pixels: %i"), rdata.Num());
-       for (int i = 0; i < rdata.Num(); i++) {
+       for (int i = 0; i < 32; i++) {
          UE_LOG(LogTemp, Warning, TEXT("%i: (%f, %f, %f, %f)"), i, rdata[i].R.GetFloat(), rdata[i].G.GetFloat(), rdata[i].B.GetFloat(), rdata[i].A.GetFloat());
        }
        UE_LOG(LogTemp, Warning, TEXT("READBACK END"));

@@ -9,7 +9,7 @@
 #include <complex>
 #include <random>
 
-#define NN 256
+#define NN 128
 
 IMPLEMENT_GLOBAL_SHADER(eWaveShader, "/Project/UnrealMasterThesis/eWave.usf", "eWaveCompute", SF_Compute);
 

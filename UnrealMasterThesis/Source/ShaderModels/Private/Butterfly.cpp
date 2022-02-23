@@ -62,7 +62,7 @@ void ReadbackRTT(FRHICommandListImmediate &RHI_cmd_list, UTextureRenderTarget2D*
 		read_flags
 	);
 
-	for (int i = 0; i < data.Num(); i++) {
+	for (int i = 0; i < 32; i++) {
 		UE_LOG(LogTemp, Warning, TEXT("%i: (%f, %f, %f, %f)"), i, data[i].R.GetFloat(), data[i].G.GetFloat(), data[i].B.GetFloat(), data[i].A.GetFloat());
 	}
 }
