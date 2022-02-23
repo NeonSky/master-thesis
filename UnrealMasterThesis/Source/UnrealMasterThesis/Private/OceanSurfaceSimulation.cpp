@@ -250,15 +250,15 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 			submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
 		}
 
-		int xp = (boatX * 50.0f) / 39.0625f;
-		int yp = (boatY * 50.0f) / 39.0625f;
+		int xp = (boatX * 100.0f) / 39.0625f;
+		int yp = (boatY * 100.0f) / 39.0625f;
 		int dxp = boatPrevXp - xp;
 		int dyp = boatPrevYp - yp;
 		
 		if (abs(dxp) >= 16) {
 			// move the simulation in the x-direction
 			boatPrevXp = xp; 
-			dxp *= -1;
+			//dxp *= -1;
 			uvX = boatX;
 		}
 		else {
