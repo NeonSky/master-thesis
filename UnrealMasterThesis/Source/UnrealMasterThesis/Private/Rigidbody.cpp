@@ -18,9 +18,9 @@ void Rigidbody::AddForceAtPosition(FVector f, FVector pos) {
   this->force += f;
 
   // There is no torque if the force is applied at the center of mass.
-  // if (!pos.IsNearlyZero()) {
-  //   this->torque += FVector::CrossProduct(pos, f); 
-  // }
+  if (!pos.IsNearlyZero()) {
+    this->torque += FVector::CrossProduct(pos, f); 
+  }
 }
 
 void Rigidbody::Update(float dt) {

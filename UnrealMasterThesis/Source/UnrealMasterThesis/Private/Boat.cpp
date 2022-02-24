@@ -75,7 +75,7 @@ void ABoat::FetchCollisionMeshData() {
 
 void ABoat::Update(UpdatePayload update_payload) {
 
-  UE_LOG(LogTemp, Warning, TEXT("08:45"));//
+  UE_LOG(LogTemp, Warning, TEXT("10:13"));
 
   m_speed_input = update_payload.speed_input;
   m_velocity_input = update_payload.velocity_input;
@@ -98,8 +98,8 @@ void ABoat::Update(UpdatePayload update_payload) {
 
   ApplyGravity();
   ApplyBuoyancy(r_s);
-  // ApplyResistanceForces(r_s);
-  // ApplyUserInput(r_s);
+  ApplyResistanceForces(r_s);
+  ApplyUserInput(r_s);
 
   m_rigidbody.Update(0.02f); // We use a fixed delta time for physics
 
@@ -186,6 +186,7 @@ void ABoat::UpdateReadbackQueue() {
       FVector v_ws = transform.TransformPosition(v);
       // sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
       sample_points.Push(FVector2D(m_rigidbody.position.X, m_rigidbody.position.Y));
+      // sample_points.Push(FVector2D(0.0f, 0.0f));
       // sample_points.Push(FVector2D(0.21518f, 2.30357f));
     }
     TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
@@ -247,12 +248,18 @@ void ABoat::UpdateSubmergedTriangles() {
     // DebugDrawTriangle(v0, v1, v2, FColor::Red);
 
     // The relevant ocean elevation samples
-    // float e0 = m_latest_elevations[i0];
-    // float e1 = m_latest_elevations[i1];
-    // float e2 = m_latest_elevations[i2];
-    float e0 = 0.0f;
-    float e1 = 0.0f;
-    float e2 = 0.0f;
+    float e0 = m_latest_elevations[i0];
+    float e1 = m_latest_elevations[i1];
+    float e2 = m_latest_elevations[i2];
+    // float e0 = 1.0f;
+    // float e1 = 2.0f;
+    // float e2 = 3.0f;
+    // float e0 = 0.12345f;
+    // float e1 = 0.12345f;
+    // float e2 = 0.12345f;
+    // float e0 = 1.0f;
+    // float e1 = 1.0f;
+    // float e2 = 1.0f;
 
     // Heights relative to the ocean surface for each vertex
     float h0 = v0.Z - e0;
@@ -304,53 +311,53 @@ void ABoat::UpdateSubmergedTriangles() {
       m_submerged_triangles.Push(t);
     }
 
-    // // Only one vertex above water (the H vertex)
-    // else if (h_M < 0.0f) {
+    // Only one vertex above water (the H vertex)
+    else if (h_M < 0.0f) {
 
-    //   // Approximate the intermediate points where the triangle should be cut.
-    //   float t_M = -h_M / (h_H - h_M);
-    //   float t_L = -h_L / (h_H - h_L);
+      // Approximate the intermediate points where the triangle should be cut.
+      float t_M = -h_M / (h_H - h_M);
+      float t_L = -h_L / (h_H - h_L);
 
-    //   FVector I_M = v_M + t_M * (v_H - v_M);
-    //   FVector I_L = v_L + t_L * (v_H - v_L);
+      FVector I_M = v_M + t_M * (v_H - v_M);
+      FVector I_L = v_L + t_L * (v_H - v_L);
 
-    //   // Debug draw partially submerged triangles
-    //   // DebugDrawTriangle(v_L, I_L, I_M, FColor::Yellow);
-    //   // DebugDrawTriangle(v_L, v_M, I_M, FColor::Yellow);
+      // Debug draw partially submerged triangles
+      // DebugDrawTriangle(v_L, I_L, I_M, FColor::Yellow);
+      // DebugDrawTriangle(v_L, v_M, I_M, FColor::Yellow);
 
-    //   // We will end up with a quad in this case. We will treat it as two triangles.
+      // We will end up with a quad in this case. We will treat it as two triangles.
 
-    //   // Triangle #1
-    //   t.centroid = (v_L + I_L + v_M) / 3.0;
-    //   t.height   = abs(h_L + h_M + 0.0f) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
-    //   t.area     = FVector::CrossProduct(I_L - v_L, v_M - v_L).Size() / 2.0f;
-    //   m_submerged_triangles.Push(t);
+      // Triangle #1
+      t.centroid = (v_L + I_L + v_M) / 3.0;
+      t.height   = abs(h_L + h_M + 0.0f) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
+      t.area     = FVector::CrossProduct(I_L - v_L, v_M - v_L).Size() / 2.0f;
+      m_submerged_triangles.Push(t);
 
-    //   // Triangle #2
-    //   t.centroid = (v_M + I_M + I_L) / 3.0;
-    //   t.height   = abs(h_M + 0.0f + 0.0f) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
-    //   t.area     = FVector::CrossProduct(I_M - v_M, I_L - v_M).Size() / 2.0f;
-    //   m_submerged_triangles.Push(t);
-    // }
+      // Triangle #2
+      t.centroid = (v_M + I_M + I_L) / 3.0;
+      t.height   = abs(h_M + 0.0f + 0.0f) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
+      t.area     = FVector::CrossProduct(I_M - v_M, I_L - v_M).Size() / 2.0f;
+      m_submerged_triangles.Push(t);
+    }
 
-    // // Only one vertex below water (the L vertex)
-    // else if (h_L < 0.0f) {
+    // Only one vertex below water (the L vertex)
+    else if (h_L < 0.0f) {
 
-    //   // Approximate the intermediate points where the triangle should be cut.
-    //   float t_M = -h_L / (h_M - h_L);
-    //   float t_H = -h_L / (h_H - h_L);
+      // Approximate the intermediate points where the triangle should be cut.
+      float t_M = -h_L / (h_M - h_L);
+      float t_H = -h_L / (h_H - h_L);
 
-    //   FVector J_M = v_L + t_M * (v_M - v_L);
-    //   FVector J_H = v_L + t_H * (v_H - v_L);
+      FVector J_M = v_L + t_M * (v_M - v_L);
+      FVector J_H = v_L + t_H * (v_H - v_L);
 
-    //   // Debug draw partially submerged triangles
-    //   // DebugDrawTriangle(v_L, J_M, J_H, FColor::Yellow);
+      // Debug draw partially submerged triangles
+      // DebugDrawTriangle(v_L, J_M, J_H, FColor::Yellow);
 
-    //   t.centroid = (v_L + J_M + J_H) / 3.0;
-    //   t.height   = abs(h_L + 0.0f + 0.0f) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
-    //   t.area     = FVector::CrossProduct(J_M - v_L, J_H - v_L).Size() / 2.0f;
-    //   m_submerged_triangles.Push(t);
-    // }
+      t.centroid = (v_L + J_M + J_H) / 3.0;
+      t.height   = abs(h_L + 0.0f + 0.0f) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
+      t.area     = FVector::CrossProduct(J_M - v_L, J_H - v_L).Size() / 2.0f;
+      m_submerged_triangles.Push(t);
+    }
 
   }
 
@@ -401,8 +408,8 @@ void ABoat::ApplyUserInput(float r_s) {
   FVector right = GetActorRightVector();
   FVector up = GetActorUpVector();
   
-  r_s = 0.2f;
-  m_velocity_input = FVector2D(0.1f, 0.2f);
+  // r_s = 0.2f;
+  // m_velocity_input = FVector2D(0.1f, 0.2f);
 
   if (m_velocity_input.Y > 0.0f) {
     FVector engine_pos = (-forward) * 2.1f + (-up) * 0.3f;

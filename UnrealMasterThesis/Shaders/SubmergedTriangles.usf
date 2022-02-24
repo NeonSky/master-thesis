@@ -73,22 +73,34 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     // float e0 = sample_elevation(ElevationTexture, v0.xy);
     // float e1 = sample_elevation(ElevationTexture, v1.xy);
     // float e2 = sample_elevation(ElevationTexture, v2.xy);
-    // float e0 = sample_elevation(ElevationTexture, position.xy);
-    // float e1 = sample_elevation(ElevationTexture, position.xy);
-    // float e2 = sample_elevation(ElevationTexture, position.xy);
-    float e0 = 0.0f;
-    float e1 = 0.0f;
-    float e2 = 0.0f;
+    float e0 = sample_elevation(ElevationTexture, position.xy);
+    float e1 = sample_elevation(ElevationTexture, position.xy);
+    float e2 = sample_elevation(ElevationTexture, position.xy);
+    // float e0 = 0.1; // bork
+    // float e1 = 0.2;
+    // float e2 = 0.3;
+    // float e0 = 1.0; // seems to work
+    // float e1 = 2.0;
+    // float e2 = 3.0;
+    // float e0 = 1.0; // works (order matters?)
+    // float e1 = 1.0;
+    // float e2 = 1.0;
+    // float e0 = 0.12345; // doesn't work (precision issue?)
+    // float e1 = 0.12345;
+    // float e2 = 0.12345;
     // float e0 = sample_elevation(ElevationTexture, float2(0.21518, 2.30357)); // works
     // float e1 = sample_elevation(ElevationTexture, float2(0.21518, 2.30357));
     // float e2 = sample_elevation(ElevationTexture, float2(0.21518, 2.30357));
+    // float e0 = sample_elevation(ElevationTexture, float2(0.5, 0.5));
+    // float e1 = sample_elevation(ElevationTexture, float2(0.5, 0.5));
+    // float e2 = sample_elevation(ElevationTexture, float2(0.5, 0.5));
     // float e0 = sample_elevation(ElevationTexture, float2(0.0, 0.0));
     // float e1 = sample_elevation(ElevationTexture, float2(0.0, 0.0));
     // float e2 = sample_elevation(ElevationTexture, float2(0.0, 0.0));
 
     float h0 = v0.z - e0;
-    float h1 = v1.z - e0;
-    float h2 = v2.z - e0;
+    float h1 = v1.z - e1;
+    float h2 = v2.z - e2;
 
     // Sort by relative height
     SortItem s[3];
@@ -146,59 +158,59 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
         OutputBuffer[2*id.x+1] = t;
     }
 
-    // // Only one vertex above water (the H vertex)
-    // else if (h_M < 0.0) {
+    // Only one vertex above water (the H vertex)
+    else if (h_M < 0.0) {
 
-    //     // Approximate the intermediate points where the triangle should be cut.
-    //     float t_M = -h_M / (h_H - h_M);
-    //     float t_L = -h_L / (h_H - h_L);
+        // Approximate the intermediate points where the triangle should be cut.
+        float t_M = -h_M / (h_H - h_M);
+        float t_L = -h_L / (h_H - h_L);
 
-    //     float3 I_M = v_M + t_M * (v_H - v_M);
-    //     float3 I_L = v_L + t_L * (v_H - v_L);
+        float3 I_M = v_M + t_M * (v_H - v_M);
+        float3 I_L = v_L + t_L * (v_H - v_L);
 
-    //     // Triangle #1
-    //     float3 center = (v_L + I_L + v_M) / 3.0;
-    //     float height  = abs(h_L + h_M + 0.0) / 3.0;
-    //     float area    = length(cross(I_L - v_L, v_M - v_L)) / 2.0;
+        // Triangle #1
+        float3 center = (v_L + I_L + v_M) / 3.0;
+        float height  = abs(h_L + h_M + 0.0) / 3.0;
+        float area    = length(cross(I_L - v_L, v_M - v_L)) / 2.0;
 
-    //     t.normal_and_height = float4(normal, height);
-    //     t.center_and_area   = float4(center, area);
-    //     OutputBuffer[2*id.x]   = t;
+        t.normal_and_height = float4(normal, height);
+        t.center_and_area   = float4(center, area);
+        OutputBuffer[2*id.x]   = t;
 
-    //     // Triangle #2
-    //     center = (v_M + I_M + I_L) / 3.0;
-    //     height = abs(h_M + 0.0 + 0.0) / 3.0;
-    //     area   = length(cross(I_M - v_M, I_L - v_M)) / 2.0;
+        // Triangle #2
+        center = (v_M + I_M + I_L) / 3.0;
+        height = abs(h_M + 0.0 + 0.0) / 3.0;
+        area   = length(cross(I_M - v_M, I_L - v_M)) / 2.0;
 
-    //     t.normal_and_height = float4(normal, height);
-    //     t.center_and_area   = float4(center, area);
-    //     OutputBuffer[2*id.x+1] = t;
-    // }
+        t.normal_and_height = float4(normal, height);
+        t.center_and_area   = float4(center, area);
+        OutputBuffer[2*id.x+1] = t;
+    }
 
-    // // Only one vertex below water (the L vertex)
-    // else if (h_L < 0.0) {
+    // Only one vertex below water (the L vertex)
+    else if (h_L < 0.0) {
 
-    //     // Approximate the intermediate points where the triangle should be cut.
-    //     float t_M = -h_L / (h_M - h_L);
-    //     float t_H = -h_L / (h_H - h_L);
+        // Approximate the intermediate points where the triangle should be cut.
+        float t_M = -h_L / (h_M - h_L);
+        float t_H = -h_L / (h_H - h_L);
 
-    //     float3 J_M = v_L + t_M * (v_M - v_L);
-    //     float3 J_H = v_L + t_H * (v_H - v_L);
+        float3 J_M = v_L + t_M * (v_M - v_L);
+        float3 J_H = v_L + t_H * (v_H - v_L);
 
-    //     float3 center = (v_L + J_M + J_H) / 3.0;
-    //     float height  = abs(h_L + 0.0 + 0.0) / 3.0;
-    //     float area    = length(cross(J_M - v_L, J_H - v_L)) / 2.0;
+        float3 center = (v_L + J_M + J_H) / 3.0;
+        float height  = abs(h_L + 0.0 + 0.0) / 3.0;
+        float area    = length(cross(J_M - v_L, J_H - v_L)) / 2.0;
 
-    //     t.normal_and_height = float4(normal, height);
-    //     t.center_and_area   = float4(center, area);
+        t.normal_and_height = float4(normal, height);
+        t.center_and_area   = float4(center, area);
 
-    //     // Store results
-    //     OutputBuffer[2*id.x] = t;
+        // Store results
+        OutputBuffer[2*id.x] = t;
 
-    //     // No second triangle, so ignore it (by setting zero area)
-    //     t.center_and_area.w = 0.0;
-    //     OutputBuffer[2*id.x+1] = t;
-    // }
+        // No second triangle, so ignore it (by setting zero area)
+        t.center_and_area.w = 0.0;
+        OutputBuffer[2*id.x+1] = t;
+    }
 
     // No vertex is submerged
     else {
