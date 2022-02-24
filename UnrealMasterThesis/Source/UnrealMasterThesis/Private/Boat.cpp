@@ -74,7 +74,7 @@ void ABoat::FetchCollisionMeshData() {
 
 void ABoat::Update(UpdatePayload update_payload) {
 
-  UE_LOG(LogTemp, Warning, TEXT("12:33"));
+  UE_LOG(LogTemp, Warning, TEXT("08:14"));//
 
   m_speed_input = update_payload.speed_input;
   m_velocity_input = update_payload.velocity_input;
@@ -95,8 +95,8 @@ void ABoat::Update(UpdatePayload update_payload) {
 
   ApplyGravity();
   ApplyBuoyancy();
-  ApplyResistanceForces(r_s);
-  ApplyUserInput(r_s);
+  // ApplyResistanceForces(r_s);
+  // ApplyUserInput(r_s);
 
   m_rigidbody.Update(0.02f); // We use a fixed delta time for physics
 
@@ -183,6 +183,7 @@ void ABoat::UpdateReadbackQueue() {
       FVector v_ws = transform.TransformPosition(v);
       // sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
       sample_points.Push(FVector2D(m_rigidbody.position.X, m_rigidbody.position.Y));
+      // sample_points.Push(FVector2D(0.21518f, 2.30357f));
     }
     TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
 
@@ -356,17 +357,19 @@ void ABoat::ApplyGravity() {
 
 void ABoat::ApplyBuoyancy() {
 
-  for (auto& t : m_submerged_triangles) {
+  // for (auto& t : m_submerged_triangles) {
 
-    // (kg / m^3) * (m / s^2) * (m) * (m^2) = kg * (m / s^2) = N
-    FVector buoyancy_force = -DENSITY_OF_WATER * GRAVITY * t.height * t.area * t.normal;
-    buoyancy_force = FVector(0.0, 0.0, abs(buoyancy_force.Z));
+  //   // (kg / m^3) * (m / s^2) * (m) * (m^2) = kg * (m / s^2) = N
+  //   FVector buoyancy_force = -DENSITY_OF_WATER * GRAVITY * t.height * t.area * t.normal;
+  //   buoyancy_force = FVector(0.0, 0.0, abs(buoyancy_force.Z));
+  //   buoyancy_force = FVector(0.0, 0.0, 1000.0f);
 
-    m_rigidbody.AddForceAtPosition(buoyancy_force, t.centroid);
+  //   m_rigidbody.AddForceAtPosition(buoyancy_force, t.centroid);
 
-    // DebugDrawForce(t.centroid, buoyancy_force / METERS_TO_UNREAL_UNITS, FColor::Purple);
-  }
+  //   // DebugDrawForce(t.centroid, buoyancy_force / METERS_TO_UNREAL_UNITS, FColor::Purple);
+  // }
 
+  m_rigidbody.AddForceAtPosition(FVector(0.0, 0.0, GRAVITY * 1.01f * m_rigidbody.mass), m_rigidbody.position);
 }
 
 void ABoat::ApplyResistanceForces(float r_s) {
@@ -390,6 +393,9 @@ void ABoat::ApplyUserInput(float r_s) {
   FVector forward = GetActorForwardVector();
   FVector right = GetActorRightVector();
   FVector up = GetActorUpVector();
+  
+  r_s = 0.2f;
+  m_velocity_input = FVector2D(0.1f, 0.2f);
 
   if (m_velocity_input.Y > 0.0f) {
     FVector engine_pos = (-forward) * 2.1f + (-up) * 0.3f;

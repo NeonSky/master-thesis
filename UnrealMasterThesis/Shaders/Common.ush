@@ -95,9 +95,9 @@ void add_force_at_position(inout Rigidbody rigidbody, float3 f, float3 pos) {
 
     rigidbody.force += f;
 
-    if (length(pos) > 0.0001) {
-        rigidbody.torque += cross(pos, f);
-    }
+    // if (length(pos) > 0.0001) {
+    //     rigidbody.torque += cross(pos, f);
+    // }
 }
 
 void update_rigidbody(inout Rigidbody rigidbody) {
