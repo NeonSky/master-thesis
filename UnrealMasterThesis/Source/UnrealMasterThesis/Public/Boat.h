@@ -97,7 +97,7 @@ private:
 	void UpdateSubmergedTriangles();
 
 	void ApplyGravity();
-	void ApplyBuoyancy();
+	void ApplyBuoyancy(float r_s);
 	void ApplyResistanceForces(float r_s);
 	void ApplyUserInput(float r_s);
 

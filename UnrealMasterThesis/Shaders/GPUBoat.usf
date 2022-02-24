@@ -35,7 +35,7 @@ void apply_gravity(inout Rigidbody rigidbody) {
     add_force_at_position(rigidbody, gravity_force, rigidbody.position);
 }
 
-void apply_buoyancy(inout Rigidbody rigidbody) {
+void apply_buoyancy(inout Rigidbody rigidbody, float r_s) {
 
     // for (int i = 0; i < N_TRIANGLES; i++) {
     //     SubmergedTriangle t = SubmergedTrianglesBuffer[i];
@@ -56,7 +56,7 @@ void apply_buoyancy(inout Rigidbody rigidbody) {
     //     }
     // }
 
-    add_force_at_position(rigidbody, GRAVITY * 1.01 * rigidbody.mass * float3(0.0, 0.0, 1.0), rigidbody.position);
+    add_force_at_position(rigidbody, GRAVITY * 10.0 * r_s * rigidbody.mass * float3(0.0, 0.0, 1.0), rigidbody.position);
 }
 
 void apply_user_input(inout Rigidbody rigidbody, float r_s) {
@@ -116,7 +116,17 @@ float compute_ratio_of_submerge() {
 
     float r_s = submerged_area / tot_area;
 
-    // ReadbackTexture[uint2(2,0)] = float4(r_s, submerged_area, tot_area, 1.0); // Debug
+    float c = 0.0;
+    for (int i = 0; i < N_TRIANGLES; i++) {
+        SubmergedTriangle t = SubmergedTrianglesBuffer[i];
+        float area    = t.center_and_area.w;
+        // Ignore non-positive areas
+        if (area > 0.0) {
+            c += 1.0;
+        }
+    }
+
+    ReadbackTexture[uint2(2,0)] = float4(c, r_s, submerged_area, tot_area); // Debug
 
     return r_s;
 }
@@ -129,7 +139,7 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     float r_s = compute_ratio_of_submerge();
 
     apply_gravity(rigidbody);
-    apply_buoyancy(rigidbody);
+    apply_buoyancy(rigidbody, r_s);
     // apply_resistance_forces(rigidbody, r_s);
     // apply_user_input(rigidbody, r_s);
 
@@ -143,6 +153,5 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     ReadbackTexture[uint2(0,0)].rgb = rigidbody.position;
     ReadbackTexture[uint2(1,0)]     = rigidbody.orientation;
-    ReadbackTexture[uint2(2,0)] = SubmergedTrianglesBuffer[0].normal_and_height; // Debug
 
 }
