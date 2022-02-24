@@ -57,7 +57,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	
 	int2 sampleCoordinates = int2(id.x, id.y);
 	if(preFFT == 1){
-		// TODO: offset when sampling from prev textures to move the simulation.
+		// Offset when sampling from prev textures to move the simulation.
 		sampleCoordinates = int2(id.x - (boat_dx), id.y - (boat_dy));
 	}
 	float h = hPrev_rtt[sampleCoordinates.xy].r;
