@@ -229,6 +229,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	static float uvY = boatY;
 	if (first) {
 		last_ran = realtimeSeconds;
+		// TODO: ComputeAdd is currently only used to clear the render targets from previous execution... remove
 		m_shader_models_module.ComputeAdd(this->ewave_h_rtt, this->eWave_addition_texture, this->ewave_h_rtt);
 		m_shader_models_module.ComputeAdd(this->ewave_hPrev_rtt, this->eWave_addition_texture, this->ewave_hPrev_rtt);
 		m_shader_models_module.ComputeAdd(this->ewave_v_rtt, this->eWave_addition_texture, this->ewave_v_rtt);
@@ -250,15 +251,15 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 			submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
 		}
 
-		int xp = (boatX * 100.0f) / 39.0625f;
-		int yp = (boatY * 100.0f) / 39.0625f;
+		float cmPerPixel = L * METERS_TO_UNREAL_UNITS / N;
+		int xp = (boatX * METERS_TO_UNREAL_UNITS) / cmPerPixel;
+		int yp = (boatY * METERS_TO_UNREAL_UNITS) / cmPerPixel;
 		int dxp = boatPrevXp - xp;
 		int dyp = boatPrevYp - yp;
 		
 		if (abs(dxp) >= 32) {
 			// move the simulation in the x-direction
 			boatPrevXp = xp; 
-			//dxp *= -1;
 			uvX = boatX;
 		}
 		else {
@@ -267,7 +268,6 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		if (abs(dyp) >= 32) {
 			// move the simulation in the y-direction
 			boatPrevYp = yp; 
-			//dyp *= -1;
 			uvY = boatY;
 		}
 		else {
@@ -279,7 +279,8 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		float boatSpeed = sqrt((dxm * dxm) + (dym * dym));
 		//UE_LOG(LogTemp, Error, TEXT("speed: %f"), boatSpeed);
 		UE_LOG(LogTemp, Error, TEXT("pixel x: %d,     last move, pixel x: %d,      dxp: %d"), xp, boatPrevXp, dxp);
-		UE_LOG(LogTemp, Error, TEXT("pixel y: %d,     last move, pixel y: %d,      dyp: %d\n\n\n"), yp, boatPrevYp, dyp);
+		UE_LOG(LogTemp, Error, TEXT("pixel y: %d,     last move, pixel y: %d,      dyp: %d"), yp, boatPrevYp, dyp);
+		UE_LOG(LogTemp, Error, TEXT("cm %f,   n %d"), cmPerPixel, N);
 
 		float scale = 1.0f / ((float)N * (float)N);
 		float dx = boatX - boatPrevX;
