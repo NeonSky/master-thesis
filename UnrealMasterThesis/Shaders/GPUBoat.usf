@@ -35,28 +35,27 @@ void apply_gravity(inout Rigidbody rigidbody) {
     add_force_at_position(rigidbody, gravity_force, rigidbody.position);
 }
 
-void apply_buoyancy(inout Rigidbody rigidbody, float r_s) {
+void apply_buoyancy(inout Rigidbody rigidbody) {
 
-    // for (int i = 0; i < N_TRIANGLES; i++) {
-    //     SubmergedTriangle t = SubmergedTrianglesBuffer[i];
+    for (int i = 0; i < N_TRIANGLES; i++) {
+        SubmergedTriangle t = SubmergedTrianglesBuffer[i];
 
-    //     float3 normal = t.normal_and_height.xyz;
-    //     float height  = t.normal_and_height.w;
-    //     float3 center = t.center_and_area.xyz;
-    //     float area    = t.center_and_area.w;
+        float3 normal = t.normal_and_height.xyz;
+        float height  = t.normal_and_height.w;
+        float3 center = t.center_and_area.xyz;
+        float area    = t.center_and_area.w;
 
-    //     // Ignore non-positive areas
-    //     if (area > 0.0) {
+        // Ignore non-positive areas
+        if (area > 0.0) {
 
-    //         float3 buoyancy_force = DENSITY_OF_WATER * GRAVITY * height * area * normal;
-    //         buoyancy_force = float3(0.0, 0.0, abs(buoyancy_force.z));
-    //         buoyancy_force = float3(0.0, 0.0, 1000.0);
+            float3 buoyancy_force = DENSITY_OF_WATER * GRAVITY * height * area * normal;
+            buoyancy_force = float3(0.0, 0.0, abs(buoyancy_force.z));
+            buoyancy_force = float3(0.0, 0.0, 1000.0);
 
-    //         add_force_at_position(rigidbody, buoyancy_force, center);
-    //     }
-    // }
+            add_force_at_position(rigidbody, buoyancy_force, center);
+        }
+    }
 
-    add_force_at_position(rigidbody, GRAVITY * 10.0 * r_s * rigidbody.mass * float3(0.0, 0.0, 1.0), rigidbody.position);
 }
 
 void apply_user_input(inout Rigidbody rigidbody, float r_s) {
@@ -64,9 +63,6 @@ void apply_user_input(inout Rigidbody rigidbody, float r_s) {
     float3 forward = rotate_vector_by_quat(float3(1.0, 0.0, 0.0), rigidbody.orientation);
     float3 right   = rotate_vector_by_quat(float3(0.0, 1.0, 0.0), rigidbody.orientation);
     float3 up      = rotate_vector_by_quat(float3(0.0, 0.0, 1.0), rigidbody.orientation);
-
-    // r_s = 0.2;
-    // float2 vel_input = float2(0.1, 0.2);
 
     if (VelocityInput.y > 0.0) {
         float3 engine_pos = (-forward) * 2.1 + (-up) * 0.3;
@@ -110,8 +106,7 @@ float compute_ratio_of_submerge() {
 
         // Ignore non-positive areas
         if (area > 0.0) {
-            // submerged_area += area;
-            submerged_area += 0.1;
+            submerged_area += area;
         }
     }
 
@@ -129,10 +124,9 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     Rigidbody rigidbody = get_rigidbody();
 
     float r_s = compute_ratio_of_submerge();
-    // float r_s = 0.2;
 
     apply_gravity(rigidbody);
-    apply_buoyancy(rigidbody, r_s);
+    apply_buoyancy(rigidbody);
     apply_resistance_forces(rigidbody, r_s);
     apply_user_input(rigidbody, r_s);
 
@@ -144,11 +138,14 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     InputOutputTexture[uint2(2,0)].rgb = rigidbody.linear_velocity;
     InputOutputTexture[uint2(3,0)].rgb = rigidbody.angular_velocity;
 
-    ReadbackTexture[uint2(0,0)].rgb = rigidbody.position;
-    ReadbackTexture[uint2(1,0)]     = rigidbody.orientation;
+    store_f32(ReadbackTexture, uint2(0,0), rigidbody.position.x);
+    store_f32(ReadbackTexture, uint2(1,0), rigidbody.position.y);
+    store_f32(ReadbackTexture, uint2(2,0), rigidbody.position.z);
+    store_f32(ReadbackTexture, uint2(3,0), rigidbody.orientation.x);
+    store_f32(ReadbackTexture, uint2(4,0), rigidbody.orientation.y);
+    store_f32(ReadbackTexture, uint2(5,0), rigidbody.orientation.z);
+    store_f32(ReadbackTexture, uint2(6,0), rigidbody.orientation.w);
 
-    // store_f32(ReadbackTexture, uint2(2,0), rigidbody.position.x);
-    // store_f32(ReadbackTexture, uint2(3,0), rigidbody.position.y);
-    store_f32(ReadbackTexture, uint2(4,0), rigidbody.position.z);
+    store_f32(ReadbackTexture, uint2(7,0), r_s); // Debug
 
 }

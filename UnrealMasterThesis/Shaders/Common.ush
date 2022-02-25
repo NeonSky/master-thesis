@@ -140,8 +140,6 @@ float sample_elevation(Texture2D<float4> elevation_texture, float2 ws_coord) {
     };
 
     float elevation = elevation_texture.SampleLevel(Sampler, coord, 0).r; // doesn't quite work yet
-    // float elevation = elevation_texture.SampleLevel(Sampler, float2(0.5, 0.5), 0).r; // used to work (correct UVs for center), but starts to desync now for some reason
-    // float elevation = 0.123450443; // works now
 
     return elevation;
 }

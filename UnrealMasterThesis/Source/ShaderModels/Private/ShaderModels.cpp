@@ -138,7 +138,7 @@ void ShaderModelsModule::UpdateGPUBoat(
 	UTextureRenderTarget2D* elevation_texture,
 	UTextureRenderTarget2D* input_output,
 	UTextureRenderTarget2D* readback_texture,
-	AActor* camera_target) {
+	AActor* update_target) {
 
 	TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer;
 	{
@@ -163,7 +163,7 @@ void ShaderModelsModule::UpdateGPUBoat(
 	{
 		TShaderMapRef<GPUBoatShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 		ENQUEUE_RENDER_COMMAND(shader)(
-			[shader, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, input_output, readback_texture, camera_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
+			[shader, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, input_output, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
 				shader->BuildAndExecuteGraph(
 					RHI_cmd_list,
 					speed_input,
@@ -172,22 +172,23 @@ void ShaderModelsModule::UpdateGPUBoat(
 					submerged_triangles_buffer,
 					input_output,
 					readback_texture,
-					camera_target ? (&data) : nullptr
+					update_target ? (&data) : nullptr
 				);
 			}); 
 	}
 
-	if (camera_target) {
+	if (update_target) {
 		FRenderCommandFence fence;
 		fence.BeginFence();
 		fence.Wait();
 
-		FVector pos = FVector(data[0].R, data[0].G, data[0].B);
-		FQuat rot   = FQuat(data[1].R, data[1].G, data[1].B, data[1].A);
-		UE_LOG(LogTemp, Warning, TEXT("GPU boat: (%.9f, %.9f, %.9f)"), RECOVER_F32(data[2]), RECOVER_F32(data[3]), RECOVER_F32(data[4]));
+		FVector pos = FVector(RECOVER_F32(data[0]), RECOVER_F32(data[1]), RECOVER_F32(data[2]));
+		FQuat rot   = FQuat(RECOVER_F32(data[3]), RECOVER_F32(data[4]), RECOVER_F32(data[5]), RECOVER_F32(data[6]));
 
-		camera_target->SetActorLocation(METERS_TO_UNREAL_UNITS * pos);
-		camera_target->SetActorRotation(rot, ETeleportType::None);
+		// UE_LOG(LogTemp, Warning, TEXT("GPU boat debug: %.9f"), RECOVER_F32(data[7]));
+
+		update_target->SetActorLocation(METERS_TO_UNREAL_UNITS * pos);
+		update_target->SetActorRotation(rot, ETeleportType::None);
 	}
 }
 

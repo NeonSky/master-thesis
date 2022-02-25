@@ -37,6 +37,6 @@ public:
 		UTextureRenderTarget2D* elevation_texture,
 		UTextureRenderTarget2D* input_output,
 		UTextureRenderTarget2D* readback_texture,
-		AActor* camera_target);
+		AActor* update_target);
 
 };

@@ -75,8 +75,8 @@ void ABoat::FetchCollisionMeshData() {
 
 void ABoat::Update(UpdatePayload update_payload) {
 
-  UE_LOG(LogTemp, Warning, TEXT("#####"));
-  UE_LOG(LogTemp, Warning, TEXT("09:11"));
+  // UE_LOG(LogTemp, Warning, TEXT("#####"));
+  // UE_LOG(LogTemp, Warning, TEXT("09:11"));
 
   m_speed_input = update_payload.speed_input;
   m_velocity_input = update_payload.velocity_input;
@@ -108,9 +108,9 @@ void ABoat::Update(UpdatePayload update_payload) {
   SetActorLocation(METERS_TO_UNREAL_UNITS * m_rigidbody.position);
   SetActorRotation(m_rigidbody.orientation, ETeleportType::None);
 
-  UE_LOG(LogTemp, Warning, TEXT("CPU boat r_s:  %.9f, %.9f"), r_s, submerged_area);
-  UE_LOG(LogTemp, Warning, TEXT("CPU boat position: %.9f, %.9f, %.9f"), m_rigidbody.position.X, m_rigidbody.position.Y, m_rigidbody.position.Z);
-  UE_LOG(LogTemp, Warning, TEXT("CPU boat orientation: %.9f, %.9f, %.9f, %.9f"), m_rigidbody.orientation.X, m_rigidbody.orientation.Y, m_rigidbody.orientation.Z, m_rigidbody.orientation.W);
+  // UE_LOG(LogTemp, Warning, TEXT("CPU boat r_s:  %.9f, %.9f"), r_s, submerged_area);
+  // UE_LOG(LogTemp, Warning, TEXT("CPU boat position: %.9f, %.9f, %.9f"), m_rigidbody.position.X, m_rigidbody.position.Y, m_rigidbody.position.Z);
+  // UE_LOG(LogTemp, Warning, TEXT("CPU boat orientation: %.9f, %.9f, %.9f, %.9f"), m_rigidbody.orientation.X, m_rigidbody.orientation.Y, m_rigidbody.orientation.Z, m_rigidbody.orientation.W);
 
   m_cur_frame++;
 }
@@ -195,10 +195,10 @@ void ABoat::UpdateReadbackQueue() {
     }
     TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
 
-    {
-      FVector2D v_ws = sample_points[0];
-      UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %.9f, %.9f -> %.9f"), v_ws.X, v_ws.Y, elevations[0]);
-    }
+    // {
+    //   FVector2D v_ws = sample_points[0];
+    //   UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %.9f, %.9f -> %.9f"), v_ws.X, v_ws.Y, elevations[0]);
+    // }
 
     m_readback_queue.push(elevations);
   }
