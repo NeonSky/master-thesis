@@ -70,33 +70,9 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     float3 normal = normalize(cross(v2 - v0, v1 - v0));
 
-    // float e0 = sample_elevation(ElevationTexture, v0.xy);
-    // float e1 = sample_elevation(ElevationTexture, v1.xy);
-    // float e2 = sample_elevation(ElevationTexture, v2.xy);
-    float e0 = sample_elevation(ElevationTexture, position.xy);
-    float e1 = sample_elevation(ElevationTexture, position.xy);
-    float e2 = sample_elevation(ElevationTexture, position.xy);
-    // float e0 = 0.1; // bork
-    // float e1 = 0.2;
-    // float e2 = 0.3;
-    // float e0 = 1.0; // seems to work
-    // float e1 = 2.0;
-    // float e2 = 3.0;
-    // float e0 = 1.0; // works (order matters?)
-    // float e1 = 1.0;
-    // float e2 = 1.0;
-    // float e0 = 0.12345; // doesn't work (precision issue?)
-    // float e1 = 0.12345;
-    // float e2 = 0.12345;
-    // float e0 = sample_elevation(ElevationTexture, float2(0.21518, 2.30357)); // works
-    // float e1 = sample_elevation(ElevationTexture, float2(0.21518, 2.30357));
-    // float e2 = sample_elevation(ElevationTexture, float2(0.21518, 2.30357));
-    // float e0 = sample_elevation(ElevationTexture, float2(0.5, 0.5));
-    // float e1 = sample_elevation(ElevationTexture, float2(0.5, 0.5));
-    // float e2 = sample_elevation(ElevationTexture, float2(0.5, 0.5));
-    // float e0 = sample_elevation(ElevationTexture, float2(0.0, 0.0));
-    // float e1 = sample_elevation(ElevationTexture, float2(0.0, 0.0));
-    // float e2 = sample_elevation(ElevationTexture, float2(0.0, 0.0));
+    float e0 = sample_elevation(ElevationTexture, v0.xy);
+    float e1 = sample_elevation(ElevationTexture, v1.xy);
+    float e2 = sample_elevation(ElevationTexture, v2.xy);
 
     float h0 = v0.z - e0;
     float h1 = v1.z - e1;
@@ -117,21 +93,6 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     float3 v_L = s[0].v;
     float3 v_M = s[1].v;
     float3 v_H = s[2].v;
-
-    // debug
-    // if (id.x == 0) {
-    //     SubmergedTriangle t;
- 
-    //     t.normal_and_height = float4(v0, e0); // synced unless we move
-    //     // t.normal_and_height = float4(v1, e1);  // synced unless we move
-    //     // t.normal_and_height = float4(v0, 3.14);
-    //     // t.normal_and_height = float4(0.1, 0.2, 0.3, 0.0);
-    //     t.center_and_area  = float4(0.0, 0.0, 0.0, 0.0);
-
-    //     OutputBuffer[2*id.x]   = t;
-    //     OutputBuffer[2*id.x+1] = t;
-    //     return;
-    // }
 
     ////////////////////////////////////////////
     /* Cut into submerged triangles (3 cases) */
