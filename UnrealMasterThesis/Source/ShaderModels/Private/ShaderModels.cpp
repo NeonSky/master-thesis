@@ -184,7 +184,7 @@ void ShaderModelsModule::UpdateGPUBoat(
 
 		FVector pos = FVector(data[0].R, data[0].G, data[0].B);
 		FQuat rot   = FQuat(data[1].R, data[1].G, data[1].B, data[1].A);
-		UE_LOG(LogTemp, Warning, TEXT("GPU Boat debug output: (%f, %f, %f)"), RECOVER_F32(data[2]), RECOVER_F32(data[3]), RECOVER_F32(data[4]));
+		UE_LOG(LogTemp, Warning, TEXT("GPU boat: (%.9f, %.9f, %.9f)"), RECOVER_F32(data[2]), RECOVER_F32(data[3]), RECOVER_F32(data[4]));
 
 		camera_target->SetActorLocation(METERS_TO_UNREAL_UNITS * pos);
 		camera_target->SetActorRotation(rot, ETeleportType::None);

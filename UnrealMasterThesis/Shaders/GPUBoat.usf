@@ -31,7 +31,7 @@ Rigidbody get_rigidbody() {
 }
 
 void apply_gravity(inout Rigidbody rigidbody) {
-    float3 gravity_force = GRAVITY * rigidbody.mass * float3(0.0, 0.0, -1.0);
+    float3 gravity_force = float3(0.0, 0.0, -GRAVITY * rigidbody.mass);
     add_force_at_position(rigidbody, gravity_force, rigidbody.position);
 }
 
@@ -101,7 +101,7 @@ void apply_resistance_forces(inout Rigidbody rigidbody, float r_s) {
 }
 
 float compute_ratio_of_submerge() {
-    float tot_area = 27.045518875122; // manually copied from CPU
+    float tot_area = 27.045519; // manually copied from CPU
     float submerged_area = 0.0f;
 
     for (int i = 0; i < N_TRIANGLES; i++) {
@@ -117,10 +117,8 @@ float compute_ratio_of_submerge() {
 
     float r_s = submerged_area / tot_area;
 
-    // ReadbackTexture[uint2(2,0)] = float4(c, r_s, submerged_area, tot_area); // Debug
     store_f32(ReadbackTexture, uint2(2,0), r_s);
     store_f32(ReadbackTexture, uint2(3,0), submerged_area);
-    store_f32(ReadbackTexture, uint2(4,0), tot_area);
 
     return r_s;
 }
@@ -131,6 +129,7 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     Rigidbody rigidbody = get_rigidbody();
 
     float r_s = compute_ratio_of_submerge();
+    // float r_s = 0.2;
 
     apply_gravity(rigidbody);
     apply_buoyancy(rigidbody, r_s);
@@ -147,5 +146,9 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     ReadbackTexture[uint2(0,0)].rgb = rigidbody.position;
     ReadbackTexture[uint2(1,0)]     = rigidbody.orientation;
+
+    // store_f32(ReadbackTexture, uint2(2,0), rigidbody.position.x);
+    // store_f32(ReadbackTexture, uint2(3,0), rigidbody.position.y);
+    store_f32(ReadbackTexture, uint2(4,0), rigidbody.position.z);
 
 }

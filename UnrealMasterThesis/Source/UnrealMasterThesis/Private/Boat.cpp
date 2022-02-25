@@ -70,12 +70,13 @@ void ABoat::FetchCollisionMeshData() {
     m_collision_mesh_surface_area += area;
 
   }
-  m_collision_mesh_surface_area = 27.045518875122f; // debug
+  m_collision_mesh_surface_area = 27.045519f; // debug
 }
 
 void ABoat::Update(UpdatePayload update_payload) {
 
-  UE_LOG(LogTemp, Warning, TEXT("08:33"));
+  UE_LOG(LogTemp, Warning, TEXT("#####"));
+  UE_LOG(LogTemp, Warning, TEXT("09:11"));
 
   m_speed_input = update_payload.speed_input;
   m_velocity_input = update_payload.velocity_input;
@@ -93,9 +94,7 @@ void ABoat::Update(UpdatePayload update_payload) {
     submerged_area += 0.1f;
   }
   float r_s = submerged_area / m_collision_mesh_surface_area;
-  UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f, %f"), r_s, submerged_area, m_collision_mesh_surface_area);
-  // UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f, %f"), m_rigidbody.position.X, m_rigidbody.position.Y, m_rigidbody.position.Z);
-  // UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f, %f, %f"), m_rigidbody.orientation.X, m_rigidbody.orientation.Y, m_rigidbody.orientation.Z, m_rigidbody.orientation.W);
+  // float r_s = 0.2f;
 
   ApplyGravity();
   ApplyBuoyancy(r_s);
@@ -108,6 +107,10 @@ void ABoat::Update(UpdatePayload update_payload) {
 
   SetActorLocation(METERS_TO_UNREAL_UNITS * m_rigidbody.position);
   SetActorRotation(m_rigidbody.orientation, ETeleportType::None);
+
+  UE_LOG(LogTemp, Warning, TEXT("CPU boat r_s:  %.9f, %.9f"), r_s, submerged_area);
+  UE_LOG(LogTemp, Warning, TEXT("CPU boat position: %.9f, %.9f, %.9f"), m_rigidbody.position.X, m_rigidbody.position.Y, m_rigidbody.position.Z);
+  UE_LOG(LogTemp, Warning, TEXT("CPU boat orientation: %.9f, %.9f, %.9f, %.9f"), m_rigidbody.orientation.X, m_rigidbody.orientation.Y, m_rigidbody.orientation.Z, m_rigidbody.orientation.W);
 
   m_cur_frame++;
 }
@@ -193,10 +196,8 @@ void ABoat::UpdateReadbackQueue() {
     TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
 
     {
-      // FVector2D v_ws = sample_points[0];
-      // UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f -> %f"), v_ws.X, v_ws.Y, elevations[0]);
-      FVector2D v_ws = sample_points[1];
-      UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f -> %f"), v_ws.X, v_ws.Y, elevations[1]);
+      FVector2D v_ws = sample_points[0];
+      UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %.9f, %.9f -> %.9f"), v_ws.X, v_ws.Y, elevations[0]);
     }
 
     m_readback_queue.push(elevations);
@@ -365,7 +366,7 @@ void ABoat::UpdateSubmergedTriangles() {
 }
 
 void ABoat::ApplyGravity() {
-  FVector force = FVector(0.0, 0.0, -GRAVITY * m_rigidbody.mass);
+  FVector force = FVector(0.0f, 0.0f, -GRAVITY * m_rigidbody.mass);
   m_rigidbody.AddForceAtPosition(force, m_rigidbody.position);
 }
 
