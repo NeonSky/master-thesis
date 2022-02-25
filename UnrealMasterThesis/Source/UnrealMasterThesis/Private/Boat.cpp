@@ -75,7 +75,7 @@ void ABoat::FetchCollisionMeshData() {
 
 void ABoat::Update(UpdatePayload update_payload) {
 
-  UE_LOG(LogTemp, Warning, TEXT("10:13"));
+  UE_LOG(LogTemp, Warning, TEXT("08:33"));
 
   m_speed_input = update_payload.speed_input;
   m_velocity_input = update_payload.velocity_input;
@@ -89,10 +89,11 @@ void ABoat::Update(UpdatePayload update_payload) {
 
   float submerged_area = 0.0f;
   for (auto& t : m_submerged_triangles) {
-    submerged_area += t.area;
+    // submerged_area += t.area;
+    submerged_area += 0.1f;
   }
   float r_s = submerged_area / m_collision_mesh_surface_area;
-  UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %u, %f, %f, %f"), m_submerged_triangles.Num(), r_s, submerged_area, m_collision_mesh_surface_area);
+  UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f, %f"), r_s, submerged_area, m_collision_mesh_surface_area);
   // UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f, %f"), m_rigidbody.position.X, m_rigidbody.position.Y, m_rigidbody.position.Z);
   // UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %f, %f, %f, %f"), m_rigidbody.orientation.X, m_rigidbody.orientation.Y, m_rigidbody.orientation.Z, m_rigidbody.orientation.W);
 

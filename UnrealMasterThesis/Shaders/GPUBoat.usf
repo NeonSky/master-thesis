@@ -110,23 +110,17 @@ float compute_ratio_of_submerge() {
 
         // Ignore non-positive areas
         if (area > 0.0) {
-            submerged_area += area;
+            // submerged_area += area;
+            submerged_area += 0.1;
         }
     }
 
     float r_s = submerged_area / tot_area;
 
-    float c = 0.0;
-    for (int i = 0; i < N_TRIANGLES; i++) {
-        SubmergedTriangle t = SubmergedTrianglesBuffer[i];
-        float area    = t.center_and_area.w;
-        // Ignore non-positive areas
-        if (area > 0.0) {
-            c += 1.0;
-        }
-    }
-
-    ReadbackTexture[uint2(2,0)] = float4(c, r_s, submerged_area, tot_area); // Debug
+    // ReadbackTexture[uint2(2,0)] = float4(c, r_s, submerged_area, tot_area); // Debug
+    store_f32(ReadbackTexture, uint2(2,0), r_s);
+    store_f32(ReadbackTexture, uint2(3,0), submerged_area);
+    store_f32(ReadbackTexture, uint2(4,0), tot_area);
 
     return r_s;
 }

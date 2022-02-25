@@ -12,8 +12,6 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     float2 ws_coord = input_sample_coordinates[id.x];
     float elevation = sample_elevation(elevation_texture, ws_coord);
 
-    // output_texture[uint2(id.x,0)] = M_TO_CM * elevation;
-    output_texture[uint2(id.x,0)] = elevation;
-    // output_texture[uint2(id.x,0)] = float4(1.0, 0.2, 0.3, 1.0); // debug
+    store_f32(output_texture, uint2(id.x,0), elevation);
 
 }

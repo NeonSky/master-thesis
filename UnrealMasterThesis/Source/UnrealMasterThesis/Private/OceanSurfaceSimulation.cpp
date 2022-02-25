@@ -209,12 +209,9 @@ void AOceanSurfaceSimulation::create_mesh() {
 	}
 }
 
-bool done = false;
 void AOceanSurfaceSimulation::update_mesh() {
-	// if (done) {
-	// 	return;
-	// }
-	UE_LOG(LogTemp, Warning, TEXT("Update Ocean Mesh"));//
+
+	// UE_LOG(LogTemp, Warning, TEXT("Update Ocean Mesh"));//
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
 
 	m_shader_models_module.ComputeFourierComponents(realtimeSeconds, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
@@ -222,6 +219,5 @@ void AOceanSurfaceSimulation::update_mesh() {
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_x_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
-	UE_LOG(LogTemp, Warning, TEXT("Update Ocean Mesh Done"));
-	done = true;
+	// UE_LOG(LogTemp, Warning, TEXT("Update Ocean Mesh Done"));
 }
