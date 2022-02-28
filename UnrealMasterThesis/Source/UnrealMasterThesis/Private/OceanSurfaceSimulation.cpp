@@ -60,10 +60,10 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	cmPerPixel = L * METERS_TO_UNREAL_UNITS / N;
 	scale = 1.0f / ((float)N * (float)N);
 	// TODO: ComputeAdd is currently only used to clear the render targets from previous execution... remove
-	m_shader_models_module.ComputeAdd(this->ewave_h_rtt, this->eWave_addition_texture, this->ewave_h_rtt);
-	m_shader_models_module.ComputeAdd(this->ewave_hPrev_rtt, this->eWave_addition_texture, this->ewave_hPrev_rtt);
-	m_shader_models_module.ComputeAdd(this->ewave_v_rtt, this->eWave_addition_texture, this->ewave_v_rtt);
-	m_shader_models_module.ComputeAdd(this->ewave_vPrev_rtt, this->eWave_addition_texture, this->ewave_vPrev_rtt);
+	m_shader_models_module.ComputeAdd(this->ewave_h_rtt, nullptr, this->ewave_h_rtt);
+	m_shader_models_module.ComputeAdd(this->ewave_hPrev_rtt, nullptr, this->ewave_hPrev_rtt);
+	m_shader_models_module.ComputeAdd(this->ewave_v_rtt, nullptr, this->ewave_v_rtt);
+	m_shader_models_module.ComputeAdd(this->ewave_vPrev_rtt, nullptr, this->ewave_vPrev_rtt);
 }
 
 void AOceanSurfaceSimulation::Tick(float DeltaTime) {
@@ -281,8 +281,8 @@ void AOceanSurfaceSimulation::prepare_ewave() {
 	else {
 		dyp = 0;
 	}
-
-	float dxm = boatX - boatPrevX;
-	float dym = boatY - boatPrevY;
-	boatSpeed = sqrt((dxm * dxm) + (dym * dym)); // TODO: get this from the boat instead.
+	//float tempx = boatX - boatPrevX;
+	//float tempy = boatY - boatPrevY;
+	//float tempSpeed = sqrt(tempx * tempx + tempy * tempy);
+	//UE_LOG(LogTemp, Warning, TEXT("Speed (boat): %f     (ocean): %f"), boatSpeed, tempSpeed);
 }
