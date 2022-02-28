@@ -58,6 +58,12 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	}
 
 	cmPerPixel = L * METERS_TO_UNREAL_UNITS / N;
+	scale = 1.0f / ((float)N * (float)N);
+	// TODO: ComputeAdd is currently only used to clear the render targets from previous execution... remove
+	m_shader_models_module.ComputeAdd(this->ewave_h_rtt, this->eWave_addition_texture, this->ewave_h_rtt);
+	m_shader_models_module.ComputeAdd(this->ewave_hPrev_rtt, this->eWave_addition_texture, this->ewave_hPrev_rtt);
+	m_shader_models_module.ComputeAdd(this->ewave_v_rtt, this->eWave_addition_texture, this->ewave_v_rtt);
+	m_shader_models_module.ComputeAdd(this->ewave_vPrev_rtt, this->eWave_addition_texture, this->ewave_vPrev_rtt);
 }
 
 void AOceanSurfaceSimulation::Tick(float DeltaTime) {
@@ -221,58 +227,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
 
-	if (first) {
-		last_ran = realtimeSeconds;
-		// TODO: ComputeAdd is currently only used to clear the render targets from previous execution... remove
-		m_shader_models_module.ComputeAdd(this->ewave_h_rtt, this->eWave_addition_texture, this->ewave_h_rtt);
-		m_shader_models_module.ComputeAdd(this->ewave_hPrev_rtt, this->eWave_addition_texture, this->ewave_hPrev_rtt);
-		m_shader_models_module.ComputeAdd(this->ewave_v_rtt, this->eWave_addition_texture, this->ewave_v_rtt);
-		m_shader_models_module.ComputeAdd(this->ewave_vPrev_rtt, this->eWave_addition_texture, this->ewave_vPrev_rtt);
-		first = false;
-		boatPrevX = boatX;
-		boatPrevY = boatY;
-		uvX = boatX;
-		uvY = boatY;
-		UE_LOG(LogTemp, Warning, TEXT("FIRST"));
-	}
-
 	if (true) {
-		// This is just a dummy triangle so that there is always SOMETHING in the triangle buffer... TODO: better solution to avoid crash.
-		
-		int dxp = boatPrevXp - xp;
-		int dyp = boatPrevYp - yp;
-		
-		if (abs(dxp) >= 1) {
-			// move the simulation in the x-direction
-			boatPrevXp = xp; 
-			uvX = boatX;
-		}
-		else {
-			dxp = 0;
-		}
-		if (abs(dyp) >= 1) {
-			// move the simulation in the y-direction
-			boatPrevYp = yp; 
-			uvY = boatY;
-		}
-		else {
-			dyp = 0;
-		}
-		float dxm = boatX - boatPrevX;
-		float dym = boatY - boatPrevY;
-
-		float boatSpeed = sqrt((dxm * dxm) + (dym * dym));
-		//UE_LOG(LogTemp, Error, TEXT("speed: %f"), boatSpeed);
-		if (abs(dxp) > 0 || abs(dyp) > 0) {
-			UE_LOG(LogTemp, Error, TEXT("pixel x: %d,     last move, pixel x: %d,      dxp: %d"), xp, boatPrevXp, dxp);
-			UE_LOG(LogTemp, Error, TEXT("pixel y: %d,     last move, pixel y: %d,      dyp: %d"), yp, boatPrevYp, dyp);
-			UE_LOG(LogTemp, Error, TEXT("_______________________________________________________"), cmPerPixel, N);
-			//UE_LOG(LogTemp, Error, TEXT("cm %f,   n %d"), cmPerPixel, N);
-		}
-		float scale = 1.0f / ((float)N * (float)N);
-		float dx = boatX - boatPrevX;
-		float dy = boatY - boatPrevY;
-
 		prepare_ewave();
 		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, uvX, uvY, dxp, dyp, boatSpeed, 1);
 		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
@@ -290,7 +245,16 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 }
 
 void AOceanSurfaceSimulation::prepare_ewave() {
+	if (first) {
+		first = false;
+		boatPrevX = boatX;
+		boatPrevY = boatY;
+		uvX = boatX;
+		uvY = boatY;
+	}
+
 	if (submerged.Num() == 0) {
+		// This is just a dummy triangle so that there is always SOMETHING in the triangle buffer... TODO: better solution to avoid crash.
 		submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
 		submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
 		submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
@@ -298,4 +262,28 @@ void AOceanSurfaceSimulation::prepare_ewave() {
 
 	xp = (boatX * METERS_TO_UNREAL_UNITS) / cmPerPixel;
 	yp = (boatY * METERS_TO_UNREAL_UNITS) / cmPerPixel;
+
+	dxp = boatPrevXp - xp;
+	dyp = boatPrevYp - yp;
+
+	if (abs(dxp) >= 1) {
+		// move the simulation in the x-direction
+		boatPrevXp = xp;
+		uvX = boatX;
+	}
+	else {
+		dxp = 0;
+	}
+	if (abs(dyp) >= 1) {
+		// move the simulation in the y-direction
+		boatPrevYp = yp;
+		uvY = boatY;
+	}
+	else {
+		dyp = 0;
+	}
+
+	float dxm = boatX - boatPrevX;
+	float dym = boatY - boatPrevY;
+	boatSpeed = sqrt((dxm * dxm) + (dym * dym)); // TODO: get this from the boat instead.
 }

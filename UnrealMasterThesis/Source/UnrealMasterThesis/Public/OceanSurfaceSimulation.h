@@ -56,6 +56,10 @@ private:
 	float cmPerPixel;
 	int xp;
 	int yp;
+	int dxp;
+	int dyp;
+	float scale;
+	float boatSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UMaterial* material;
