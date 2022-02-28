@@ -57,7 +57,7 @@ void AOceanSurfaceSimulation::BeginPlay() {
 		this->tile_meshes[i]->SetMaterial(0, this->material);
 	}
 
-	// ----
+	cmPerPixel = L * METERS_TO_UNREAL_UNITS / N;
 }
 
 void AOceanSurfaceSimulation::Tick(float DeltaTime) {
@@ -239,10 +239,6 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	if (true) {
 		// This is just a dummy triangle so that there is always SOMETHING in the triangle buffer... TODO: better solution to avoid crash.
 		
-
-		float cmPerPixel = L * METERS_TO_UNREAL_UNITS / N;
-		int xp = (boatX * METERS_TO_UNREAL_UNITS) / cmPerPixel;
-		int yp = (boatY * METERS_TO_UNREAL_UNITS) / cmPerPixel;
 		int dxp = boatPrevXp - xp;
 		int dyp = boatPrevYp - yp;
 		
@@ -299,4 +295,7 @@ void AOceanSurfaceSimulation::prepare_ewave() {
 		submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
 		submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
 	}
+
+	xp = (boatX * METERS_TO_UNREAL_UNITS) / cmPerPixel;
+	yp = (boatY * METERS_TO_UNREAL_UNITS) / cmPerPixel;
 }

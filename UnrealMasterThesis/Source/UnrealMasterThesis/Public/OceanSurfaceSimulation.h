@@ -53,6 +53,9 @@ private:
 	int boatPrevYp = 0;
 	float uvX = 0.0f;
 	float uvY = 0.0f;
+	float cmPerPixel;
+	int xp;
+	int yp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UMaterial* material;
