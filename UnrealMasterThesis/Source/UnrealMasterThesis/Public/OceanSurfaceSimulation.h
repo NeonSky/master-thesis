@@ -23,30 +23,11 @@ enum DirectionalSpreadingType {
   DonelanBanner UMETA(DisplayName = "Donelan-Banner"),
 };
 
-UCLASS(Blueprintable)
-class UNREALMASTERTHESIS_API AOceanSurfaceSimulation : public AActor {
-	GENERATED_BODY()
-	
-public:	
-	AOceanSurfaceSimulation();
-
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	TArray<float> sample_elevation_points(TArray<FVector2D> sample_points);
+struct eWaveSimulation {
 	TArray<FVector4> submerged;
 	float boatX = 0.0f;
 	float boatY = 0.0f;
 	float boatSpeed = 0.0f;
-
-protected:
-
-	// Called once on "Play"
-	virtual void BeginPlay() override;
-
-private:
-	bool first = true;
-	float last_ran = 0.0f;
 	float boatPrevX = 0.0f;
 	float boatPrevY = 0.0f;
 	int boatPrevXp = 0;
@@ -59,7 +40,33 @@ private:
 	int dxp;
 	int dyp;
 	float scale;
+	bool first = true;
 
+	float L;
+	int N;
+};
+
+
+UCLASS(Blueprintable)
+class UNREALMASTERTHESIS_API AOceanSurfaceSimulation : public AActor {
+	GENERATED_BODY()
+	
+public:	
+	AOceanSurfaceSimulation();
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	TArray<float> sample_elevation_points(TArray<FVector2D> sample_points);
+	eWaveSimulation eWaveState;
+	int speed = 0;
+
+protected:
+
+	// Called once on "Play"
+	virtual void BeginPlay() override;
+
+private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UMaterial* material;
 
@@ -124,3 +131,4 @@ private:
 	void prepare_ewave();
 
 };
+

@@ -58,8 +58,8 @@ void AOceanSurfaceSimulation::BeginPlay() {
 		this->tile_meshes[i]->SetMaterial(0, this->material);
 	}
 
-	cmPerPixel = L * METERS_TO_UNREAL_UNITS / N;
-	scale = 1.0f / ((float)N * (float)N);
+	eWaveState.cmPerPixel = L * METERS_TO_UNREAL_UNITS / N;
+	eWaveState.scale = 1.0f / ((float)N * (float)N);
 	// TODO: ComputeAdd is currently only used to clear the render targets from previous execution... remove
 	m_shader_models_module.ComputeAdd(this->ewave_h_rtt, nullptr, this->ewave_h_rtt);
 	m_shader_models_module.ComputeAdd(this->ewave_hPrev_rtt, nullptr, this->ewave_hPrev_rtt);
@@ -229,60 +229,56 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
 
 	prepare_ewave();
-	m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, uvX, uvY, dxp, dyp, boatSpeed, 1);
+	m_shader_models_module.ComputeObstruction(eWaveState.submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, eWaveState.uvX, eWaveState.uvY, eWaveState.dxp, eWaveState.dyp, eWaveState.boatSpeed, 1);
 	m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
 	m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
 	m_shader_models_module.ComputeeWave(dt, L, this->ewave_h_rtt, this->ewave_v_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt, 0);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt, 0);
-	m_shader_models_module.ComputeScale(this->ewave_h_rtt, this->ewave_hPrev_rtt, scale);
-	m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, scale);
-	m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, uvX, uvY, 0, 0, 0, 0);
+	m_shader_models_module.ComputeScale(this->ewave_h_rtt, this->ewave_hPrev_rtt, eWaveState.scale);
+	m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, eWaveState.scale);
+	m_shader_models_module.ComputeObstruction(eWaveState.submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, eWaveState.uvX, eWaveState.uvY, 0, 0, 0, 0);
 	
-	boatPrevX = boatX;
-	boatPrevY = boatY;
+	eWaveState.boatPrevX = eWaveState.boatX;
+	eWaveState.boatPrevY = eWaveState.boatY;
 }
 
 void AOceanSurfaceSimulation::prepare_ewave() {
-	if (first) {
-		first = false;
-		boatPrevX = boatX;
-		boatPrevY = boatY;
-		uvX = boatX;
-		uvY = boatY;
+	if (eWaveState.first) {
+		eWaveState.first = false;
+		eWaveState.boatPrevX = eWaveState.boatX;
+		eWaveState.boatPrevY = eWaveState.boatY;
+		eWaveState.uvX = eWaveState.boatX;
+		eWaveState.uvY = eWaveState.boatY;
 	}
 
-	if (submerged.Num() == 0) {
+	if (eWaveState.submerged.Num() == 0) {
 		// This is just a dummy triangle so that there is always SOMETHING in the triangle buffer... TODO: better solution to avoid crash.
-		submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
-		submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
-		submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
+		eWaveState.submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
+		eWaveState.submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
+		eWaveState.submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
 	}
 
-	boatXp = (boatX * METERS_TO_UNREAL_UNITS) / cmPerPixel;
-	boatYp = (boatY * METERS_TO_UNREAL_UNITS) / cmPerPixel;
+	eWaveState.boatXp = (eWaveState.boatX * METERS_TO_UNREAL_UNITS) / eWaveState.cmPerPixel;
+	eWaveState.boatYp = (eWaveState.boatY * METERS_TO_UNREAL_UNITS) / eWaveState.cmPerPixel;
 
-	dxp = boatPrevXp - boatXp; // Amount of simulation pixel units boat has moved since last time the simulation moved.
-	dyp = boatPrevYp - boatYp;
+	eWaveState.dxp = eWaveState.boatPrevXp - eWaveState.boatXp; // Amount of simulation pixel units boat has moved since last time the simulation moved.
+	eWaveState.dyp = eWaveState.boatPrevYp - eWaveState.boatYp;
 
-	if (abs(dxp) >= MOVE_SIM_THRESHOLD) {
+	if (abs(eWaveState.dxp) >= MOVE_SIM_THRESHOLD) {
 		// move the simulation in the x-direction
-		boatPrevXp = boatXp;
-		uvX = boatX;
+		eWaveState.boatPrevXp = eWaveState.boatXp;
+		eWaveState.uvX = eWaveState.boatX;
 	}
 	else {
-		dxp = 0;
+		eWaveState.dxp = 0;
 	}
-	if (abs(dyp) >= MOVE_SIM_THRESHOLD) {
+	if (abs(eWaveState.dyp) >= MOVE_SIM_THRESHOLD) {
 		// move the simulation in the y-direction
-		boatPrevYp = boatYp;
-		uvY = boatY;
+		eWaveState.boatPrevYp = eWaveState.boatYp;
+		eWaveState.uvY = eWaveState.boatY;
 	}
 	else {
-		dyp = 0;
+		eWaveState.dyp = 0;
 	}
-	//float tempx = boatX - boatPrevX;
-	//float tempy = boatY - boatPrevY;
-	//float tempSpeed = sqrt(tempx * tempx + tempy * tempy);
-	//UE_LOG(LogTemp, Warning, TEXT("Speed (boat): %f     (ocean): %f"), boatSpeed, tempSpeed);
 }

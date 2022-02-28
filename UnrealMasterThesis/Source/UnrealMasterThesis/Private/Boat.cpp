@@ -29,13 +29,11 @@ void ABoat::BeginPlay() {
 
   FetchCollisionMeshData();
   if (ocean_surface_simulation) {
-      ocean_surface_simulation->submerged.Empty();
-      UE_LOG(LogTemp, Error, TEXT("Ocean was not nullptr. Adding triangles"))
+      ocean_surface_simulation->eWaveState.submerged.Empty();
       for (auto& t : m_submerged_triangles) {
-          UE_LOG(LogTemp, Error, TEXT("\t...Adding a triangle"))
-          ocean_surface_simulation->submerged.Add(t.v_L);
-          ocean_surface_simulation->submerged.Add(t.v_M);
-          ocean_surface_simulation->submerged.Add(t.v_H);
+          ocean_surface_simulation->eWaveState.submerged.Add(t.v_L);
+          ocean_surface_simulation->eWaveState.submerged.Add(t.v_M);
+          ocean_surface_simulation->eWaveState.submerged.Add(t.v_H);
       }
   }
   else {
@@ -356,16 +354,16 @@ void ABoat::UpdateSubmergedTriangles() {
 
   }
 
-  ocean_surface_simulation->submerged.Empty();
+  ocean_surface_simulation->eWaveState.submerged.Empty();
   for (auto& t : m_submerged_triangles) {
-    ocean_surface_simulation->submerged.Add(t.v_L);
-    ocean_surface_simulation->submerged.Add(t.v_M);
-    ocean_surface_simulation->submerged.Add(t.v_H);
+    ocean_surface_simulation->eWaveState.submerged.Add(t.v_L);
+    ocean_surface_simulation->eWaveState.submerged.Add(t.v_M);
+    ocean_surface_simulation->eWaveState.submerged.Add(t.v_H);
   }
   
-  ocean_surface_simulation->boatX = m_rigidbody.position.X;
-  ocean_surface_simulation->boatY = m_rigidbody.position.Y;
-  ocean_surface_simulation->boatSpeed = m_rigidbody.linear_velocity.Size() / 100.0f;
+  ocean_surface_simulation->eWaveState.boatX = m_rigidbody.position.X;
+  ocean_surface_simulation->eWaveState.boatY = m_rigidbody.position.Y;
+  ocean_surface_simulation->eWaveState.boatSpeed = m_rigidbody.linear_velocity.Size() / 100.0f;
 }
 
 void ABoat::ApplyGravity() {
