@@ -227,19 +227,18 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
 
-	if (true) {
-		prepare_ewave();
-		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, uvX, uvY, dxp, dyp, boatSpeed, 1);
-		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
-		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
-		m_shader_models_module.ComputeeWave(dt, L, this->ewave_h_rtt, this->ewave_v_rtt);
-		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt, 0);
-		m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt, 0);
-		m_shader_models_module.ComputeScale(this->ewave_h_rtt, this->ewave_hPrev_rtt, scale);
-		m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, scale);
-		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, uvX, uvY, 0, 0, 0, 0);
-		last_ran = realtimeSeconds;
-	}
+	prepare_ewave();
+	m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, uvX, uvY, dxp, dyp, boatSpeed, 1);
+	m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
+	m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
+	m_shader_models_module.ComputeeWave(dt, L, this->ewave_h_rtt, this->ewave_v_rtt);
+	m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt, 0);
+	m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt, 0);
+	m_shader_models_module.ComputeScale(this->ewave_h_rtt, this->ewave_hPrev_rtt, scale);
+	m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, scale);
+	m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, uvX, uvY, 0, 0, 0, 0);
+	last_ran = realtimeSeconds;
+	
 	boatPrevX = boatX;
 	boatPrevY = boatY;
 }
