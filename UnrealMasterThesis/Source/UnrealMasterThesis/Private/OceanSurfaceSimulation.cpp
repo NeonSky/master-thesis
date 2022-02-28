@@ -221,12 +221,6 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
 
-	static float boatPrevX = 0.0;
-	static float boatPrevY = 0.0;
-	static int boatPrevXp = 0;
-	static int boatPrevYp = 0;
-	static float uvX = boatX;
-	static float uvY = boatY;
 	if (first) {
 		last_ran = realtimeSeconds;
 		// TODO: ComputeAdd is currently only used to clear the render targets from previous execution... remove
@@ -237,8 +231,6 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		first = false;
 		boatPrevX = boatX;
 		boatPrevY = boatY;
-		boatPrevXp = 0;
-		boatPrevYp = 0;
 		uvX = boatX;
 		uvY = boatY;
 		UE_LOG(LogTemp, Warning, TEXT("FIRST"));
@@ -246,11 +238,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 
 	if (true) {
 		// This is just a dummy triangle so that there is always SOMETHING in the triangle buffer... TODO: better solution to avoid crash.
-		if (submerged.Num() == 0) {
-			submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
-			submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
-			submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
-		}
+		
 
 		float cmPerPixel = L * METERS_TO_UNREAL_UNITS / N;
 		int xp = (boatX * METERS_TO_UNREAL_UNITS) / cmPerPixel;
@@ -288,6 +276,8 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		float scale = 1.0f / ((float)N * (float)N);
 		float dx = boatX - boatPrevX;
 		float dy = boatY - boatPrevY;
+
+		prepare_ewave();
 		m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, uvX, uvY, dxp, dyp, boatSpeed, 1);
 		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
 		m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
@@ -301,4 +291,12 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	}
 	boatPrevX = boatX;
 	boatPrevY = boatY;
+}
+
+void AOceanSurfaceSimulation::prepare_ewave() {
+	if (submerged.Num() == 0) {
+		submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
+		submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
+		submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
+	}
 }

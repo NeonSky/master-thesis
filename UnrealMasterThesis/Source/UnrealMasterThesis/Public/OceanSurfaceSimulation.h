@@ -47,6 +47,13 @@ protected:
 private:
 	bool first = true;
 	float last_ran = 0.0f;
+	float boatPrevX = 0.0f;
+	float boatPrevY = 0.0f;
+	int boatPrevXp = 0;
+	int boatPrevYp = 0;
+	float uvX = 0.0f;
+	float uvY = 0.0f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UMaterial* material;
 
@@ -114,5 +121,6 @@ private:
 
 	void create_mesh();
 	void update_mesh(float dt);
+	void prepare_ewave();
 
 };
