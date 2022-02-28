@@ -12,6 +12,7 @@
 // This function may only be called from the constructor, which doesn't have access to the initialized editor properties.
 // The NewObject function could potentially work, but it does not appear to give visible results in our case.
 const int TILES_COUNT = 9; // Should be 1 or higher
+const int MOVE_SIM_THRESHOLD = 1;
 int counter = 0;
 TArray<float> elevation_output;
 
@@ -237,7 +238,6 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	m_shader_models_module.ComputeScale(this->ewave_h_rtt, this->ewave_hPrev_rtt, scale);
 	m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, scale);
 	m_shader_models_module.ComputeObstruction(submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, uvX, uvY, 0, 0, 0, 0);
-	last_ran = realtimeSeconds;
 	
 	boatPrevX = boatX;
 	boatPrevY = boatY;
@@ -259,23 +259,23 @@ void AOceanSurfaceSimulation::prepare_ewave() {
 		submerged.Add(FVector4(0.0, 0.0, 0.0, 1.0));
 	}
 
-	xp = (boatX * METERS_TO_UNREAL_UNITS) / cmPerPixel;
-	yp = (boatY * METERS_TO_UNREAL_UNITS) / cmPerPixel;
+	boatXp = (boatX * METERS_TO_UNREAL_UNITS) / cmPerPixel;
+	boatYp = (boatY * METERS_TO_UNREAL_UNITS) / cmPerPixel;
 
-	dxp = boatPrevXp - xp;
-	dyp = boatPrevYp - yp;
+	dxp = boatPrevXp - boatXp; // Amount of simulation pixel units boat has moved since last time the simulation moved.
+	dyp = boatPrevYp - boatYp;
 
-	if (abs(dxp) >= 1) {
+	if (abs(dxp) >= MOVE_SIM_THRESHOLD) {
 		// move the simulation in the x-direction
-		boatPrevXp = xp;
+		boatPrevXp = boatXp;
 		uvX = boatX;
 	}
 	else {
 		dxp = 0;
 	}
-	if (abs(dyp) >= 1) {
+	if (abs(dyp) >= MOVE_SIM_THRESHOLD) {
 		// move the simulation in the y-direction
-		boatPrevYp = yp;
+		boatPrevYp = boatYp;
 		uvY = boatY;
 	}
 	else {
