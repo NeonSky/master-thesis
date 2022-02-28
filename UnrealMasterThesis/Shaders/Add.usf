@@ -2,12 +2,7 @@
 
 RWTexture2D<float4> result;
 
-
-
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void eWaveCompute(uint3 id : SV_DispatchThreadID) {
-  float t1 = 2.0 * sin(id.x + id.y + 3.2) + 3.23;
-  float t2 = 2.3 * cos(id.x + id.y);
-  // We flip t1 and t2 here since we perform IFFT
   result[id.xy] = float4(0.0, 0.0, 0.0, 1.0);
 }
