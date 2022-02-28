@@ -118,7 +118,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	//		Note: this should only be done before FFT
 	// ----------------------------------------------------------------------------------
 	if(preFFT == 1){
-		float scale = 2.0 * speedScale;
+		float scale = 4.0 * speedScale;
 		float obsCompliment = 1.0 - obstructionMap_rtt[id.xy];
 		h += scale * obsCompliment;
 	}

@@ -356,25 +356,16 @@ void ABoat::UpdateSubmergedTriangles() {
 
   }
 
-
-
-
-  //UE_LOG(LogTemp, Error, TEXT("Submerged triangle[0]:  v1(%f, %f)   v2(%f, %f)   v3(%f, %f)"), m_submerged_triangles[0].v_H.X, m_submerged_triangles[0].v_H.Y, m_submerged_triangles[0].v_M.X, m_submerged_triangles[0].v_M.Y, m_submerged_triangles[0].v_L.X, m_submerged_triangles[0].v_L.Y);
-
-  if (ocean_surface_simulation) {
-      ocean_surface_simulation->submerged.Empty();
-      //UE_LOG(LogTemp, Error, TEXT("Ocean was not nullptr. Adding triangles"))
-          for (auto& t : m_submerged_triangles) {
-              //UE_LOG(LogTemp, Error, TEXT("\t...Adding a triangle"))
-              ocean_surface_simulation->submerged.Add(t.v_L);
-              ocean_surface_simulation->submerged.Add(t.v_M);
-              ocean_surface_simulation->submerged.Add(t.v_H);
-          }
+  ocean_surface_simulation->submerged.Empty();
+  for (auto& t : m_submerged_triangles) {
+    ocean_surface_simulation->submerged.Add(t.v_L);
+    ocean_surface_simulation->submerged.Add(t.v_M);
+    ocean_surface_simulation->submerged.Add(t.v_H);
   }
+  
   ocean_surface_simulation->boatX = m_rigidbody.position.X;
   ocean_surface_simulation->boatY = m_rigidbody.position.Y;
-
-  //UE_LOG(LogTemp, Error, TEXT("Boat pos: %f, %f"), m_rigidbody.position.X, m_rigidbody.position.Y);
+  ocean_surface_simulation->boatSpeed = m_rigidbody.linear_velocity.Size() / 100.0f;
 }
 
 void ABoat::ApplyGravity() {

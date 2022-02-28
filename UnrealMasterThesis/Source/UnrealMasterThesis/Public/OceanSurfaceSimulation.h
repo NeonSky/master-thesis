@@ -38,6 +38,7 @@ public:
 	float boatX = 0.0f;
 	float boatY = 0.0f;
 	int speed = 0;
+	float boatSpeed = 0.0f;
 
 protected:
 
@@ -59,19 +60,12 @@ private:
 	int dxp;
 	int dyp;
 	float scale;
-	float boatSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UMaterial* material;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UTextureRenderTarget2D* eWave_addition_rtt;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTexture2D* eWave_addition_texture;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTexture2D* eWave_zero_texture;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UTextureRenderTarget2D* butterfly_rtt;
