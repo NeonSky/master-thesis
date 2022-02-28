@@ -1,4 +1,4 @@
-#include "Add.h"
+#include "Clear.h"
 #include "Globals/StatelessHelpers.h"
 
 #include "RenderGraph.h"
@@ -11,7 +11,7 @@
 
 #define NN 256
 
-IMPLEMENT_GLOBAL_SHADER(AddShader, "/Project/UnrealMasterThesis/Add.usf", "eWaveCompute", SF_Compute);
+IMPLEMENT_GLOBAL_SHADER(ClearShader, "/Project/UnrealMasterThesis/Clear.usf", "eWaveCompute", SF_Compute);
 
 FRDGTextureRef register_texture32(
     FRDGBuilder& graph_builder,
@@ -44,19 +44,19 @@ struct CustomUAV {
     FRDGTextureUAVRef uav_ref;
 };
 
-void AddShader::BuildAndExecuteGraph(
+void ClearShader::BuildAndExecuteGraph(
     FRHICommandListImmediate& RHI_cmd_list,
     UTextureRenderTarget2D* result) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
 
     FParameters* PassParameters;
-    PassParameters = graph_builder.AllocParameters<AddShader::FParameters>();
+    PassParameters = graph_builder.AllocParameters<ClearShader::FParameters>();
 
     FRDGTextureRef io_tex_ref = register_texture32(graph_builder, result, "result");
     PassParameters->result = graph_builder.CreateUAV(io_tex_ref);
 
-    TShaderMapRef<AddShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+    TShaderMapRef<ClearShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
     FComputeShaderUtils::AddPass(
         graph_builder,
