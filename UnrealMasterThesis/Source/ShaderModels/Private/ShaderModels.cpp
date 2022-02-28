@@ -6,7 +6,7 @@
 #include "ButterflyPostProcess.h"
 #include "ButterflyPostProcessForward.h"
 #include "eWave.h"
-#include "Add.h"
+#include "Clear.h"
 #include "Scale.h"
 #include "Obstruction.h"
 #include "ElevationSampler.h"
@@ -156,9 +156,9 @@ void ShaderModelsModule::ComputeeWave(
 
 }
 
-void ShaderModelsModule::ComputeAdd(UTextureRenderTarget2D* result) {
+void ShaderModelsModule::Clear(UTextureRenderTarget2D* result) {
 
-	TShaderMapRef<AddShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+	TShaderMapRef<ClearShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	UTextureRenderTarget2D* result_param = result;
 

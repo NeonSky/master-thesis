@@ -60,11 +60,11 @@ void AOceanSurfaceSimulation::BeginPlay() {
 
 	eWaveState.cmPerPixel = L * METERS_TO_UNREAL_UNITS / N;
 	eWaveState.scale = 1.0f / ((float)N * (float)N);
-	// TODO: ComputeAdd is currently only used to clear the render targets from previous execution... remove
-	m_shader_models_module.ComputeAdd(this->ewave_h_rtt);
-	m_shader_models_module.ComputeAdd(this->ewave_hPrev_rtt);
-	m_shader_models_module.ComputeAdd(this->ewave_v_rtt);
-	m_shader_models_module.ComputeAdd(this->ewave_vPrev_rtt);
+
+	m_shader_models_module.Clear(this->ewave_h_rtt);
+	m_shader_models_module.Clear(this->ewave_hPrev_rtt);
+	m_shader_models_module.Clear(this->ewave_v_rtt);
+	m_shader_models_module.Clear(this->ewave_vPrev_rtt);
 }
 
 void AOceanSurfaceSimulation::Tick(float DeltaTime) {

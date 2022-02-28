@@ -31,7 +31,7 @@ public:
 		UTextureRenderTarget2D* eWave_v
 	);
 
-	void ComputeAdd(UTextureRenderTarget2D* result);
+	void Clear(UTextureRenderTarget2D* result);
 
 	void ComputeScale(
 		UTextureRenderTarget2D* input_output_rtt, 

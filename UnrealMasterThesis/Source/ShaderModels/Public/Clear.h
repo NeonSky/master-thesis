@@ -5,11 +5,11 @@
 #include "ShaderParameterStruct.h"
 #include "Modules/ModuleManager.h"
 
-class SHADERMODELS_API AddShader : public FGlobalShader {
+class SHADERMODELS_API ClearShader : public FGlobalShader {
 public:
 
-	DECLARE_GLOBAL_SHADER(AddShader)
-	SHADER_USE_PARAMETER_STRUCT(AddShader, FGlobalShader)
+	DECLARE_GLOBAL_SHADER(ClearShader)
+	SHADER_USE_PARAMETER_STRUCT(ClearShader, FGlobalShader)
 
 		BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, result)
