@@ -37,7 +37,6 @@ public:
 	TArray<FVector4> submerged;
 	float boatX = 0.0f;
 	float boatY = 0.0f;
-	int speed = 0;
 	float boatSpeed = 0.0f;
 
 protected:
@@ -55,8 +54,8 @@ private:
 	float uvX = 0.0f;
 	float uvY = 0.0f;
 	float cmPerPixel;
-	int xp;
-	int yp;
+	int boatXp;
+	int boatYp;
 	int dxp;
 	int dyp;
 	float scale;
