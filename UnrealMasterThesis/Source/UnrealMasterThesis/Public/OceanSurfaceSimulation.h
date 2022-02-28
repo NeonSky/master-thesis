@@ -4,6 +4,7 @@
 
 #include "ShaderModels.h"
 #include "WaveSpectrums.h"
+#include "eWaveSimulation.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -22,30 +23,6 @@ enum DirectionalSpreadingType {
   Uniform       UMETA(DisplayName = "Uniform"),
   DonelanBanner UMETA(DisplayName = "Donelan-Banner"),
 };
-
-struct eWaveSimulation {
-	TArray<FVector4> submerged;
-	float boatX = 0.0f;
-	float boatY = 0.0f;
-	float boatSpeed = 0.0f;
-	float boatPrevX = 0.0f;
-	float boatPrevY = 0.0f;
-	int boatPrevXp = 0;
-	int boatPrevYp = 0;
-	float uvX = 0.0f;
-	float uvY = 0.0f;
-	float cmPerPixel;
-	int boatXp;
-	int boatYp;
-	int dxp;
-	int dyp;
-	float scale;
-	bool first = true;
-
-	float L;
-	int N;
-};
-
 
 UCLASS(Blueprintable)
 class UNREALMASTERTHESIS_API AOceanSurfaceSimulation : public AActor {
@@ -124,11 +101,7 @@ private:
 
 	TArray<UProceduralMeshComponent*> tile_meshes; // Each tile is a separate mesh but they share material
 
-
-
 	void create_mesh();
 	void update_mesh(float dt);
 	void prepare_ewave();
-
 };
-
