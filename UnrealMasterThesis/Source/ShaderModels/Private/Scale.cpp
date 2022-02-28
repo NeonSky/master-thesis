@@ -10,7 +10,6 @@
 #include <random>
 
 #define NN 256
-#define TEMP_TEXTURE_N 256
 
 IMPLEMENT_GLOBAL_SHADER(ScaleShader, "/Project/UnrealMasterThesis/Scale.usf", "eWaveCompute", SF_Compute);
 
@@ -65,41 +64,6 @@ CustomUAV create_UAV4( // TODO: this and register texture defined in fourier com
     uav.uav_ref = graph_builder.CreateUAV(OutTextureUAVDesc);
 
     return uav;
-}
-
-void ScaleShader::BuildTestTextures(int N, float L) {
-    {
-        FRHIResourceCreateInfo CreateInfo;
-        FTexture2DRHIRef Texture2DRHI = RHICreateTexture2D(
-            TEMP_TEXTURE_N,
-            TEMP_TEXTURE_N,
-            PF_FloatRGBA,
-            1,
-            1,
-            TexCreate_RenderTargetable,
-            CreateInfo);
-
-        TArray<FFloat16Color> pixel_data;
-        bool flip = true;
-        for (int i = 0; i < TEMP_TEXTURE_N; i++) {
-            for (int j = 0; j < TEMP_TEXTURE_N; j++) {
-                if (flip) {
-                    pixel_data.Add(FFloat16Color(FLinearColor(1.0, 0.0, 0.0, 1.0)));
-                }
-                else {
-                    pixel_data.Add(FFloat16Color(FLinearColor(0.0, 0.0, 0.0, 1.0)));
-                }
-            }
-            flip = !flip;
-        }
-
-        uint32 DestStride = 0;
-        FFloat16Color* data = (FFloat16Color*)RHILockTexture2D(Texture2DRHI, 0, RLM_WriteOnly, DestStride, false);
-        FMemory::Memcpy(data, pixel_data.GetData(), sizeof(FFloat16Color) * pixel_data.Num());
-        RHIUnlockTexture2D(Texture2DRHI, 0, false);
-
-        //this->test = Texture2DRHI;
-    }
 }
 
 void ReadbackRTT3(FRHICommandListImmediate& RHI_cmd_list, UTextureRenderTarget2D* rtt) {
@@ -164,28 +128,8 @@ void ScaleShader::BuildAndExecuteGraph(
         RDG_EVENT_NAME("Scale Pass"),
         ComputeShader,
         PassParameters,
-        FIntVector(TEMP_TEXTURE_N, TEMP_TEXTURE_N, 1)
+        FIntVector(NN, NN, 1)
     );
-
-   /* TRefCountPtr<IPooledRenderTarget> PooledComputeTarget_Scale;
-    graph_builder.QueueTextureExtraction(io_tex_ref, &PooledComputeTarget_Scale);
-    TRefCountPtr<IPooledRenderTarget> PooledComputeTarget_Scale2;
-    graph_builder.QueueTextureExtraction(io_tex_ref2, &PooledComputeTarget_Scale2);*/
 
     graph_builder.Execute();
-
-    /*RHI_cmd_list.CopyToResolveTarget(
-        PooledComputeTarget_Scale.GetReference()->GetRenderTargetItem().TargetableTexture,
-        input_output_rtt->GetRenderTargetResource()->TextureRHI,
-        FResolveParams()
-    );
-    RHI_cmd_list.CopyToResolveTarget(
-        PooledComputeTarget_Scale2.GetReference()->GetRenderTargetItem().TargetableTexture,
-        copy_rtt->GetRenderTargetResource()->TextureRHI,
-        FResolveParams()
-    );*/
-   
-    /*UE_LOG(LogTemp, Warning, TEXT("SCALE OUTPUT START"));
-    ReadbackRTT3(RHI_cmd_list, input_output_rtt);
-    UE_LOG(LogTemp, Warning, TEXT("FFT SCALE process OUTPUT END"));*/
 }

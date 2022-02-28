@@ -10,7 +10,6 @@
 #include <random>
 
 #define NN 256
-#define TEMP_TEXTURE_N 256
 
 IMPLEMENT_GLOBAL_SHADER(eWaveShader, "/Project/UnrealMasterThesis/eWave.usf", "eWaveCompute", SF_Compute);
 
@@ -79,7 +78,7 @@ void eWaveShader::BuildAndExecuteGraph(
     FParameters* PassParameters;
     PassParameters = graph_builder.AllocParameters<eWaveShader::FParameters>();
 
-    PassParameters->N = NN; // TODO
+    PassParameters->N = NN;
     PassParameters->L = L;
     PassParameters->t = t;
 
@@ -101,63 +100,5 @@ void eWaveShader::BuildAndExecuteGraph(
         FIntVector(NN, NN, 1)
     );
 
-    /*TRefCountPtr<IPooledRenderTarget> PooledComputeTarget_ewave_h;
-    graph_builder.QueueTextureExtraction(io_tex_ref_h, &PooledComputeTarget_ewave_h);
-    
-    TRefCountPtr<IPooledRenderTarget> PooledComputeTarget_ewave_v;
-    graph_builder.QueueTextureExtraction(io_tex_ref_v, &PooledComputeTarget_ewave_v);*/
-
     graph_builder.Execute();
-
-    /*RHI_cmd_list.CopyToResolveTarget(
-        PooledComputeTarget_ewave_h.GetReference()->GetRenderTargetItem().TargetableTexture,
-        eWave_h->GetRenderTargetResource()->TextureRHI,
-        FResolveParams()
-    );
-
-    RHI_cmd_list.CopyToResolveTarget(
-        PooledComputeTarget_ewave_v.GetReference()->GetRenderTargetItem().TargetableTexture,
-        eWave_v->GetRenderTargetResource()->TextureRHI,
-        FResolveParams()
-    );*/
-
-    // DEBUG READ-BACK
-     //{
-     //  FRHIResourceCreateInfo CreateInfo;
-     //  FTexture2DRHIRef readback_tex = RHICreateTexture2D(
-     //      NN,
-     //      NN,
-     //    PF_FloatRGBA,
-     //    1,
-     //    1,
-     //    TexCreate_RenderTargetable,
-     //    CreateInfo);
-
-     //  RHI_cmd_list.CopyToResolveTarget(
-     //      eWave_h->GetRenderTargetResource()->TextureRHI,
-     //    readback_tex->GetTexture2D(),
-     //    FResolveParams()
-     //  );
-
-     //  //UE_LOG(LogTemp, Warning, TEXT("READBACK START"));
-
-     //  FReadSurfaceDataFlags read_flags(RCM_MinMax);
-     //  read_flags.SetLinearToGamma(false);
-
-     //  TArray<FFloat16Color> rdata;
-     //  RHI_cmd_list.ReadSurfaceFloatData(
-     //    readback_tex->GetTexture2D(),
-     //    FIntRect(0, 0, NN, NN),
-     //    rdata,
-     //    read_flags
-     //  );
-
-     // 
-     //}
-     /*UE_LOG(LogTemp, Warning, TEXT("Amount of pixels: %i"), rdata.Num());
-      for (int i = 0; i < rdata.Num(); i++) {
-        UE_LOG(LogTemp, Warning, TEXT("%i: (%f, %f, %f, %f)"), i, rdata[i].R.GetFloat(), rdata[i].G.GetFloat(), rdata[i].B.GetFloat(), rdata[i].A.GetFloat());
-      }
-      UE_LOG(LogTemp, Warning, TEXT("READBACK END"));*/
-
 }
