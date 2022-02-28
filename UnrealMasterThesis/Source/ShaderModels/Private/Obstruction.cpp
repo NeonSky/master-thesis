@@ -10,7 +10,6 @@
 #include <random>
 
 #define NN 256
-#define TEMP_TEXTURE_N 256
 
 IMPLEMENT_GLOBAL_SHADER(ObstructionShader, "/Project/UnrealMasterThesis/Obstruction.usf", "eWaveCompute", SF_Compute);
 
@@ -140,19 +139,14 @@ void ObstructionShader::BuildAndExecuteGraph(
     PassParameters->speedScale = speedScale;
     PassParameters->preFFT = preFFT;
 
-
-
-
 	FRDGTextureRef io_tex_ref = register_texture4_obs(graph_builder, obstructionMap_rtt, "InputOutputRenderTarget");
     auto uav = graph_builder.CreateUAV(io_tex_ref);
     FRDGTextureRef io_tex_ref2 = register_texture4_obs(graph_builder, h_rtt, "InputOutputRenderTarget2");
     auto uav2 = graph_builder.CreateUAV(io_tex_ref2);
     FRDGTextureRef io_tex_ref3 = register_texture4_obs(graph_builder, v_rtt, "InputOutputRenderTarget3");
     auto uav3 = graph_builder.CreateUAV(io_tex_ref3);
-
     FRDGTextureRef io_tex_ref4 = register_texture4_obs(graph_builder, hPrev_rtt, "InputOutputRenderTarget4");
     auto uav4 = graph_builder.CreateUAV(io_tex_ref4);
-
     FRDGTextureRef io_tex_ref5 = register_texture4_obs(graph_builder, vPrev_rtt, "InputOutputRenderTarget4");
     auto uav5 = graph_builder.CreateUAV(io_tex_ref5);
 
@@ -165,7 +159,6 @@ void ObstructionShader::BuildAndExecuteGraph(
     PassParameters->yPos = yPos;
     PassParameters->boat_dx = boat_dx;
     PassParameters->boat_dy = boat_dy;
-    
 
     TShaderMapRef<ObstructionShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
@@ -174,39 +167,8 @@ void ObstructionShader::BuildAndExecuteGraph(
         RDG_EVENT_NAME("Obstruction Pass"),
         ComputeShader,
         PassParameters,
-        FIntVector(TEMP_TEXTURE_N, TEMP_TEXTURE_N, 1)
+        FIntVector(NN, NN, 1)
     );
-
-   /* TRefCountPtr<IPooledRenderTarget> PooledComputeTarget_Obs;
-    graph_builder.QueueTextureExtraction(io_tex_ref, &PooledComputeTarget_Obs);
-
-    TRefCountPtr<IPooledRenderTarget> PooledComputeTarget2_Obs;
-    graph_builder.QueueTextureExtraction(io_tex_ref2, &PooledComputeTarget2_Obs);
-
-    TRefCountPtr<IPooledRenderTarget> PooledComputeTarget3_Obs;
-    graph_builder.QueueTextureExtraction(io_tex_ref3, &PooledComputeTarget3_Obs);*/
 
     graph_builder.Execute();
-
-   /* RHI_cmd_list.CopyToResolveTarget(
-        PooledComputeTarget_Obs.GetReference()->GetRenderTargetItem().TargetableTexture,
-        obstructionMap_rtt->GetRenderTargetResource()->TextureRHI,
-        FResolveParams()
-    );
-
-    RHI_cmd_list.CopyToResolveTarget(
-        PooledComputeTarget2_Obs.GetReference()->GetRenderTargetItem().TargetableTexture,
-        h_rtt->GetRenderTargetResource()->TextureRHI,
-        FResolveParams()
-    );
-
-    RHI_cmd_list.CopyToResolveTarget(
-        PooledComputeTarget3_Obs.GetReference()->GetRenderTargetItem().TargetableTexture,
-        v_rtt->GetRenderTargetResource()->TextureRHI,
-        FResolveParams()
-    );*/
-   
-    //UE_LOG(LogTemp, Warning, TEXT("OBSTRUCTION OUTPUT START"));
-    //ReadbackRTT3_obs(RHI_cmd_list, obstructionMap_rtt);
-    //UE_LOG(LogTemp, Warning, TEXT("OBSTRUCTION process OUTPUT END"));
 }

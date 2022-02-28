@@ -70,15 +70,6 @@ void ButterflyTextureShader::BuildAndExecuteGraph(
 	FRDGBufferSRVRef ReverseBitsSRV = graph_builder.CreateSRV(ReverseBitsBuffer, PF_R32_UINT);
 	PassParameters->ReverseBits = ReverseBitsSRV;
 
-	// FRDGTextureDesc OutTextureDesc = FRDGTextureDesc::Create2D(
-	// 	FIntPoint(output->SizeX, output->SizeY),
-	// 	PF_FloatRGBA,
-	// 	FClearValueBinding(),
-	// 	TexCreate_UAV,
-	// 	1,
-	// 	1); 
-	// FRDGTextureRef OutTextureRef = graph_builder.CreateTexture(OutTextureDesc, TEXT("Compute_Out_Texture"));
-	// FRDGTextureUAVDesc OutTextureUAVDesc(OutTextureRef);
 	FRDGTextureRef output_tex_ref = register_texture3(graph_builder, output, "InputOutputRenderTarget");
 	PassParameters->OutputTexture = graph_builder.CreateUAV(output_tex_ref);
 
@@ -95,19 +86,5 @@ void ButterflyTextureShader::BuildAndExecuteGraph(
 		FIntVector(output->SizeX, output->SizeY, 1) // This gets multiplied by `numthreads` in the .usf shader, kinda.
 	);
 
-
-	// ------ Extracting to pooled render target ------
-	// TRefCountPtr<IPooledRenderTarget> PooledComputeTarget;
-	// Copy the result of compute shader from UAV to pooled render target
-	// graph_builder.QueueTextureExtraction(OutTextureRef, &PooledComputeTarget);
-
 	graph_builder.Execute();
-
-	// Queue the UAV we wrote to for extraction 
-	// I.e. copy UAV result on the GPU to our render target (on the CPU?).
-	// RHI_cmd_list.CopyToResolveTarget(
-	// PooledComputeTarget.GetReference()->GetRenderTargetItem().TargetableTexture,
-	// output->GetRenderTargetResource()->TextureRHI,
-	// FResolveParams()
-
 }

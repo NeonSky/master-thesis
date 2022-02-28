@@ -30,8 +30,6 @@ public:
 		OutEnvironment.SetDefine(TEXT("N_THREADS_Y"), 1);
 	}
 
-	void BuildTestTextures(int N, float L);
-
 	void BuildAndExecuteGraph(
 		FRHICommandListImmediate& RHI_cmd_list,
 		UTextureRenderTarget2D* input_output_rtt,
