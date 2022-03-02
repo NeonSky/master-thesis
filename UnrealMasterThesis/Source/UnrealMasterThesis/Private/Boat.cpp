@@ -6,19 +6,14 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "DrawDebugHelpers.h"
 
-ABoat::ABoat() {
-
-	// Configure Tick() to be called every frame.
-	PrimaryActorTick.bCanEverTick = true;
-}
+ABoat::ABoat() {}
 
 void ABoat::BeginPlay() {
 	Super::BeginPlay();
 
-  m_rigidbody = Rigidbody(mass); // kg (wet weight, i.e. including fuel). Our boat should be similar to a cabin cruiser: https://www.godownsize.com/how-much-do-boats-weigh/
+  input_pawn->on_fixed_update.AddUObject<ABoat>(this, &ABoat::Update);
 
-  m_velocity_input = FVector2D(0.0f);
-  m_speed_input = slow_speed;
+  m_rigidbody = Rigidbody(mass); // kg (wet weight, i.e. including fuel). Our boat should be similar to a cabin cruiser: https://www.godownsize.com/how-much-do-boats-weigh/
 
   m_requested_elevations_on_frame = 0;
   m_cur_frame = 0;
@@ -78,23 +73,43 @@ void ABoat::FetchCollisionMeshData() {
     FVector v2 = m_collision_mesh_vertices[i2];
 
     float area = FVector::CrossProduct(v2 - v0, v1 - v0).Size() / 2.0f;
+    
+    // UE_LOG(LogTemp, Warning, TEXT("v0: %i, %f, %f, %f"), i0, v0.X, v0.Y, v0.Z);
+    // UE_LOG(LogTemp, Warning, TEXT("v1: %i, %f, %f, %f"), i1, v1.X, v1.Y, v1.Z);
+    // UE_LOG(LogTemp, Warning, TEXT("v2: %i, %f, %f, %f"), i2, v2.X, v2.Y, v2.Z);
+    // UE_LOG(LogTemp, Warning, TEXT("i = %i has area: %f"), i, area);
+
     m_collision_mesh_surface_area += area;
 
   }
+  m_collision_mesh_surface_area = 27.045519f; // debug
 }
 
-void ABoat::Tick(float DeltaTime) {
-	Super::Tick(DeltaTime);
+void ABoat::Update(UpdatePayload update_payload) {
+
+  // UE_LOG(LogTemp, Warning, TEXT("#####"));
+  // UE_LOG(LogTemp, Warning, TEXT("09:11"));
+
+  m_speed_input = update_payload.speed_input;
+  m_velocity_input = update_payload.velocity_input;
 
   FlushPersistentDebugLines(this->GetWorld());
 
   UpdateReadbackQueue();
   UpdateSubmergedTriangles();
 
+  // UE_LOG(LogTemp, Warning, TEXT("submerged triangles count: %u"), m_submerged_triangles.Num());//
+
+  float submerged_area = 0.0f;
+  for (auto& t : m_submerged_triangles) {
+    submerged_area += t.area;
+  }
+  float r_s = submerged_area / m_collision_mesh_surface_area;
+
   ApplyGravity();
-  ApplyBuoyancy();
-  ApplyResistanceForces();
-  ApplyUserInput();
+  ApplyBuoyancy(r_s);
+  ApplyResistanceForces(r_s);
+  ApplyUserInput(r_s);
 
   m_rigidbody.Update(0.02f); // We use a fixed delta time for physics
 
@@ -102,6 +117,10 @@ void ABoat::Tick(float DeltaTime) {
 
   SetActorLocation(METERS_TO_UNREAL_UNITS * m_rigidbody.position);
   SetActorRotation(m_rigidbody.orientation, ETeleportType::None);
+
+  // UE_LOG(LogTemp, Warning, TEXT("CPU boat r_s:  %.9f, %.9f"), r_s, submerged_area);
+  // UE_LOG(LogTemp, Warning, TEXT("CPU boat position: %.9f, %.9f, %.9f"), m_rigidbody.position.X, m_rigidbody.position.Y, m_rigidbody.position.Z);
+  // UE_LOG(LogTemp, Warning, TEXT("CPU boat orientation: %.9f, %.9f, %.9f, %.9f"), m_rigidbody.orientation.X, m_rigidbody.orientation.Y, m_rigidbody.orientation.Z, m_rigidbody.orientation.W);
 
   m_cur_frame++;
 }
@@ -178,10 +197,18 @@ void ABoat::UpdateReadbackQueue() {
     FTransform transform = m_rigidbody.Transform();
     TArray<FVector2D> sample_points;
     for (auto &v : m_collision_mesh_vertices) {
-      FVector v_ws = transform.TransformPosition(v) * METERS_TO_UNREAL_UNITS;
-      sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
+      FVector v_ws = transform.TransformPosition(v);
+      // sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
+      sample_points.Push(FVector2D(m_rigidbody.position.X, m_rigidbody.position.Y));
+      // sample_points.Push(FVector2D(0.0f, 0.0f));
+      // sample_points.Push(FVector2D(0.21518f, 2.30357f));
     }
     TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
+
+    // {
+    //   FVector2D v_ws = sample_points[0];
+    //   UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %.9f, %.9f -> %.9f"), v_ws.X, v_ws.Y, elevations[0]);
+    // }
 
     m_readback_queue.push(elevations);
   }
@@ -204,14 +231,6 @@ void ABoat::UpdateSubmergedTriangles() {
   m_submerged_triangles.SetNum(0);
 
   FTransform transform = m_rigidbody.Transform();
-
-  // Fetch ocean surface elevations for all vertices
-  TArray<FVector2D> sample_points;
-  for (auto &v : m_collision_mesh_vertices) {
-    FVector v_ws = transform.TransformPosition(v) * METERS_TO_UNREAL_UNITS;
-    sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
-  }
-  TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
 
   uint32 n_triangles = m_collision_mesh_indices.Num() / 3;
   for (unsigned int i = 0; i < n_triangles; i++) {
@@ -241,9 +260,18 @@ void ABoat::UpdateSubmergedTriangles() {
     DebugDrawTriangle(v0, v1, v2, FColor::Red);
 
     // The relevant ocean elevation samples
-    float e0 = m_latest_elevations[i0] / METERS_TO_UNREAL_UNITS;
-    float e1 = m_latest_elevations[i1] / METERS_TO_UNREAL_UNITS;
-    float e2 = m_latest_elevations[i2] / METERS_TO_UNREAL_UNITS;
+    float e0 = m_latest_elevations[i0];
+    float e1 = m_latest_elevations[i1];
+    float e2 = m_latest_elevations[i2];
+    // float e0 = 1.0f;
+    // float e1 = 2.0f;
+    // float e2 = 3.0f;
+    // float e0 = 0.12345f;
+    // float e1 = 0.12345f;
+    // float e2 = 0.12345f;
+    // float e0 = 1.0f;
+    // float e1 = 1.0f;
+    // float e2 = 1.0f;
 
     // Heights relative to the ocean surface for each vertex
     float h0 = v0.Z - e0;
@@ -278,7 +306,7 @@ void ABoat::UpdateSubmergedTriangles() {
     /* Cut into submerged triangles (3 cases) */
     ////////////////////////////////////////////
 
-    // No vertex above water (assume fully submerged)
+    // // No vertex above water (assume fully submerged)
     if (h_H < 0.0f) {
 
       t.v_L = v_L;
@@ -309,7 +337,7 @@ void ABoat::UpdateSubmergedTriangles() {
       // DebugDrawTriangle(v_L, I_L, I_M, FColor::Yellow);
       // DebugDrawTriangle(v_L, v_M, I_M, FColor::Yellow);
 
-      // We will end up with a quad in this case. We will treat as two triangles.
+      // We will end up with a quad in this case. We will treat it as two triangles.
 
       // Triangle #1
       t.v_L = v_L;
@@ -367,17 +395,16 @@ void ABoat::UpdateSubmergedTriangles() {
 }
 
 void ABoat::ApplyGravity() {
-  FVector force = FVector(0.0, 0.0, -GRAVITY * m_rigidbody.mass);
+  FVector force = FVector(0.0f, 0.0f, -GRAVITY * m_rigidbody.mass);
   m_rigidbody.AddForceAtPosition(force, m_rigidbody.position);
 }
 
-void ABoat::ApplyBuoyancy() {
+void ABoat::ApplyBuoyancy(float r_s) {
 
   for (auto& t : m_submerged_triangles) {
 
     // (kg / m^3) * (m / s^2) * (m) * (m^2) = kg * (m / s^2) = N
-    float density_of_water = 1000.0f;
-    FVector buoyancy_force = -density_of_water * GRAVITY * t.height * t.area * t.normal;
+    FVector buoyancy_force = -DENSITY_OF_WATER * GRAVITY * t.height * t.area * t.normal;
     buoyancy_force = FVector(0.0, 0.0, abs(buoyancy_force.Z));
 
     m_rigidbody.AddForceAtPosition(buoyancy_force, t.centroid);
@@ -387,13 +414,7 @@ void ABoat::ApplyBuoyancy() {
 
 }
 
-void ABoat::ApplyResistanceForces() {
-
-  float submerged_area = 0.0f;
-  for (auto& t : m_submerged_triangles) {
-    submerged_area += t.area;
-  }
-  float r_s = submerged_area / m_collision_mesh_surface_area;
+void ABoat::ApplyResistanceForces(float r_s) {
 
   float c_damp = 500.0f;
 
@@ -409,55 +430,25 @@ void ABoat::ApplyResistanceForces() {
   m_rigidbody.angular_velocity -= angular_drag * m_rigidbody.angular_velocity * (1.0f - r_s);
 }
 
-void ABoat::ApplyUserInput() {
+void ABoat::ApplyUserInput(float r_s) {
 
-  FTransform transform = engine->GetActorTransform();
+  FVector forward = GetActorForwardVector();
+  FVector right = GetActorRightVector();
+  FVector up = GetActorUpVector();
 
-  float submerged_area = 0.0f;
-  for (auto& t : m_submerged_triangles) {
-    submerged_area += t.area;
-  }
-  float r_s = submerged_area / m_collision_mesh_surface_area;
-  ocean_surface_simulation->speed = 0;
   if (m_velocity_input.Y > 0.0f) {
+    FVector engine_pos = (-forward) * 2.1f + (-up) * 0.3f;
+    engine_pos += m_rigidbody.position;
 
-    FVector engine_pos = transform.TransformPosition(FVector(-210.0f, 0.0f, -30.0f)) / METERS_TO_UNREAL_UNITS;
     float engine_power = HORSEPOWER_TO_NEWTON * m_speed_input * sqrt(r_s);
 
-    m_rigidbody.AddForceAtPosition(engine_power * m_velocity_input.Y * GetActorForwardVector(), engine_pos);
-    ocean_surface_simulation->speed = 1;
+    m_rigidbody.AddForceAtPosition(engine_power * m_velocity_input.Y * forward, engine_pos);
   }
 
   if (m_velocity_input.X != 0.0f) {
-
-    FVector steer_pos = m_rigidbody.position + 100.0f * GetActorForwardVector();
+    FVector steer_pos = m_rigidbody.position + 100.0f * forward;
     float engine_power = HORSEPOWER_TO_NEWTON * sqrt(m_speed_input) * sqrt(r_s); // Nerf sideways movement
-
-    m_rigidbody.AddForceAtPosition(engine_power * m_velocity_input.X * GetActorRightVector(), steer_pos);
-    ocean_surface_simulation->speed = 1;
+    m_rigidbody.AddForceAtPosition(engine_power * m_velocity_input.X * right, steer_pos);
   }
 
-}
-
-void ABoat::SetupPlayerInputComponent(class UInputComponent* inputComponent) {
-  Super::SetupPlayerInputComponent(inputComponent);
-
-  inputComponent->BindAction("Speed1", IE_Pressed, this, &ABoat::UseSlowSpeed);
-  inputComponent->BindAction("Speed2", IE_Pressed, this, &ABoat::UseNormalSpeed);
-  inputComponent->BindAction("Speed3", IE_Pressed, this, &ABoat::UseFastSpeed);
-
-  inputComponent->BindAxis("HorizontalAxis", this, &ABoat::HorizontalAxis);
-  inputComponent->BindAxis("VerticalAxis", this, &ABoat::VerticalAxis);
-}
-
-void ABoat::UseSlowSpeed()   { m_speed_input = slow_speed; }
-void ABoat::UseNormalSpeed() { m_speed_input = normal_speed; }
-void ABoat::UseFastSpeed()   { m_speed_input = fast_speed; }
-
-void ABoat::HorizontalAxis(float input) {
-  m_velocity_input.X = input;
-}
-
-void ABoat::VerticalAxis(float input) {
-  m_velocity_input.Y = input;
 }

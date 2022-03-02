@@ -6,7 +6,6 @@
 // as we need to be able to replicate the physics perfectly on the GPU.
 struct Rigidbody {
   FVector force = FVector(0.0f);
-  FVector acceleration = FVector(0.0f);
   FVector linear_velocity = FVector(0.0f);
   FVector position = FVector(0.0f);
 
