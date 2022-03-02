@@ -70,8 +70,11 @@ void AOceanSurfaceSimulation::Tick(float DeltaTime) {
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 	this->update_mesh(0.02f);
 
-	for (auto &boat : boats) {
-		boat->Update(update_payload);
+	for (auto boat : boats) {
+		// Allow "None", i.e. nullptr, to be assigned for boats in the editor.
+		if (boat) {
+			boat->Update(update_payload);
+		}
 	}
 }
 

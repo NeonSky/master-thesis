@@ -48,6 +48,10 @@ void ACPUBoat::UpdateReadbackQueue() {
 
 void ACPUBoat::Update(UpdatePayload update_payload) {
 
+    if (IsHidden()) {
+        SetActorHiddenInGame(false);
+    }
+
     UpdateReadbackQueue();
 
     m_shader_models_module.UpdateGPUBoat(
