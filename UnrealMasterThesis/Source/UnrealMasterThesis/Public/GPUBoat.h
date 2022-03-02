@@ -2,17 +2,19 @@
 
 #pragma once
 
+#include "IBoat.h"
 #include "ShaderModels.h"
-#include "InputPawn.h"
 
 #include "GPUBoat.generated.h"
 
 UCLASS(Blueprintable)
-class UNREALMASTERTHESIS_API AGPUBoat : public AActor {
+class UNREALMASTERTHESIS_API AGPUBoat : public AActor, public IBoatInterface {
 	GENERATED_BODY()
 	
 public:	
 	AGPUBoat();
+
+	virtual void Update(UpdatePayload update_payload) override;
 
 protected:
 
@@ -20,11 +22,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-
-	void Update(UpdatePayload update_payload);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	AInputPawn* input_pawn;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	AActor* camera_target;

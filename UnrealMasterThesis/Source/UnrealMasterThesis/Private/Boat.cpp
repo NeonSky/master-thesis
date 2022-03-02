@@ -11,8 +11,6 @@ ABoat::ABoat() {}
 void ABoat::BeginPlay() {
 	Super::BeginPlay();
 
-  input_pawn->on_fixed_update.AddUObject<ABoat>(this, &ABoat::Update);
-
   m_rigidbody = Rigidbody(mass); // kg (wet weight, i.e. including fuel). Our boat should be similar to a cabin cruiser: https://www.godownsize.com/how-much-do-boats-weigh/
 
   m_requested_elevations_on_frame = 0;
@@ -263,15 +261,6 @@ void ABoat::UpdateSubmergedTriangles() {
     float e0 = m_latest_elevations[i0];
     float e1 = m_latest_elevations[i1];
     float e2 = m_latest_elevations[i2];
-    // float e0 = 1.0f;
-    // float e1 = 2.0f;
-    // float e2 = 3.0f;
-    // float e0 = 0.12345f;
-    // float e1 = 0.12345f;
-    // float e2 = 0.12345f;
-    // float e0 = 1.0f;
-    // float e1 = 1.0f;
-    // float e2 = 1.0f;
 
     // Heights relative to the ocean surface for each vertex
     float h0 = v0.Z - e0;
@@ -306,7 +295,7 @@ void ABoat::UpdateSubmergedTriangles() {
     /* Cut into submerged triangles (3 cases) */
     ////////////////////////////////////////////
 
-    // // No vertex above water (assume fully submerged)
+    // No vertex above water (assume fully submerged)
     if (h_H < 0.0f) {
 
       t.v_L = v_L;

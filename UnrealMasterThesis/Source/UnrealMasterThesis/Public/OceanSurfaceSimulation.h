@@ -5,6 +5,7 @@
 #include "ShaderModels.h"
 #include "WaveSpectrums.h"
 #include "eWaveSimulation.h"
+#include "IBoat.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -43,6 +44,13 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	AInputPawn* input_pawn;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TArray<TScriptInterface<IBoatInterface>> boats;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UMaterial* material;
 
@@ -100,6 +108,7 @@ private:
 
 	TArray<UProceduralMeshComponent*> tile_meshes; // Each tile is a separate mesh but they share material
 
+	void update(UpdatePayload update_payload);
 	void create_mesh();
 	void update_mesh(float dt);
 	void prepare_ewave();

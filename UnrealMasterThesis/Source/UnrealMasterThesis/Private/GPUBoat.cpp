@@ -7,8 +7,6 @@ AGPUBoat::AGPUBoat() {}
 void AGPUBoat::BeginPlay() {
 	  Super::BeginPlay();
 
-    input_pawn->on_fixed_update.AddUObject<AGPUBoat>(this, &AGPUBoat::Update);
-
     m_shader_models_module.ResetGPUBoat(boat_rtt);
 }
 
