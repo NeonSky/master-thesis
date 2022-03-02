@@ -15,9 +15,6 @@ const int TILES_COUNT = 9; // Should be 1 or higher
 const int MOVE_SIM_THRESHOLD = 1;
 
 AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
-	// Configure Tick() to be called every frame.
-	PrimaryActorTick.bCanEverTick = true;
-
 	// Initialize the tiles as empty procedural meshes.
 	this->tile_meshes.SetNum(TILES_COUNT);
 	for (int i = 0; i < TILES_COUNT; i++) {
@@ -62,12 +59,20 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	m_shader_models_module.Clear(this->ewave_hPrev_rtt);
 	m_shader_models_module.Clear(this->ewave_v_rtt);
 	m_shader_models_module.Clear(this->ewave_vPrev_rtt);
+
+	input_pawn->on_fixed_update.AddUObject<AOceanSurfaceSimulation>(this, &AOceanSurfaceSimulation::update);
 }
 
 void AOceanSurfaceSimulation::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
+}
 
+void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 	this->update_mesh(0.02f);
+
+	for (auto &boat : boats) {
+		boat->Update(update_payload);
+	}
 }
 
 TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points) {

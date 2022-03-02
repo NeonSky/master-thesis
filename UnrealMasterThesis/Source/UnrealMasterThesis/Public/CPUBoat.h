@@ -2,19 +2,21 @@
 
 #pragma once
 
+#include "IBoat.h"
 #include "ShaderModels.h"
-#include "InputPawn.h"
 
 #include <queue>
 
 #include "CPUBoat.generated.h"
 
 UCLASS(Blueprintable)
-class UNREALMASTERTHESIS_API ACPUBoat : public AActor {
+class UNREALMASTERTHESIS_API ACPUBoat : public AActor, public IBoatInterface {
 	GENERATED_BODY()
 	
 public:	
 	ACPUBoat();
+
+	virtual void Update(UpdatePayload update_payload) override;
 
 protected:
 
@@ -24,10 +26,6 @@ protected:
 private:
 
 	void UpdateReadbackQueue();
-	void Update(UpdatePayload update_payload);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	AInputPawn* input_pawn;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	AStaticMeshActor* collision_mesh;

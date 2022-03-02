@@ -8,8 +8,6 @@ ACPUBoat::ACPUBoat() {}
 void ACPUBoat::BeginPlay() {
     Super::BeginPlay();
 
-    input_pawn->on_fixed_update.AddUObject<ACPUBoat>(this, &ACPUBoat::Update);
-
     m_shader_models_module.ResetGPUBoat(boat_rtt);
 
     for (int i = 0; i < artificial_frame_delay+1; i++) {

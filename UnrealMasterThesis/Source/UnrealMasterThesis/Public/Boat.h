@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "InputPawn.h"
+#include "IBoat.h"
 #include "OceanSurfaceSimulation.h"
 #include "ShaderModels.h"
 #include "Rigidbody.h"
@@ -29,12 +29,13 @@ struct SubmergedTriangle {
 };
 
 UCLASS(Blueprintable)
-class UNREALMASTERTHESIS_API ABoat : public AActor {
+class UNREALMASTERTHESIS_API ABoat : public AActor, public IBoatInterface {
 	GENERATED_BODY()
 	
 public:	
 	ABoat();
 
+	virtual void Update(UpdatePayload update_payload) override;
 	// Called every frame
 	// virtual void Tick(float DeltaTime) override;
 
@@ -44,11 +45,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-
-	void Update(UpdatePayload update_payload);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	AInputPawn* input_pawn;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	AOceanSurfaceSimulation* ocean_surface_simulation;
