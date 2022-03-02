@@ -85,8 +85,9 @@ void ABoat::FetchCollisionMeshData() {
 
 void ABoat::Update(UpdatePayload update_payload) {
 
-  // UE_LOG(LogTemp, Warning, TEXT("#####"));
-  // UE_LOG(LogTemp, Warning, TEXT("09:11"));
+  if (IsHidden()) {
+      SetActorHiddenInGame(false);
+  }
 
   m_speed_input = update_payload.speed_input;
   m_velocity_input = update_payload.velocity_input;

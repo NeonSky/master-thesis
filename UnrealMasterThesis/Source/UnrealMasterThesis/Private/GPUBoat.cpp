@@ -12,6 +12,10 @@ void AGPUBoat::BeginPlay() {
 
 void AGPUBoat::Update(UpdatePayload update_payload) {
 
+    if (IsHidden()) {
+        SetActorHiddenInGame(false);
+    }
+
     m_shader_models_module.UpdateGPUBoat(
         update_payload.speed_input,
         update_payload.velocity_input,
