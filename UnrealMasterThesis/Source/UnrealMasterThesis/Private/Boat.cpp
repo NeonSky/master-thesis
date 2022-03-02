@@ -107,8 +107,8 @@ void ABoat::Update(UpdatePayload update_payload) {
 
   ApplyGravity();
   ApplyBuoyancy(r_s);
-  ApplyResistanceForces(r_s);
   ApplyUserInput(r_s);
+  ApplyResistanceForces(r_s);
 
   m_rigidbody.Update(0.02f); // We use a fixed delta time for physics
 
@@ -197,17 +197,9 @@ void ABoat::UpdateReadbackQueue() {
     TArray<FVector2D> sample_points;
     for (auto &v : m_collision_mesh_vertices) {
       FVector v_ws = transform.TransformPosition(v);
-      // sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
-      sample_points.Push(FVector2D(m_rigidbody.position.X, m_rigidbody.position.Y));
-      // sample_points.Push(FVector2D(0.0f, 0.0f));
-      // sample_points.Push(FVector2D(0.21518f, 2.30357f));
+      sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
     }
     TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
-
-    // {
-    //   FVector2D v_ws = sample_points[0];
-    //   UE_LOG(LogTemp, Warning, TEXT("CPU Debug output: %.9f, %.9f -> %.9f"), v_ws.X, v_ws.Y, elevations[0]);
-    // }
 
     m_readback_queue.push(elevations);
   }
@@ -397,7 +389,9 @@ void ABoat::ApplyBuoyancy(float r_s) {
     FVector buoyancy_force = -DENSITY_OF_WATER * GRAVITY * t.height * t.area * t.normal;
     buoyancy_force = FVector(0.0, 0.0, abs(buoyancy_force.Z));
 
-    m_rigidbody.AddForceAtPosition(buoyancy_force, t.centroid);
+    float buoyancy_torque_amplifier = 20.0f;
+    FVector amplified_centroid = buoyancy_torque_amplifier * (t.centroid - m_rigidbody.position) + m_rigidbody.position;
+    m_rigidbody.AddForceAtPosition(buoyancy_force, amplified_centroid);
 
     // DebugDrawForce(t.centroid, buoyancy_force / METERS_TO_UNREAL_UNITS, FColor::Purple);
   }
