@@ -13,7 +13,7 @@
 
 IMPLEMENT_GLOBAL_SHADER(ScaleShader, "/Project/UnrealMasterThesis/Scale.usf", "eWaveCompute", SF_Compute);
 
-FRDGTextureRef register_texture4(
+FRDGTextureRef register_texture7(
 	FRDGBuilder& graph_builder,
 	UTextureRenderTarget2D* render_target,
 	FString name) {
@@ -111,9 +111,9 @@ void ScaleShader::BuildAndExecuteGraph(
     FParameters* PassParameters;
     PassParameters = graph_builder.AllocParameters<ScaleShader::FParameters>();
 
-	FRDGTextureRef io_tex_ref = register_texture4(graph_builder, input_output_rtt, "InputOutputRenderTarget");
+	FRDGTextureRef io_tex_ref = register_texture7(graph_builder, input_output_rtt, "InputOutputRenderTarget");
     auto uav = graph_builder.CreateUAV(io_tex_ref);
-    FRDGTextureRef io_tex_ref2 = register_texture4(graph_builder, copy_rtt, "CopyRenderTarget");
+    FRDGTextureRef io_tex_ref2 = register_texture7(graph_builder, copy_rtt, "CopyRenderTarget");
     auto uav2 = graph_builder.CreateUAV(io_tex_ref2);
 
     PassParameters->input_output_rtt = uav;

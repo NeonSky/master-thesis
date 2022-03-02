@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "InputPawn.h"
 #include "OceanSurfaceSimulation.h"
 #include "ShaderModels.h"
 #include "Rigidbody.h"
@@ -22,23 +23,20 @@ struct SubmergedTriangle {
 
 	FVector normal;   // Points out from the hull
 	FVector centroid; // The center point of the triangle
-	float height;     // Relative (positive) height below water water for the centroid
+	float height;     // Relative (positive) height below water water for the centroid. TODO: maybe rename to depth?
 	float area;       // The surface area of the triangle
 	float velocity;   // The (point) velocity at which the centroid is moving
 };
 
 UCLASS(Blueprintable)
-class UNREALMASTERTHESIS_API ABoat : public APawn {
+class UNREALMASTERTHESIS_API ABoat : public AActor {
 	GENERATED_BODY()
 	
 public:	
 	ABoat();
 
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
+	// virtual void Tick(float DeltaTime) override;
 
 protected:
 
@@ -46,6 +44,11 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+
+	void Update(UpdatePayload update_payload);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	AInputPawn* input_pawn;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	AOceanSurfaceSimulation* ocean_surface_simulation;
@@ -63,22 +66,10 @@ private:
 	int artificial_frame_skip; // The number of consecutive frames we don't perform a readback
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float slow_speed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float normal_speed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float fast_speed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float mass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float angular_drag;
-
-	FVector2D m_velocity_input;
-	float m_speed_input;
 
 	Rigidbody m_rigidbody;
 
@@ -94,6 +85,9 @@ private:
 
 	TArray<SubmergedTriangle> m_submerged_triangles;
 
+	FVector2D m_velocity_input;
+	float m_speed_input;
+
 	void FetchCollisionMeshData();
 
 	void DebugDrawTriangle(FVector v0, FVector v1, FVector v2, FColor color);
@@ -103,9 +97,9 @@ private:
 	void UpdateSubmergedTriangles();
 
 	void ApplyGravity();
-	void ApplyBuoyancy();
-	void ApplyResistanceForces();
-	void ApplyUserInput();
+	void ApplyBuoyancy(float r_s);
+	void ApplyResistanceForces(float r_s);
+	void ApplyUserInput(float r_s);
 
 	void UseSlowSpeed();
 	void UseNormalSpeed();

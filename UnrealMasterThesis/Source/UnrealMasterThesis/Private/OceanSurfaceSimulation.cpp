@@ -13,8 +13,6 @@
 // The NewObject function could potentially work, but it does not appear to give visible results in our case.
 const int TILES_COUNT = 9; // Should be 1 or higher
 const int MOVE_SIM_THRESHOLD = 1;
-int counter = 0;
-TArray<float> elevation_output;
 
 AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
 	// Configure Tick() to be called every frame.
@@ -26,7 +24,6 @@ AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
 		FName name = FName(*FString::Printf(TEXT("Ocean tile %i"), i+1));
 		this->tile_meshes[i] = CreateDefaultSubobject<UProceduralMeshComponent>(name);
 	}
-	counter = 0;
 }
 
 void AOceanSurfaceSimulation::BeginPlay() {
@@ -70,10 +67,12 @@ void AOceanSurfaceSimulation::BeginPlay() {
 void AOceanSurfaceSimulation::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
-	this->update_mesh(DeltaTime);
+	this->update_mesh(0.02f);
 }
 
 TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points) {
+
+	TArray<float> elevation_output;
 
 	m_shader_models_module.SampleElevationPoints(
 		this->spectrum_y_rtt,

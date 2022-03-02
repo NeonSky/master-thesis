@@ -15,7 +15,7 @@ uint32 reverse_bits(uint32 x, uint32 range) {
 	return res;
 }
 
-FRDGTextureRef register_texture3(
+FRDGTextureRef register_texture6(
 	FRDGBuilder& graph_builder,
 	UTextureRenderTarget2D* render_target,
 	FString name) {
@@ -70,7 +70,7 @@ void ButterflyTextureShader::BuildAndExecuteGraph(
 	FRDGBufferSRVRef ReverseBitsSRV = graph_builder.CreateSRV(ReverseBitsBuffer, PF_R32_UINT);
 	PassParameters->ReverseBits = ReverseBitsSRV;
 
-	FRDGTextureRef output_tex_ref = register_texture3(graph_builder, output, "InputOutputRenderTarget");
+	FRDGTextureRef output_tex_ref = register_texture6(graph_builder, output, "InputOutputRenderTarget");
 	PassParameters->OutputTexture = graph_builder.CreateUAV(output_tex_ref);
 
 

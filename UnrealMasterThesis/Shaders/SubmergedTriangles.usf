@@ -1,0 +1,182 @@
+#include "/Engine/Public/Platform.ush"
+
+#include "Common.ush"
+
+float4x4 ModelMatrix;
+
+Buffer<uint> IndexBuffer;
+Buffer<float> PositionBuffer;
+Texture2D<float4> ElevationTexture;
+Texture2D<float4> BoatTexture;
+RWStructuredBuffer<SubmergedTriangle> OutputBuffer;
+
+struct SortItem {
+    float h;
+    float3 v;
+};
+
+void swap(inout SortItem a, inout SortItem b) {
+    SortItem temp = a;
+    a = b;
+    b = temp;
+}
+
+void sort(inout SortItem s[3]) {
+    // Min at index 0
+    if (s[0].h > s[1].h) swap(s[0], s[1]);
+    if (s[0].h > s[2].h) swap(s[0], s[2]);
+
+    // Next min at index 1
+    if (s[1].h > s[2].h) swap(s[1], s[2]);
+}
+
+float3 homogenize(float4 v) {
+    return v.xyz / v.w;
+}
+
+[numthreads(N_THREADS_X, 1, 1)]
+void MainCompute(uint3 id : SV_DispatchThreadID) {
+
+    float3 position    = BoatTexture[uint2(0,0)].rgb; // RGB of (0,0) stores position
+    float4 orientation = BoatTexture[uint2(1,0)]; // RGBA of (1,0) stores orientation
+
+    float4x4 transform_matrix = {
+        1.0, 0.0, 0.0, position.x,// * M_TO_CM,
+        0.0, 1.0, 0.0, position.y,// * M_TO_CM,
+        0.0, 0.0, 1.0, position.z,// * M_TO_CM,
+        0.0, 0.0, 0.0, 1.0,
+    };
+    float4x4 rotation_matrix = quat_to_mat(orientation);
+    float4x4 model_matrix = mul(transform_matrix, mul(rotation_matrix, transpose(ModelMatrix)));
+    float4x4 test = mul(transform_matrix, rotation_matrix);
+
+    uint i0 = 3*IndexBuffer[3*id.x+0];
+    uint i1 = 3*IndexBuffer[3*id.x+1];
+    uint i2 = 3*IndexBuffer[3*id.x+2];
+
+    // PF_R32G32B32 nor PF_B32G32R32 supported, so we use PF_R32_FLOAT
+    float3 v0 = float3(PositionBuffer[i0], PositionBuffer[i0+1], PositionBuffer[i0+2]);
+    float3 v1 = float3(PositionBuffer[i1], PositionBuffer[i1+1], PositionBuffer[i1+2]);
+    float3 v2 = float3(PositionBuffer[i2], PositionBuffer[i2+1], PositionBuffer[i2+2]);
+
+    // Convert vertices to world space
+    v0 = homogenize(mul(transpose(ModelMatrix), float4(v0, 1.0))) / M_TO_CM;
+    v1 = homogenize(mul(transpose(ModelMatrix), float4(v1, 1.0))) / M_TO_CM;
+    v2 = homogenize(mul(transpose(ModelMatrix), float4(v2, 1.0))) / M_TO_CM;
+
+    v0 = homogenize(mul(test, float4(v0, 1.0)));
+    v1 = homogenize(mul(test, float4(v1, 1.0)));
+    v2 = homogenize(mul(test, float4(v2, 1.0)));
+
+    float3 normal = normalize(cross(v2 - v0, v1 - v0));
+
+    float e0 = sample_elevation(ElevationTexture, v0.xy);
+    float e1 = sample_elevation(ElevationTexture, v1.xy);
+    float e2 = sample_elevation(ElevationTexture, v2.xy);
+
+    float h0 = v0.z - e0;
+    float h1 = v1.z - e1;
+    float h2 = v2.z - e2;
+
+    // Sort by relative height
+    SortItem s[3];
+    s[0].h = h0; s[0].v = v0;
+    s[1].h = h1; s[1].v = v1;
+    s[2].h = h2; s[2].v = v2;
+    sort(s);
+
+    // Extract back
+    float h_L = s[0].h;
+    float h_M = s[1].h;
+    float h_H = s[2].h;
+
+    float3 v_L = s[0].v;
+    float3 v_M = s[1].v;
+    float3 v_H = s[2].v;
+
+    ////////////////////////////////////////////
+    /* Cut into submerged triangles (3 cases) */
+    ////////////////////////////////////////////
+
+    SubmergedTriangle t;
+    t.center_and_area.w = 0.0; // Ignore this triangle by default
+
+    // No vertex above water (assume fully submerged)
+    if (h_H < 0.0) {
+
+        float3 center = (v_L + v_M + v_H) / 3.0;
+        float height  = abs(h_L + h_M + h_H) / 3.0;
+        float area    = length(cross(v_H - v_L, v_M - v_L)) / 2.0;
+
+        t.normal_and_height = float4(normal, height);
+        t.center_and_area   = float4(center, area);
+
+        // Store results
+        OutputBuffer[2*id.x] = t;
+
+        // No second triangle, so ignore it (by setting zero area)
+        t.center_and_area.w = 0.0;
+        OutputBuffer[2*id.x+1] = t;
+    }
+
+    // Only one vertex above water (the H vertex)
+    else if (h_M < 0.0) {
+
+        // Approximate the intermediate points where the triangle should be cut.
+        float t_M = -h_M / (h_H - h_M);
+        float t_L = -h_L / (h_H - h_L);
+
+        float3 I_M = v_M + t_M * (v_H - v_M);
+        float3 I_L = v_L + t_L * (v_H - v_L);
+
+        // Triangle #1
+        float3 center = (v_L + I_L + v_M) / 3.0;
+        float height  = abs(h_L + h_M + 0.0) / 3.0;
+        float area    = length(cross(I_L - v_L, v_M - v_L)) / 2.0;
+
+        t.normal_and_height = float4(normal, height);
+        t.center_and_area   = float4(center, area);
+        OutputBuffer[2*id.x]   = t;
+
+        // Triangle #2
+        center = (v_M + I_M + I_L) / 3.0;
+        height = abs(h_M + 0.0 + 0.0) / 3.0;
+        area   = length(cross(I_M - v_M, I_L - v_M)) / 2.0;
+
+        t.normal_and_height = float4(normal, height);
+        t.center_and_area   = float4(center, area);
+        OutputBuffer[2*id.x+1] = t;
+    }
+
+    // Only one vertex below water (the L vertex)
+    else if (h_L < 0.0) {
+
+        // Approximate the intermediate points where the triangle should be cut.
+        float t_M = -h_L / (h_M - h_L);
+        float t_H = -h_L / (h_H - h_L);
+
+        float3 J_M = v_L + t_M * (v_M - v_L);
+        float3 J_H = v_L + t_H * (v_H - v_L);
+
+        float3 center = (v_L + J_M + J_H) / 3.0;
+        float height  = abs(h_L + 0.0 + 0.0) / 3.0;
+        float area    = length(cross(J_M - v_L, J_H - v_L)) / 2.0;
+
+        t.normal_and_height = float4(normal, height);
+        t.center_and_area   = float4(center, area);
+
+        // Store results
+        OutputBuffer[2*id.x] = t;
+
+        // No second triangle, so ignore it (by setting zero area)
+        t.center_and_area.w = 0.0;
+        OutputBuffer[2*id.x+1] = t;
+    }
+
+    // No vertex is submerged
+    else {
+        OutputBuffer[2*id.x]   = t;
+        OutputBuffer[2*id.x+1] = t;
+    }
+
+}

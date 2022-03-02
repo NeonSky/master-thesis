@@ -36,7 +36,6 @@ public:
 
 	TArray<float> sample_elevation_points(TArray<FVector2D> sample_points);
 	eWaveSimulation eWaveState;
-	int speed = 0;
 
 protected:
 

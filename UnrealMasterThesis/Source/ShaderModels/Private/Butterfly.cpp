@@ -160,10 +160,10 @@ void ButterflyShader::BuildAndExecuteGraph(
 	// Queue the UAV we wrote to for extraction 
 	// I.e. copy UAV result on the GPU to our render target (on the CPU?).
 	RHI_cmd_list.CopyToResolveTarget(
-    PooledComputeTarget.GetReference()->GetRenderTargetItem().TargetableTexture,
-    input_output->GetRenderTargetResource()->TextureRHI,
-    FResolveParams()
-  );
+		PooledComputeTarget.GetReference()->GetRenderTargetItem().TargetableTexture,
+		input_output->GetRenderTargetResource()->TextureRHI,
+		FResolveParams()
+	);
 	
 	//UE_LOG(LogTemp, Warning, TEXT("FFT OUTPUT START"));
 	//ReadbackRTT(RHI_cmd_list, input_output);
