@@ -23,5 +23,14 @@ void AGPUBoat::Update(UpdatePayload update_payload) {
         elevation_rtt,
         boat_rtt,
         readback_rtt,
+        m_submerged_triangles,
         camera_follow ? camera_target : nullptr);
+}
+
+UTextureRenderTarget2D* AGPUBoat::GetBoatRTT() {
+    return boat_rtt;
+}
+
+TRefCountPtr<FRDGPooledBuffer> AGPUBoat::GetSubmergedTriangles() {
+    return m_submerged_triangles;
 }

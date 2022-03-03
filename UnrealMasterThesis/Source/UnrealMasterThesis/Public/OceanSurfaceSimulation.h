@@ -32,9 +32,6 @@ class UNREALMASTERTHESIS_API AOceanSurfaceSimulation : public AActor {
 public:	
 	AOceanSurfaceSimulation();
 
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 	TArray<float> sample_elevation_points(TArray<FVector2D> sample_points);
 	eWaveSimulation eWaveState;
 

@@ -5,6 +5,7 @@
 
 #include "Engine/StaticMeshActor.h"
 #include "StaticMeshResources.h"
+#include "RenderGraphResources.h"
 
 #include <functional>
 
@@ -67,6 +68,7 @@ public:
 		UTextureRenderTarget2D* elevation_texture,
 		UTextureRenderTarget2D* input_output,
 		UTextureRenderTarget2D* readback_texture,
+		TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer,
 		AActor* update_target);
 
 };

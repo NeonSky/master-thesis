@@ -1,5 +1,10 @@
 #include "/Engine/Public/Platform.ush"
 
+#include "Common.ush"
+
+// Texture2D<float4> BoatTexture;
+StructuredBuffer<SubmergedTriangle> SubmergedTrianglesBuffer;
+
 StructuredBuffer<float4> submergedTriangleVertices;
 int numTriangles;
 int L;
@@ -48,6 +53,8 @@ bool ptInTriangle(float4 p, float4 p0, float4 p1, float4 p2){
 
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void eWaveCompute(uint3 id : SV_DispatchThreadID) {
+
+	// float xPos = BoatTexture[]
 	
 	// ----------------------------------------------------------------------------------
 	// Pre processing steps:

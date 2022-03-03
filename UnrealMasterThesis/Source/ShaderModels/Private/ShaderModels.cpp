@@ -101,14 +101,6 @@ void ShaderModelsModule::Buildh0Textures(int N, float L, std::function<float (FV
 			shader->Buildh0Textures(N, L, wave_spectrum);
 		}); 
 
-	/*TShaderMapRef<AddShader> shader2(GetGlobalShaderMap(GMaxRHIFeatureLevel));
-
-	ENQUEUE_RENDER_COMMAND(shader2)(
-		[shader2, N, L](FRHICommandListImmediate& RHI_cmd_list) {
-		shader2->BuildTestTextures(N, L);
-	});*/
-
-
 }
 
 void ShaderModelsModule::ComputeFourierComponents(
@@ -290,9 +282,9 @@ void ShaderModelsModule::UpdateGPUBoat(
 	UTextureRenderTarget2D* elevation_texture,
 	UTextureRenderTarget2D* input_output,
 	UTextureRenderTarget2D* readback_texture,
+	TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer,
 	AActor* update_target) {
 
-	TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer;
 	{
 		TShaderMapRef<SubmergedTrianglesShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 		ENQUEUE_RENDER_COMMAND(shader)(

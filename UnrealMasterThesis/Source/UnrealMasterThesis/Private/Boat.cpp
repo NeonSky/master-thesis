@@ -436,3 +436,11 @@ void ABoat::ApplyUserInput(float r_s) {
   }
 
 }
+
+UTextureRenderTarget2D* ABoat::GetBoatRTT() {
+    return nullptr; // TODO
+}
+
+TRefCountPtr<FRDGPooledBuffer> ABoat::GetSubmergedTriangles() {
+    return m_submerged_triangles_;
+}

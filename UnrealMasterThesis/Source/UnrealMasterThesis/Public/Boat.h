@@ -36,8 +36,8 @@ public:
 	ABoat();
 
 	virtual void Update(UpdatePayload update_payload) override;
-	// Called every frame
-	// virtual void Tick(float DeltaTime) override;
+    virtual UTextureRenderTarget2D* GetBoatRTT() override;
+    virtual TRefCountPtr<FRDGPooledBuffer> GetSubmergedTriangles() override;
 
 protected:
 
@@ -83,6 +83,8 @@ private:
 
 	FVector2D m_velocity_input;
 	float m_speed_input;
+
+	TRefCountPtr<FRDGPooledBuffer> m_submerged_triangles_;
 
 	void FetchCollisionMeshData();
 
