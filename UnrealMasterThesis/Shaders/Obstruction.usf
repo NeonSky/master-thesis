@@ -2,23 +2,15 @@
 
 #include "Common.ush"
 
-// Texture2D<float4> BoatTexture;
+Texture2D<float4> BoatTexture;
 StructuredBuffer<SubmergedTriangle> SubmergedTrianglesBuffer;
-
-// float L;
 
 RWTexture2D<float4> obstructionMap_rtt;
 RWTexture2D<float4> h_rtt;
 RWTexture2D<float4> v_rtt;
 RWTexture2D<float4> hPrev_rtt;
 RWTexture2D<float4> vPrev_rtt;
-// float xPos; // Boat position in metres
-// float yPos;
-// int boat_dx;
-// int boat_dy;
-// float speedScale;
 int preFFT; 
-
 
 
 float T(float x_y){
@@ -54,24 +46,22 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 
 	float cm_per_pixel = L * M_TO_CM / N;
 
-	// Test data //
-	float speedScale = 1.0;
+	float3 vel = BoatTexture[uint2(2,0)].rgb; // RGB of (2,0) stores velocity
+	float speedScale = length(vel) / 100.0;
 
-	float xPrevPos = -2.0;
-	float yPrevPos = -2.0;
-	float prevXp = (xPrevPos * M_TO_CM) / cm_per_pixel;
-	float prevYp = (yPrevPos * M_TO_CM) / cm_per_pixel;
+	float2 pos = BoatTexture[uint2(0,0)].rg; // RG of (0,0) stores horizontal position (see gravity in GPUBoat.usf)
+	int xp = (pos.x * M_TO_CM) / cm_per_pixel;
+	int yp = (pos.y * M_TO_CM) / cm_per_pixel;
 
-	float xPos = 0.0;
-	float yPos = 0.0;
-	float xp = (xPos * M_TO_CM) / cm_per_pixel;
-	float yp = (yPos * M_TO_CM) / cm_per_pixel;
+	float2 prev_pos = BoatTexture[uint2(0,1)].rg; // RG of (0,1) stores previous horizontal position
+	int prev_xp = (prev_pos.x * M_TO_CM) / cm_per_pixel;
+	int prev_yp = (prev_pos.y * M_TO_CM) / cm_per_pixel;
 
-	// float boat_dx = xp - prevXp;
-	// float boat_dy = yp - prevYp;
-	float boat_dx = 1;
-	float boat_dy = 1;
-	///////////////
+	int boat_dx = xp - prev_xp;
+	int boat_dy = yp - prev_yp;
+
+	pos.x = xp * cm_per_pixel / M_TO_CM;
+	pos.y = yp * cm_per_pixel / M_TO_CM;
 	
 	// ----------------------------------------------------------------------------------
 	// Pre processing steps:
@@ -82,8 +72,9 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	int2 sampleCoordinates = int2(id.x, id.y);
 	if(preFFT == 1){
 		// Offset when sampling from prev textures to move the simulation.
-		sampleCoordinates = int2(id.x - (boat_dx), id.y - (boat_dy));
+		sampleCoordinates = int2(id.x + boat_dx, id.y + boat_dy);
 	}
+
 	float h = hPrev_rtt[sampleCoordinates.xy].r;
 	float v = vPrev_rtt[sampleCoordinates.xy].r;
 	
@@ -91,10 +82,10 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 		// Compute the obstruction map
 		// it should be 0.0 where the boats submerged triangles are. Rest should be 1.0
 		float half_L_in_metres = 50.0f;
-		float oldMinX = xPos - half_L_in_metres; // TODO: replace 0 with offset to move with the boat.
-		float oldMaxX = xPos + half_L_in_metres;
-		float oldMinY = yPos - half_L_in_metres;
-		float oldMaxY = yPos + half_L_in_metres;
+		float oldMinX = pos.x - half_L_in_metres; // TODO: replace 0 with offset to move with the boat.
+		float oldMaxX = pos.x + half_L_in_metres;
+		float oldMinY = pos.y - half_L_in_metres;
+		float oldMaxY = pos.y + half_L_in_metres;
 		obstructionMap_rtt[id.xy] = float4(1.0, 0.0, 0.0, 1.0);
 
 		for (int i = 0; i < N_TRIANGLES; i++) {
@@ -138,7 +129,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	//}
 	
 	// ----------------------------------------------------------------------------------
-	// Step 3, Apply trim (boundary ocnditions)
+	// Step 3, Apply trim (boundary conditions)
 	// ----------------------------------------------------------------------------------
 	float T_x = T(id.x);
 	float T_y = T(id.y);
@@ -172,5 +163,5 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	}
 	
 	h_rtt[id.xy] = float4(h, 0.0, 0.0, 1.0);
-	v_rtt[id.xy] = float4(v, 0.0, xPos * 100.0, yPos* 100.0);
+	v_rtt[id.xy] = float4(v, 0.0, pos.x * 100.0, pos.y * 100.0);
 }

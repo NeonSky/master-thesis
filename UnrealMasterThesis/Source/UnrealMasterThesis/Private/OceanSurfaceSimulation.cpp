@@ -231,13 +231,11 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	// Update interactive wake simulation on top of the non-interactive ocean
 	for (auto boat : boats) {
 		if (boat) {
-			// TODO: fetch eWave state and textures from each boat.
-
 			UTextureRenderTarget2D* boat_rtt = boat->GetBoatRTT();
 			TRefCountPtr<FRDGPooledBuffer> submerged_triangles = boat->GetSubmergedTriangles();
 
 			prepare_ewave();
-			m_shader_models_module.ComputeObstruction(submerged_triangles, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, eWaveState.uvX, eWaveState.uvY, eWaveState.dxp, eWaveState.dyp, eWaveState.boatSpeed, 1);
+			m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, 1);
 			m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
 			m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
 			m_shader_models_module.ComputeeWave(dt, L, this->ewave_h_rtt, this->ewave_v_rtt);
@@ -245,7 +243,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 			m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt, 0);
 			m_shader_models_module.ComputeScale(this->ewave_h_rtt, this->ewave_hPrev_rtt, eWaveState.scale);
 			m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, eWaveState.scale);
-			m_shader_models_module.ComputeObstruction(submerged_triangles, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, eWaveState.uvX, eWaveState.uvY, 0, 0, 0, 0);
+			m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, 0);
 	
 			eWaveState.boatPrevX = eWaveState.boatX;
 			eWaveState.boatPrevY = eWaveState.boatY;

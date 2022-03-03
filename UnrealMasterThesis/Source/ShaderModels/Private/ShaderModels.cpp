@@ -193,18 +193,13 @@ void ShaderModelsModule::ComputeScale(
 }
 
 void ShaderModelsModule::ComputeObstruction(
+    UTextureRenderTarget2D* boat_rtt,
 	TRefCountPtr<FRDGPooledBuffer> submerged_triangles,
-	int L,
 	UTextureRenderTarget2D* obstructionMap_rtt,
 	UTextureRenderTarget2D* h_rtt,
 	UTextureRenderTarget2D* v_rtt,
 	UTextureRenderTarget2D* hPrev_rtt,
 	UTextureRenderTarget2D* vPrev_rtt,
-	float xPos,
-	float yPos,
-	int boat_dx,
-	int boat_dy,
-	float speedScale,
 	int preFFT) {
 
 	TShaderMapRef<ObstructionShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
@@ -214,28 +209,18 @@ void ShaderModelsModule::ComputeObstruction(
 	UTextureRenderTarget2D* v_rtt_param = v_rtt;
 	UTextureRenderTarget2D* hPrev_rtt_param = h_rtt;
 	UTextureRenderTarget2D* vPrev_rtt_param = v_rtt;
-	float xPos_param = xPos;
-	float yPos_param = yPos;
-	float boat_dx_param = boat_dx;
-	float boat_dy_param = boat_dy;
-	int L_param = L;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, submerged_triangles, L_param, obstructionMap_rtt_param, h_rtt_param, v_rtt_param, hPrev_rtt_param, vPrev_rtt_param, xPos_param, yPos_param, boat_dx_param, boat_dy_param, speedScale, preFFT](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, boat_rtt, submerged_triangles, obstructionMap_rtt_param, h_rtt_param, v_rtt_param, hPrev_rtt_param, vPrev_rtt_param, preFFT](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
+			boat_rtt,
 			submerged_triangles,
-			L_param,
 			obstructionMap_rtt_param,
 			h_rtt_param,
 			v_rtt_param,
 			hPrev_rtt_param,
 			vPrev_rtt_param,
-			xPos_param,
-			yPos_param,
-			boat_dx_param,
-			boat_dy_param,
-			speedScale,
 			preFFT
 		);
 	});
@@ -333,7 +318,6 @@ void ShaderModelsModule::UpdateGPUBoat(
 		update_target->SetActorLocation(METERS_TO_UNREAL_UNITS * pos);
 		update_target->SetActorRotation(rot, ETeleportType::None);
 	}
-    UE_LOG(LogTemp, Warning, TEXT("ShaderModels boat valid4? %i"), submerged_triangles_buffer.IsValid());
 }
 
 IMPLEMENT_MODULE(ShaderModelsModule, ShaderModels);
