@@ -2,8 +2,6 @@
 
 #include "Common.ush"
 
-int N; // Resolution
-
 StructuredBuffer<uint> ReverseBits;
 RWTexture2D<float4> OutputTexture;
 

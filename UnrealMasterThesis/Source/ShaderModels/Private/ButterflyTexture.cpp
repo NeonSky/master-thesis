@@ -50,8 +50,6 @@ void ButterflyTextureShader::BuildAndExecuteGraph(
 	FParameters* PassParameters;
 	PassParameters = graph_builder.AllocParameters<ButterflyTextureShader::FParameters>();
 
-	PassParameters->N = output->SizeY;
-
 	int n_stages = output->SizeX;
 	TArray<uint32> ReverseBits;
 	for (uint32 x = 0; (int)x < output->SizeY; x++) {

@@ -103,7 +103,7 @@ void ReadbackRTT3_obs(FRHICommandListImmediate& RHI_cmd_list, UTextureRenderTarg
 void ObstructionShader::BuildAndExecuteGraph(
     FRHICommandListImmediate& RHI_cmd_list,
     TRefCountPtr<FRDGPooledBuffer> submerged_triangles,
-	int L,
+	float L,
     UTextureRenderTarget2D* obstructionMap_rtt,
     UTextureRenderTarget2D* h_rtt,
     UTextureRenderTarget2D* v_rtt,
@@ -121,22 +121,11 @@ void ObstructionShader::BuildAndExecuteGraph(
     FParameters* PassParameters;
     PassParameters = graph_builder.AllocParameters<ObstructionShader::FParameters>();
 
-    // input_sample_coordinates
-    // FRDGBufferRef SubmergedTrianglesStructuredBuffer = CreateStructuredBuffer(
-    //     graph_builder,
-    //     TEXT("SubmergedTriangles_StructuredBuffer"),
-    //     sizeof(FVector4), // bytes per element
-    //     numTriangles * 3, // num elements
-    //     submergedTriangleVertices.GetData(),
-    //     sizeof(FVector4) * numTriangles * 3 // initial data size... ? (and no flags parameter)
-    // );
-    // FRDGBufferSRVRef SubmergedTrianglesSRV = graph_builder.CreateSRV(SubmergedTrianglesStructuredBuffer, PF_R32_UINT); // PF_R32_FLOAT?
-    // PassParameters->submergedTriangleVertices = SubmergedTrianglesSRV;
     FRDGBufferRef RDG_ref = graph_builder.RegisterExternalBuffer(submerged_triangles, TEXT("SubmergedTriangles_StructuredBuffer"), ERDGBufferFlags::MultiFrame);
     PassParameters->SubmergedTrianglesBuffer = graph_builder.CreateSRV(RDG_ref);
 
-	PassParameters->L = L;
-    PassParameters->speedScale = speedScale;
+	// PassParameters->L = L;
+    // PassParameters->speedScale = speedScale;
     PassParameters->preFFT = preFFT;
 
 	FRDGTextureRef io_tex_ref = register_texture4_obs(graph_builder, obstructionMap_rtt, "InputOutputRenderTarget");
@@ -155,10 +144,10 @@ void ObstructionShader::BuildAndExecuteGraph(
     PassParameters->v_rtt = uav3;
     PassParameters->hPrev_rtt = uav4;
     PassParameters->vPrev_rtt = uav5;
-    PassParameters->xPos = xPos;
-    PassParameters->yPos = yPos;
-    PassParameters->boat_dx = boat_dx;
-    PassParameters->boat_dy = boat_dy;
+    // PassParameters->xPos = xPos;
+    // PassParameters->yPos = yPos;
+    // PassParameters->boat_dx = boat_dx;
+    // PassParameters->boat_dy = boat_dy;
 
     TShaderMapRef<ObstructionShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
