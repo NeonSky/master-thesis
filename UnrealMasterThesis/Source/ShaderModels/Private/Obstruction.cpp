@@ -102,18 +102,13 @@ void ReadbackRTT3_obs(FRHICommandListImmediate& RHI_cmd_list, UTextureRenderTarg
 
 void ObstructionShader::BuildAndExecuteGraph(
     FRHICommandListImmediate& RHI_cmd_list,
+    UTextureRenderTarget2D* boat_rtt,
     TRefCountPtr<FRDGPooledBuffer> submerged_triangles,
-	float L,
     UTextureRenderTarget2D* obstructionMap_rtt,
     UTextureRenderTarget2D* h_rtt,
     UTextureRenderTarget2D* v_rtt,
     UTextureRenderTarget2D* hPrev_rtt,
     UTextureRenderTarget2D* vPrev_rtt,
-    float xPos,
-    float yPos,
-    int boat_dx,
-    int boat_dy,
-    float speedScale,
     int preFFT) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
@@ -121,11 +116,11 @@ void ObstructionShader::BuildAndExecuteGraph(
     FParameters* PassParameters;
     PassParameters = graph_builder.AllocParameters<ObstructionShader::FParameters>();
 
+    PassParameters->BoatTexture = register_texture4_obs(graph_builder, boat_rtt, "BoatRTT");
+
     FRDGBufferRef RDG_ref = graph_builder.RegisterExternalBuffer(submerged_triangles, TEXT("SubmergedTriangles_StructuredBuffer"), ERDGBufferFlags::MultiFrame);
     PassParameters->SubmergedTrianglesBuffer = graph_builder.CreateSRV(RDG_ref);
 
-	// PassParameters->L = L;
-    // PassParameters->speedScale = speedScale;
     PassParameters->preFFT = preFFT;
 
 	FRDGTextureRef io_tex_ref = register_texture4_obs(graph_builder, obstructionMap_rtt, "InputOutputRenderTarget");
@@ -144,10 +139,6 @@ void ObstructionShader::BuildAndExecuteGraph(
     PassParameters->v_rtt = uav3;
     PassParameters->hPrev_rtt = uav4;
     PassParameters->vPrev_rtt = uav5;
-    // PassParameters->xPos = xPos;
-    // PassParameters->yPos = yPos;
-    // PassParameters->boat_dx = boat_dx;
-    // PassParameters->boat_dy = boat_dy;
 
     TShaderMapRef<ObstructionShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 

@@ -33,7 +33,7 @@ public:
 	AOceanSurfaceSimulation();
 
 	TArray<float> sample_elevation_points(TArray<FVector2D> sample_points);
-	eWaveSimulation eWaveState;
+	eWaveSimulation eWaveState; // TODO: remove
 
 protected:
 

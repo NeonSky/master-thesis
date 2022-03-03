@@ -43,18 +43,13 @@ public:
 		float scale);
 
 	void ComputeObstruction(
+		UTextureRenderTarget2D* boat_rtt,
 		TRefCountPtr<FRDGPooledBuffer> submerged_triangles,
-		int L,
 		UTextureRenderTarget2D* obstructionMap_rtt,
 		UTextureRenderTarget2D* h_rtt,
 		UTextureRenderTarget2D* v_rtt,
 		UTextureRenderTarget2D* hPrev_rtt,
 		UTextureRenderTarget2D* vPrev_rtt,
-		float xPos, 
-		float yPos,
-		int boat_dx,
-		int boat_dy,
-		float speedScale,
 		int preFFT);
 
 	void SampleElevationPoints(UTextureRenderTarget2D* elevations, TArray<FVector2D> input_sample_coordinates, TArray<float>* output);
