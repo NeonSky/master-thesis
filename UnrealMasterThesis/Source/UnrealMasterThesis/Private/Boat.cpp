@@ -1,8 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Boat.h"
+#include "SubmergedTriangles.h"
 #include "Globals/StatelessHelpers.h"
 
+#include "RenderGraph.h"
+#include "RenderTargetPool.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "DrawDebugHelpers.h"
 
@@ -21,17 +24,6 @@ void ABoat::BeginPlay() {
   m_rigidbody.orientation = GetActorQuat();
 
   FetchCollisionMeshData();
-  if (ocean_surface_simulation) {
-      ocean_surface_simulation->eWaveState.submerged.Empty();
-      for (auto& t : m_submerged_triangles) {
-          ocean_surface_simulation->eWaveState.submerged.Add(t.v_L);
-          ocean_surface_simulation->eWaveState.submerged.Add(t.v_M);
-          ocean_surface_simulation->eWaveState.submerged.Add(t.v_H);
-      }
-  }
-  else {
-      UE_LOG(LogTemp, Error, TEXT("Ocean was NULLPTR"))
-  }
   
 }
 
@@ -71,11 +63,6 @@ void ABoat::FetchCollisionMeshData() {
     FVector v2 = m_collision_mesh_vertices[i2];
 
     float area = FVector::CrossProduct(v2 - v0, v1 - v0).Size() / 2.0f;
-    
-    // UE_LOG(LogTemp, Warning, TEXT("v0: %i, %f, %f, %f"), i0, v0.X, v0.Y, v0.Z);
-    // UE_LOG(LogTemp, Warning, TEXT("v1: %i, %f, %f, %f"), i1, v1.X, v1.Y, v1.Z);
-    // UE_LOG(LogTemp, Warning, TEXT("v2: %i, %f, %f, %f"), i2, v2.X, v2.Y, v2.Z);
-    // UE_LOG(LogTemp, Warning, TEXT("i = %i has area: %f"), i, area);
 
     m_collision_mesh_surface_area += area;
 
@@ -89,6 +76,8 @@ void ABoat::Update(UpdatePayload update_payload) {
       SetActorHiddenInGame(false);
   }
 
+  Rigidbody prev_rigidbody = m_rigidbody;
+
   m_speed_input = update_payload.speed_input;
   m_velocity_input = update_payload.velocity_input;
 
@@ -96,8 +85,6 @@ void ABoat::Update(UpdatePayload update_payload) {
 
   UpdateReadbackQueue();
   UpdateSubmergedTriangles();
-
-  // UE_LOG(LogTemp, Warning, TEXT("submerged triangles count: %u"), m_submerged_triangles.Num());//
 
   float submerged_area = 0.0f;
   for (auto& t : m_submerged_triangles) {
@@ -117,9 +104,7 @@ void ABoat::Update(UpdatePayload update_payload) {
   SetActorLocation(METERS_TO_UNREAL_UNITS * m_rigidbody.position);
   SetActorRotation(m_rigidbody.orientation, ETeleportType::None);
 
-  // UE_LOG(LogTemp, Warning, TEXT("CPU boat r_s:  %.9f, %.9f"), r_s, submerged_area);
-  // UE_LOG(LogTemp, Warning, TEXT("CPU boat position: %.9f, %.9f, %.9f"), m_rigidbody.position.X, m_rigidbody.position.Y, m_rigidbody.position.Z);
-  // UE_LOG(LogTemp, Warning, TEXT("CPU boat orientation: %.9f, %.9f, %.9f, %.9f"), m_rigidbody.orientation.X, m_rigidbody.orientation.Y, m_rigidbody.orientation.Z, m_rigidbody.orientation.W);
+  UpdateGPUState(prev_rigidbody);
 
   m_cur_frame++;
 }
@@ -364,16 +349,6 @@ void ABoat::UpdateSubmergedTriangles() {
 
   }
 
-  ocean_surface_simulation->eWaveState.submerged.Empty();
-  for (auto& t : m_submerged_triangles) {
-    ocean_surface_simulation->eWaveState.submerged.Add(t.v_L);
-    ocean_surface_simulation->eWaveState.submerged.Add(t.v_M);
-    ocean_surface_simulation->eWaveState.submerged.Add(t.v_H);
-  }
-  
-  ocean_surface_simulation->eWaveState.boatX = m_rigidbody.position.X;
-  ocean_surface_simulation->eWaveState.boatY = m_rigidbody.position.Y;
-  ocean_surface_simulation->eWaveState.boatSpeed = m_rigidbody.linear_velocity.Size() / 100.0f;
 }
 
 void ABoat::ApplyGravity() {
@@ -438,9 +413,89 @@ void ABoat::ApplyUserInput(float r_s) {
 }
 
 UTextureRenderTarget2D* ABoat::GetBoatRTT() {
-    return nullptr; // TODO
+    return boat_rtt;
 }
 
 TRefCountPtr<FRDGPooledBuffer> ABoat::GetSubmergedTriangles() {
-    return m_submerged_triangles_;
+    return m_submerged_triangles_buffer;
+}
+
+void ABoat::UpdateGPUState(Rigidbody prev_r) {
+
+  /* Update boat_rtt */
+  {
+    UTextureRenderTarget2D* rtt = boat_rtt;
+    Rigidbody r = m_rigidbody;
+
+    ENQUEUE_RENDER_COMMAND()([rtt, r, prev_r](FRHICommandListImmediate& RHI_cmd_list) {
+      FTexture2DRHIRef tex_ref = rtt->GetRenderTargetResource()->GetTextureRenderTarget2DResource()->GetTextureRHI();
+
+      TArray<FLinearColor> pixel_data = {
+        // Current
+        FLinearColor(r.position.X, r.position.Y, r.position.Z, 0.0f), // position
+        FLinearColor(r.orientation.X, r.orientation.Y, r.orientation.Z, r.orientation.W), // orientation
+        FLinearColor(r.linear_velocity.X, r.linear_velocity.Y, r.linear_velocity.Z, 0.0f), // linear velocity
+        FLinearColor(r.angular_velocity.X, r.angular_velocity.Y, r.angular_velocity.Z, 0.0f), // angular velocity
+        // Prev
+        FLinearColor(prev_r.position.X, prev_r.position.Y, prev_r.position.Z, 0.0f), // position
+        FLinearColor(prev_r.orientation.X, prev_r.orientation.Y, prev_r.orientation.Z, prev_r.orientation.W), // orientation
+        FLinearColor(prev_r.linear_velocity.X, prev_r.linear_velocity.Y, prev_r.linear_velocity.Z, 0.0f), // linear velocity
+        FLinearColor(prev_r.angular_velocity.X, prev_r.angular_velocity.Y, prev_r.angular_velocity.Z, 0.0f), // angular velocity
+      };
+
+      uint32 DestStride = 0;
+      FLinearColor* data = (FLinearColor*) RHILockTexture2D(tex_ref, 0, RLM_WriteOnly, DestStride, false);
+      FMemory::Memcpy(data, pixel_data.GetData(), sizeof(FLinearColor) * pixel_data.Num());
+      RHIUnlockTexture2D(tex_ref, 0, false);
+    });
+
+    FRenderCommandFence fence;
+    fence.BeginFence();
+    fence.Wait();
+  }
+
+  /* Update m_submerged_triangles_buffer */
+  {
+    TRefCountPtr<FRDGPooledBuffer>* buffer = &m_submerged_triangles_buffer;
+    TArray<SubmergedTriangle> submerged_triangles = m_submerged_triangles;
+
+    ENQUEUE_RENDER_COMMAND()([buffer, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) {
+
+      FRDGBuilder graph_builder(RHI_cmd_list);
+
+      int N = 140;
+      TArray<GPUSumbergedTriangle> initial_data;
+      initial_data.SetNum(N);
+
+      for (int i = 0; i < N; i++) {
+
+        if (i >= submerged_triangles.Num()) {
+          initial_data[i].center_and_area.W = 0.0f;
+          continue;
+        }
+
+        initial_data[i].v0 = submerged_triangles[i].v_L;
+        initial_data[i].v1 = submerged_triangles[i].v_M;
+        initial_data[i].v2 = submerged_triangles[i].v_H;
+      }
+
+      FRDGBufferRef rdg_buffer_ref = CreateStructuredBuffer(
+          graph_builder,
+          TEXT("SubmergedTriangles"),
+          sizeof(GPUSumbergedTriangle),
+          N,
+          initial_data.GetData(),
+          sizeof(GPUSumbergedTriangle) * N,
+          ERDGInitialDataFlags::None
+      );
+
+      graph_builder.QueueBufferExtraction(rdg_buffer_ref, buffer);
+      graph_builder.Execute();
+
+    });
+
+    FRenderCommandFence fence;
+    fence.BeginFence();
+    fence.Wait();
+  }
 }
