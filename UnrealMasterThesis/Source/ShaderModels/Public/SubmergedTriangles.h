@@ -11,6 +11,9 @@
 struct GPUSumbergedTriangle {
 	FVector4 normal_and_height;
 	FVector4 center_and_area;
+	FVector4 v0;
+	FVector4 v1;
+	FVector4 v2;
 };
 
 class SHADERMODELS_API SubmergedTrianglesShader : public FGlobalShader {

@@ -61,7 +61,16 @@ void ACPUBoat::Update(UpdatePayload update_payload) {
         m_readback_queue.front(),
         boat_rtt,
         readback_rtt,
+        m_submerged_triangles,
         this);
 
     m_cur_frame++;
+}
+
+UTextureRenderTarget2D* ACPUBoat::GetBoatRTT() {
+    return boat_rtt;
+}
+
+TRefCountPtr<FRDGPooledBuffer> ACPUBoat::GetSubmergedTriangles() {
+    return m_submerged_triangles;
 }

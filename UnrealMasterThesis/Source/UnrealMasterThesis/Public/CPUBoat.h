@@ -17,6 +17,8 @@ public:
 	ACPUBoat();
 
 	virtual void Update(UpdatePayload update_payload) override;
+    virtual UTextureRenderTarget2D* GetBoatRTT() override;
+    virtual TRefCountPtr<FRDGPooledBuffer> GetSubmergedTriangles() override;
 
 protected:
 
@@ -53,4 +55,6 @@ private:
 	int m_cur_frame;
 
 	ShaderModelsModule m_shader_models_module; // Reference to the ShaderModels module
+
+	TRefCountPtr<FRDGPooledBuffer> m_submerged_triangles;
 };

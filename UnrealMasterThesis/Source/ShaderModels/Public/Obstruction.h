@@ -13,6 +13,9 @@ public:
 
 		BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 
+		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<GPUSumbergedTriangle>, SubmergedTrianglesBuffer)
+		SHADER_PARAMETER_RDG_TEXTURE(RWTexture2D<FVector4>, BoatTexture)
+
 		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<FVector4>, submergedTriangleVertices)
 		SHADER_PARAMETER(int, numTriangles)
 		SHADER_PARAMETER(int, L)

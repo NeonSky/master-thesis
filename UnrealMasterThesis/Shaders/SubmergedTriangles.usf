@@ -110,6 +110,9 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
         t.normal_and_height = float4(normal, height);
         t.center_and_area   = float4(center, area);
+        t.v1 = float4(v_L, 1.0);
+        t.v2 = float4(v_M, 1.0);
+        t.v3 = float4(v_H, 1.0);
 
         // Store results
         OutputBuffer[2*id.x] = t;
@@ -136,6 +139,9 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
         t.normal_and_height = float4(normal, height);
         t.center_and_area   = float4(center, area);
+        t.v1 = float4(v_L, 1.0);
+        t.v2 = float4(I_L, 1.0);
+        t.v3 = float4(v_M, 1.0);
         OutputBuffer[2*id.x]   = t;
 
         // Triangle #2
@@ -145,6 +151,9 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
         t.normal_and_height = float4(normal, height);
         t.center_and_area   = float4(center, area);
+        t.v1 = float4(v_M, 1.0);
+        t.v2 = float4(I_M, 1.0);
+        t.v3 = float4(I_L, 1.0);
         OutputBuffer[2*id.x+1] = t;
     }
 
@@ -164,6 +173,9 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
         t.normal_and_height = float4(normal, height);
         t.center_and_area   = float4(center, area);
+        t.v1 = float4(v_L, 1.0);
+        t.v2 = float4(J_M, 1.0);
+        t.v3 = float4(J_H, 1.0);
 
         // Store results
         OutputBuffer[2*id.x] = t;

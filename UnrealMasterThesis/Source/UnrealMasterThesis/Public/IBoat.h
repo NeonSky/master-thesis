@@ -3,6 +3,7 @@
 #pragma once
 
 #include "InputPawn.h"
+#include "RenderGraphResources.h"
 
 #include "IBoat.generated.h"
 
@@ -17,4 +18,6 @@ class IBoatInterface {
 
 public:
     virtual void Update(UpdatePayload update_payload);
+    virtual UTextureRenderTarget2D* GetBoatRTT();
+    virtual TRefCountPtr<FRDGPooledBuffer> GetSubmergedTriangles();
 };
