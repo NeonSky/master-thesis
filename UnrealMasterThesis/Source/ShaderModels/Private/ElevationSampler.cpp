@@ -8,28 +8,6 @@
 
 IMPLEMENT_GLOBAL_SHADER(ElevationSamplerShader, "/Project/UnrealMasterThesis/ElevationSampler.usf", "MainCompute", SF_Compute);
 
-// FRDGTextureRef register_texture2(
-// 	FRDGBuilder& graph_builder,
-// 	FTexture2DRHIRef rhi_ref,
-// 	FString name) {
-
-// 	FSceneRenderTargetItem RenderTargetItem;
-// 	RenderTargetItem.TargetableTexture = rhi_ref;
-// 	RenderTargetItem.ShaderResourceTexture = rhi_ref;
-// 	FPooledRenderTargetDesc RenderTargetDesc = FPooledRenderTargetDesc::Create2DDesc(
-// 		rhi_ref->GetSizeXY(),
-// 		rhi_ref->GetFormat(),
-// 		FClearValueBinding::Black,
-// 		TexCreate_None,
-// 		TexCreate_RenderTargetable | TexCreate_ShaderResource,
-// 		false);
-// 	TRefCountPtr<IPooledRenderTarget> PooledRenderTarget;
-// 	GRenderTargetPool.CreateUntrackedElement(RenderTargetDesc, PooledRenderTarget, RenderTargetItem);
-
-// 	FRDGTextureRef RDG_tex_ref = graph_builder.RegisterExternalTexture(PooledRenderTarget, *name);
-
-// 	return RDG_tex_ref;
-// }
 FRDGTextureRef register_texture2(
 	FRDGBuilder& graph_builder,
 	UTextureRenderTarget2D* render_target,
