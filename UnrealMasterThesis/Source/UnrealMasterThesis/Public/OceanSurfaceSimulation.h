@@ -4,7 +4,6 @@
 
 #include "ShaderModels.h"
 #include "WaveSpectrums.h"
-#include "eWaveSimulation.h"
 #include "IBoat.h"
 
 #include "CoreMinimal.h"
@@ -33,7 +32,6 @@ public:
 	AOceanSurfaceSimulation();
 
 	TArray<float> sample_elevation_points(TArray<FVector2D> sample_points);
-	eWaveSimulation eWaveState; // TODO: remove
 
 protected:
 
@@ -108,5 +106,5 @@ private:
 	void update(UpdatePayload update_payload);
 	void create_mesh();
 	void update_mesh(float dt);
-	void prepare_ewave();
+
 };

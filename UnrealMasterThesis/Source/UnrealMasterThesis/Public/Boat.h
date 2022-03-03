@@ -67,6 +67,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float angular_drag;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UTextureRenderTarget2D* boat_rtt;
+
 	Rigidbody m_rigidbody;
 
 	int m_requested_elevations_on_frame;
@@ -84,7 +87,7 @@ private:
 	FVector2D m_velocity_input;
 	float m_speed_input;
 
-	TRefCountPtr<FRDGPooledBuffer> m_submerged_triangles_;
+	TRefCountPtr<FRDGPooledBuffer> m_submerged_triangles_buffer;
 
 	void FetchCollisionMeshData();
 
@@ -105,4 +108,6 @@ private:
 
 	void HorizontalAxis(float input);
 	void VerticalAxis(float input);
+
+	void UpdateGPUState(Rigidbody prev_r);
 };
