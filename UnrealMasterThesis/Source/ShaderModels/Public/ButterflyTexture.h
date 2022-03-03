@@ -13,8 +13,6 @@ public:
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 
-		SHADER_PARAMETER(int, N)
-
 		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<uint>, ReverseBits)
 
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, OutputTexture)

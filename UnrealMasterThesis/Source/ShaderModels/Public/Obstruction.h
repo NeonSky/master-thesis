@@ -13,23 +13,23 @@ public:
 
 		BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 
-		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<GPUSumbergedTriangle>, SubmergedTrianglesBuffer)
 		SHADER_PARAMETER_RDG_TEXTURE(RWTexture2D<FVector4>, BoatTexture)
+		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<GPUSumbergedTriangle>, SubmergedTrianglesBuffer)
 
-		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<FVector4>, submergedTriangleVertices)
-		SHADER_PARAMETER(int, numTriangles)
-		SHADER_PARAMETER(int, L)
+		// SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<FVector4>, submergedTriangleVertices)
+		// SHADER_PARAMETER(int, numTriangles)
+		// SHADER_PARAMETER(float, L)
 
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, obstructionMap_rtt)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, h_rtt)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, v_rtt)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, hPrev_rtt)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, vPrev_rtt)
-		SHADER_PARAMETER(float, xPos)
-		SHADER_PARAMETER(float, yPos)
-		SHADER_PARAMETER(int, boat_dx)
-		SHADER_PARAMETER(int, boat_dy)
-		SHADER_PARAMETER(float, speedScale)
+		// SHADER_PARAMETER(float, xPos)
+		// SHADER_PARAMETER(float, yPos)
+		// SHADER_PARAMETER(int, boat_dx)
+		// SHADER_PARAMETER(int, boat_dy)
+		// SHADER_PARAMETER(float, speedScale)
 		SHADER_PARAMETER(int, preFFT)
 
 	END_SHADER_PARAMETER_STRUCT()
@@ -49,7 +49,7 @@ public:
 	void BuildAndExecuteGraph(
 		FRHICommandListImmediate& RHI_cmd_list,
 		TRefCountPtr<FRDGPooledBuffer> submerged_triangles,
-		int L,
+		float L,
 		UTextureRenderTarget2D* obstructionMap_rtt,
 		UTextureRenderTarget2D* h_rtt,
 		UTextureRenderTarget2D* v_rtt,
