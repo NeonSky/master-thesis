@@ -43,7 +43,7 @@ public:
 		float scale);
 
 	void ComputeObstruction(
-		TArray<FVector4> SubmergedTriangles,
+		TRefCountPtr<FRDGPooledBuffer> submerged_triangles,
 		int L,
 		UTextureRenderTarget2D* obstructionMap_rtt,
 		UTextureRenderTarget2D* h_rtt,
@@ -68,7 +68,7 @@ public:
 		UTextureRenderTarget2D* elevation_texture,
 		UTextureRenderTarget2D* input_output,
 		UTextureRenderTarget2D* readback_texture,
-		TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer,
+		TRefCountPtr<FRDGPooledBuffer>& submerged_triangles_buffer,
 		AActor* update_target);
 
 };

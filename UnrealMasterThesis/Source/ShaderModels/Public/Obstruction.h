@@ -43,12 +43,12 @@ public:
 
 		OutEnvironment.SetDefine(TEXT("N_THREADS_X"), 1);
 		OutEnvironment.SetDefine(TEXT("N_THREADS_Y"), 1);
+		OutEnvironment.SetDefine(TEXT("N_TRIANGLES"), 140);
 	}
 
 	void BuildAndExecuteGraph(
 		FRHICommandListImmediate& RHI_cmd_list,
-		TArray<FVector4> submergedTriangleVertices, // TODO: pass as ref instead?
-		int numTriangles,
+		TRefCountPtr<FRDGPooledBuffer> submerged_triangles,
 		int L,
 		UTextureRenderTarget2D* obstructionMap_rtt,
 		UTextureRenderTarget2D* h_rtt,

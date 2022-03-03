@@ -64,7 +64,6 @@ void AOceanSurfaceSimulation::BeginPlay() {
 }
 
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
-	this->update_mesh(0.02f);
 
 	for (auto boat : boats) {
 		// Allow "None", i.e. nullptr, to be assigned for boats in the editor.
@@ -72,6 +71,8 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 			boat->Update(update_payload);
 		}
 	}
+
+	this->update_mesh(0.02f);
 }
 
 TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points) {
@@ -83,11 +84,6 @@ TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D>
 		sample_points,
 		&elevation_output
 	);
-
-	// UE_LOG(LogTemp, Warning, TEXT("Output"));
-	// for (int i = 0; i < elevation_output.Num(); i++) {
-	// 	UE_LOG(LogTemp, Warning, TEXT("i = %i: %f"), i, elevation_output[i]);
-	// }
 
 	return elevation_output;
 }
@@ -241,7 +237,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 			TRefCountPtr<FRDGPooledBuffer> submerged_triangles = boat->GetSubmergedTriangles();
 
 			prepare_ewave();
-			m_shader_models_module.ComputeObstruction(eWaveState.submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, eWaveState.uvX, eWaveState.uvY, eWaveState.dxp, eWaveState.dyp, eWaveState.boatSpeed, 1);
+			m_shader_models_module.ComputeObstruction(submerged_triangles, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, eWaveState.uvX, eWaveState.uvY, eWaveState.dxp, eWaveState.dyp, eWaveState.boatSpeed, 1);
 			m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
 			m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
 			m_shader_models_module.ComputeeWave(dt, L, this->ewave_h_rtt, this->ewave_v_rtt);
@@ -249,7 +245,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 			m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt, 0);
 			m_shader_models_module.ComputeScale(this->ewave_h_rtt, this->ewave_hPrev_rtt, eWaveState.scale);
 			m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, eWaveState.scale);
-			m_shader_models_module.ComputeObstruction(eWaveState.submerged, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, eWaveState.uvX, eWaveState.uvY, 0, 0, 0, 0);
+			m_shader_models_module.ComputeObstruction(submerged_triangles, L, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, eWaveState.uvX, eWaveState.uvY, 0, 0, 0, 0);
 	
 			eWaveState.boatPrevX = eWaveState.boatX;
 			eWaveState.boatPrevY = eWaveState.boatY;

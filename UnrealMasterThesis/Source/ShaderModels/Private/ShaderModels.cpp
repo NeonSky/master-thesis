@@ -193,7 +193,7 @@ void ShaderModelsModule::ComputeScale(
 }
 
 void ShaderModelsModule::ComputeObstruction(
-	TArray<FVector4> SubmergedTriangles,
+	TRefCountPtr<FRDGPooledBuffer> submerged_triangles,
 	int L,
 	UTextureRenderTarget2D* obstructionMap_rtt,
 	UTextureRenderTarget2D* h_rtt,
@@ -221,11 +221,10 @@ void ShaderModelsModule::ComputeObstruction(
 	int L_param = L;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, SubmergedTriangles, L_param, obstructionMap_rtt_param, h_rtt_param, v_rtt_param, hPrev_rtt_param, vPrev_rtt_param, xPos_param, yPos_param, boat_dx_param, boat_dy_param, speedScale, preFFT](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, submerged_triangles, L_param, obstructionMap_rtt_param, h_rtt_param, v_rtt_param, hPrev_rtt_param, vPrev_rtt_param, xPos_param, yPos_param, boat_dx_param, boat_dy_param, speedScale, preFFT](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
-			SubmergedTriangles,
-			SubmergedTriangles.Num() / 3, // the number of triangles is num verts / 3
+			submerged_triangles,
 			L_param,
 			obstructionMap_rtt_param,
 			h_rtt_param,
@@ -282,7 +281,7 @@ void ShaderModelsModule::UpdateGPUBoat(
 	UTextureRenderTarget2D* elevation_texture,
 	UTextureRenderTarget2D* input_output,
 	UTextureRenderTarget2D* readback_texture,
-	TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer,
+	TRefCountPtr<FRDGPooledBuffer>& submerged_triangles_buffer,
 	AActor* update_target) {
 
 	{
@@ -334,6 +333,7 @@ void ShaderModelsModule::UpdateGPUBoat(
 		update_target->SetActorLocation(METERS_TO_UNREAL_UNITS * pos);
 		update_target->SetActorRotation(rot, ETeleportType::None);
 	}
+    UE_LOG(LogTemp, Warning, TEXT("ShaderModels boat valid4? %i"), submerged_triangles_buffer.IsValid());
 }
 
 IMPLEMENT_MODULE(ShaderModelsModule, ShaderModels);

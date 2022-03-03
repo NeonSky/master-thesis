@@ -102,8 +102,7 @@ void ReadbackRTT3_obs(FRHICommandListImmediate& RHI_cmd_list, UTextureRenderTarg
 
 void ObstructionShader::BuildAndExecuteGraph(
     FRHICommandListImmediate& RHI_cmd_list,
-    TArray<FVector4> submergedTriangleVertices, // TODO: pass as ref instead?
-    int numTriangles,
+    TRefCountPtr<FRDGPooledBuffer> submerged_triangles,
 	int L,
     UTextureRenderTarget2D* obstructionMap_rtt,
     UTextureRenderTarget2D* h_rtt,
@@ -123,18 +122,19 @@ void ObstructionShader::BuildAndExecuteGraph(
     PassParameters = graph_builder.AllocParameters<ObstructionShader::FParameters>();
 
     // input_sample_coordinates
-    FRDGBufferRef SubmergedTrianglesStructuredBuffer = CreateStructuredBuffer(
-        graph_builder,
-        TEXT("SubmergedTriangles_StructuredBuffer"),
-        sizeof(FVector4), // bytes per element
-        numTriangles * 3, // num elements
-        submergedTriangleVertices.GetData(),
-        sizeof(FVector4) * numTriangles * 3 // initial data size... ? (and no flags parameter)
-    );
-    FRDGBufferSRVRef SubmergedTrianglesSRV = graph_builder.CreateSRV(SubmergedTrianglesStructuredBuffer, PF_R32_UINT); // PF_R32_FLOAT?
-    PassParameters->submergedTriangleVertices = SubmergedTrianglesSRV;
+    // FRDGBufferRef SubmergedTrianglesStructuredBuffer = CreateStructuredBuffer(
+    //     graph_builder,
+    //     TEXT("SubmergedTriangles_StructuredBuffer"),
+    //     sizeof(FVector4), // bytes per element
+    //     numTriangles * 3, // num elements
+    //     submergedTriangleVertices.GetData(),
+    //     sizeof(FVector4) * numTriangles * 3 // initial data size... ? (and no flags parameter)
+    // );
+    // FRDGBufferSRVRef SubmergedTrianglesSRV = graph_builder.CreateSRV(SubmergedTrianglesStructuredBuffer, PF_R32_UINT); // PF_R32_FLOAT?
+    // PassParameters->submergedTriangleVertices = SubmergedTrianglesSRV;
+    FRDGBufferRef RDG_ref = graph_builder.RegisterExternalBuffer(submerged_triangles, TEXT("SubmergedTriangles_StructuredBuffer"), ERDGBufferFlags::MultiFrame);
+    PassParameters->SubmergedTrianglesBuffer = graph_builder.CreateSRV(RDG_ref);
 
-    PassParameters->numTriangles = numTriangles;
 	PassParameters->L = L;
     PassParameters->speedScale = speedScale;
     PassParameters->preFFT = preFFT;
