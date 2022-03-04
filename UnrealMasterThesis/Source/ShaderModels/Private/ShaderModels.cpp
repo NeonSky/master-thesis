@@ -264,6 +264,7 @@ void ShaderModelsModule::UpdateGPUBoat(
     FVector2D velocity_input,
 	AStaticMeshActor* collision_mesh,
 	UTextureRenderTarget2D* elevation_texture,
+	UTextureRenderTarget2D* wake_texture,
 	UTextureRenderTarget2D* input_output,
 	UTextureRenderTarget2D* readback_texture,
 	TRefCountPtr<FRDGPooledBuffer>& submerged_triangles_buffer,
@@ -272,12 +273,13 @@ void ShaderModelsModule::UpdateGPUBoat(
 	{
 		TShaderMapRef<SubmergedTrianglesShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 		ENQUEUE_RENDER_COMMAND(shader)(
-			[shader, collision_mesh, elevation_texture, input_output, &submerged_triangles_buffer](FRHICommandListImmediate& RHI_cmd_list) {
+			[shader, collision_mesh, elevation_texture, wake_texture, input_output, &submerged_triangles_buffer](FRHICommandListImmediate& RHI_cmd_list) {
 				shader->BuildAndExecuteGraph(
 					RHI_cmd_list,
 					collision_mesh,
 					elevation_texture,
 					input_output,
+					wake_texture,
 					&submerged_triangles_buffer
 				);
 			}); 

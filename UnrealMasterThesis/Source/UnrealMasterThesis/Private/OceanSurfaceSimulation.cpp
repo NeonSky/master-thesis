@@ -52,10 +52,12 @@ void AOceanSurfaceSimulation::BeginPlay() {
 		this->tile_meshes[i]->SetMaterial(0, this->material);
 	}
 
-	m_shader_models_module.Clear(this->ewave_h_rtt);
-	m_shader_models_module.Clear(this->ewave_hPrev_rtt);
-	m_shader_models_module.Clear(this->ewave_v_rtt);
-	m_shader_models_module.Clear(this->ewave_vPrev_rtt);
+	if (should_update_wakes) {
+		m_shader_models_module.Clear(this->ewave_h_rtt);
+		m_shader_models_module.Clear(this->ewave_hPrev_rtt);
+		m_shader_models_module.Clear(this->ewave_v_rtt);
+		m_shader_models_module.Clear(this->ewave_vPrev_rtt);
+	}
 
 	input_pawn->on_fixed_update.AddUObject<AOceanSurfaceSimulation>(this, &AOceanSurfaceSimulation::update);
 }
@@ -225,22 +227,24 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
 
-	// Update interactive wake simulation on top of the non-interactive ocean
-	float ewave_scale = 1.0f / ((float)N * (float)N);
-	for (auto boat : boats) {
-		if (boat) {
-			UTextureRenderTarget2D* boat_rtt = boat->GetBoatRTT();
-			TRefCountPtr<FRDGPooledBuffer> submerged_triangles = boat->GetSubmergedTriangles();
+	if (should_update_wakes) {
+		// Update interactive wake simulation on top of the non-interactive ocean
+		float ewave_scale = 1.0f / ((float)N * (float)N);
+		for (auto boat : boats) {
+			if (boat) {
+				UTextureRenderTarget2D* boat_rtt = boat->GetBoatRTT();
+				TRefCountPtr<FRDGPooledBuffer> submerged_triangles = boat->GetSubmergedTriangles();
 
-			m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, 1);
-			m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
-			m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
-			m_shader_models_module.ComputeeWave(dt, L, this->ewave_h_rtt, this->ewave_v_rtt);
-			m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt, 0);
-			m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt, 0);
-			m_shader_models_module.ComputeScale(this->ewave_h_rtt, this->ewave_hPrev_rtt, ewave_scale);
-			m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, ewave_scale);
-			m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, 0);
+				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, 1);
+				m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
+				m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
+				m_shader_models_module.ComputeeWave(dt, L, this->ewave_h_rtt, this->ewave_v_rtt);
+				m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt, 0);
+				m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt, 0);
+				m_shader_models_module.ComputeScale(this->ewave_h_rtt, this->ewave_hPrev_rtt, ewave_scale);
+				m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, ewave_scale);
+				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, 0);
+			}
 		}
 	}
 }

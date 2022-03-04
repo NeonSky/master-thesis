@@ -129,12 +129,17 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     float r_s = compute_ratio_of_submerge();
 
+    // if (abs(SpeedInput) < 0.01) {
+    //     rigidbody.position.z = SubmergedTrianglesBuffer[0].center_and_area.z;
+    // }
+    // else {
     apply_gravity(rigidbody);
     apply_buoyancy(rigidbody);
     apply_user_input(rigidbody, r_s);
     apply_resistance_forces(rigidbody, r_s);
 
     update_rigidbody(rigidbody);
+    // }
 
     // Store new results
     InputOutputTexture[uint2(0,0)].rgb = rigidbody.position;

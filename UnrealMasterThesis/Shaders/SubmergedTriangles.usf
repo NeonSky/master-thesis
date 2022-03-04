@@ -8,6 +8,7 @@ Buffer<uint> IndexBuffer;
 Buffer<float> PositionBuffer;
 Texture2D<float4> ElevationTexture;
 Texture2D<float4> BoatTexture;
+Texture2D<float4> WakeTexture;
 RWStructuredBuffer<SubmergedTriangle> OutputBuffer;
 
 struct SortItem {
@@ -73,6 +74,24 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     float e0 = sample_elevation(ElevationTexture, v0.xy);
     float e1 = sample_elevation(ElevationTexture, v1.xy);
     float e2 = sample_elevation(ElevationTexture, v2.xy);
+
+    // float2 ws_boat_pos = M_TO_CM * position.xy;
+    const float cm_per_pixel = L * M_TO_CM / N;
+    float2 pos               = float2(0.0, 0.0); //position.xy;
+    int2 pixel_pos           = (position.xy * M_TO_CM) / cm_per_pixel;
+    float2 ws_boat_pos       = pixel_pos * cm_per_pixel / M_TO_CM;
+
+    // e0 += 5.0 * sample_elevation(WakeTexture, v0.xy);
+    // e1 += 5.0 * sample_elevation(WakeTexture, v1.xy);
+    // e2 += 5.0 * sample_elevation(WakeTexture, v2.xy);
+
+    // e0 += 15.0 * sample_elevation(WakeTexture, v0.xy);
+    // e1 += 15.0 * sample_elevation(WakeTexture, v1.xy);
+    // e2 += 15.0 * sample_elevation(WakeTexture, v2.xy);
+
+    e0 += sample_wake_elevation(WakeTexture, M_TO_CM * v0.xy, ws_boat_pos);
+    e1 += sample_wake_elevation(WakeTexture, M_TO_CM * v1.xy, ws_boat_pos);
+    e2 += sample_wake_elevation(WakeTexture, M_TO_CM * v2.xy, ws_boat_pos);
 
     float h0 = v0.z - e0;
     float h1 = v1.z - e1;
@@ -191,4 +210,45 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
         OutputBuffer[2*id.x+1] = t;
     }
 
+    // if (id.x == 0) {
+
+    //     // TODO: I need the other boat's position and eWave H texture, not this boat's!
+    //     // However, it should also be able to react to itself.
+
+    //     ///////////////////////////////////////
+    //     float e = sample_elevation(ElevationTexture, position.xy);
+
+    //     const float cm_per_pixel = L * M_TO_CM / N;
+    //     int2 pixel_pos           = (position.xy * M_TO_CM) / cm_per_pixel;
+    //     float2 ws_boat_pos       = pixel_pos * cm_per_pixel / M_TO_CM;
+
+    //     e += 5.0 * sample_wake_elevation(WakeTexture, M_TO_CM * position.xy, ws_boat_pos);
+    //     ///////////////////////////////////////
+
+
+    //     /* Kinda works? */
+    //     // SamplerState Sampler {
+    //     //     Filter = MIN_MAG_MIP_LINEAR;
+    //     //     AddressU = Wrap;
+    //     //     AddressV = Wrap;
+    //     // };
+    //     // float test = 5.0 * WakeTexture.SampleLevel(Sampler, float2(0.48, 0.5), 0).r;
+    //     ///////////////////
+
+    //     /* Debug */
+    //     // float test = sample_wake_elevation(WakeTexture, position.xy, ws_boat_pos);
+
+    //     // SamplerState Sampler {
+    //     //     Filter = MIN_MAG_MIP_LINEAR;
+    //     //     AddressU = Wrap;
+    //     //     AddressV = Wrap;
+    //     // };
+    //     // float test = 5.0 * WakeTexture.SampleLevel(Sampler, float2(0.48, 0.5), 0).r;
+    //     ///////////////////////////////////////
+
+    //     t.center_and_area.z = e;
+    //     t.center_and_area.w = 0.0;
+    //     OutputBuffer[2*id.x]   = t;
+    //     OutputBuffer[2*id.x+1] = t;
+    // }
 }

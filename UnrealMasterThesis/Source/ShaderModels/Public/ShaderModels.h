@@ -61,6 +61,7 @@ public:
 		FVector2D velocity_input,
 		AStaticMeshActor* collision_mesh,
 		UTextureRenderTarget2D* elevation_texture,
+		UTextureRenderTarget2D* wake_texture,
 		UTextureRenderTarget2D* input_output,
 		UTextureRenderTarget2D* readback_texture,
 		TRefCountPtr<FRDGPooledBuffer>& submerged_triangles_buffer,

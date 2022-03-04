@@ -130,9 +130,8 @@ struct SubmergedTriangle {
 	float4 v3; // w-comp unused
 };
 
-float sample_elevation(Texture2D<float4> elevation_texture, float2 ws_coord) {
+float sample_ambient_elevation(Texture2D<float4> elevation_texture, float2 ws_coord) {
 
-    const float L = 100.0;
     const float world_size = M_TO_CM * L;
 
     // The coordinate of interest in normalized UV space.
@@ -144,9 +143,96 @@ float sample_elevation(Texture2D<float4> elevation_texture, float2 ws_coord) {
         AddressV = Wrap;
     };
 
-    float elevation = elevation_texture.SampleLevel(Sampler, coord, 0).r; // doesn't quite work yet
+    float elevation = elevation_texture.SampleLevel(Sampler, coord, 0).r;
 
     return elevation;
+}
+
+float sample_wake_elevation(Texture2D<float4> ewave_H, float2 ws_coord, float2 ws_boat_pos) {
+
+    ////////////////////////////
+    float x = ws_coord.x;
+    float y = ws_coord.y;
+    float eWave_x = ws_boat_pos.x;
+    float eWave_y = ws_boat_pos.y;
+    ////////////////////////////
+
+    const float world_size = M_TO_CM * L;
+    const float half_world_size = world_size / 2.0;
+    
+    int signX = x > 0 ? 1 : -1;
+    int signY = y > 0 ? 1 : -1;
+
+    // Ocean tile indices:
+    int oceanTile_x = (int)((x + signX * half_world_size) / world_size);
+    int oceanTile_y = (int)((y + signY * half_world_size) / world_size);
+
+    // eWave texture borders in world space coordinates
+    float eWave_left  = eWave_x - half_world_size;
+    float eWave_right = eWave_left + world_size;
+    float eWave_up    = eWave_y - half_world_size;
+    float eWave_down  = eWave_up + world_size;
+
+    // Indices of ocean tiles partly covered by the eWave texture
+    int eWave_tile_left  = (int)((eWave_left + signX * half_world_size) / world_size);
+    int eWave_tile_right = (int)((eWave_right + signX * half_world_size) / world_size);
+    int eWave_tile_up    = (int)((eWave_up + signY * half_world_size) / world_size);
+    int eWave_tile_down  = (int)((eWave_down + signY * half_world_size) / world_size);
+
+    // Worldcoordinate borders of the ocean tile for this (x, y) coordinate
+    float oceanTile_left  = oceanTile_x * world_size - half_world_size;
+    float oceanTile_right = oceanTile_left + world_size;
+    float oceanTile_up    = oceanTile_y * world_size - half_world_size;
+    float oceanTile_down  = oceanTile_up + world_size;
+
+    float u_remapped = -1.0;
+    float v_remapped = -1.0;
+
+    if(x > eWave_right || x < eWave_left || y < eWave_up || y > eWave_down)
+        // We are not interested if (x, y) coordinates that are outside of the eWave texture.
+        return 0.0;
+
+    if (oceanTile_x == eWave_tile_left){
+        // This (x, y) coordinate is on the leftmost ocean tile covered by the eWave texture.
+        float u_max = (oceanTile_right - eWave_left) / world_size;
+        //u_remapped = remap(x, eWave_left, oceanTile_right, 0.0, u_max);
+        u_remapped = (x - eWave_left) * (u_max - 0.0) / (oceanTile_right - eWave_left) + 0.0;
+    }
+    else{
+        float u_min = 1.0 - ((eWave_right - oceanTile_left) / world_size);
+        //u_remapped = remap(x, oceanTile_left, eWave_right, u_min, 1.0);
+        u_remapped = (x - oceanTile_left) * (1.0 - u_min) / (eWave_right - oceanTile_left) + u_min;
+    }
+
+
+    if (oceanTile_y == eWave_tile_up){
+        // This (x, y) coordinate is on the upper ocean tile covered by the eWave texture.
+        float v_max = (oceanTile_down - eWave_up) / world_size;
+        //v_remapped = remap(y, eWave_up, oceanTile_down, 0.0, v_max);
+        v_remapped = (y - eWave_up) * (v_max - 0.0) / (oceanTile_down - eWave_up) + 0.0;
+    }
+    else{
+        float v_min = 1.0 - ((eWave_down - oceanTile_up) / world_size);
+        //v_remapped = remap(y, oceanTile_up, eWave_down, v_min, 1.0);
+        v_remapped = (y - oceanTile_up) * (1.0 - v_min) / (eWave_down - oceanTile_up) + v_min;
+    }
+
+    float2 coord = float2(u_remapped, v_remapped);
+
+    SamplerState Sampler {
+        Filter = MIN_MAG_MIP_LINEAR;
+        AddressU = Clamp;
+        AddressV = Clamp;
+    };
+
+    float elevation = ewave_H.SampleLevel(Sampler, coord, 0).r;
+
+    return elevation;
+}
+
+float sample_elevation(Texture2D<float4> elevation_texture, float2 ws_coord) {
+    // TODO: include wake elevation
+    return sample_ambient_elevation(elevation_texture, ws_coord);
 }
 
 /* Memory stuff */
