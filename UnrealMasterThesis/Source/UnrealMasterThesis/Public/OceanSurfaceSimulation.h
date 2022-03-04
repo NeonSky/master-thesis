@@ -98,7 +98,7 @@ private:
 	float L; // The side length of each ocean tile in meters.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), meta=(UIMin = "0.01", UIMax = "10.0"))
-	bool should_update_wakes; // TODO: remove
+	bool should_update_wakes;
 
 	int32 N; // Resolution in terms of vertices per horizontal unit axis.
 

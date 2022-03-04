@@ -55,10 +55,8 @@ void ACPUBoat::Update(UpdatePayload update_payload) {
     UpdateReadbackQueue();
 
     m_shader_models_module.UpdateGPUBoat(
-        // update_payload.speed_input,
-        // update_payload.velocity_input,
-        0.0f,
-        FVector2D(0.0f, 0.0f),
+        update_payload.speed_input,
+        update_payload.velocity_input,
         collision_mesh,
         m_readback_queue.front(),
         wake_rtt,
