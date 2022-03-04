@@ -427,7 +427,7 @@ void ABoat::UpdateGPUState(Rigidbody prev_r) {
     UTextureRenderTarget2D* rtt = boat_rtt;
     Rigidbody r = m_rigidbody;
 
-    ENQUEUE_RENDER_COMMAND()([rtt, r, prev_r](FRHICommandListImmediate& RHI_cmd_list) {
+    ENQUEUE_RENDER_COMMAND(void)([rtt, r, prev_r](FRHICommandListImmediate& RHI_cmd_list) {
       FTexture2DRHIRef tex_ref = rtt->GetRenderTargetResource()->GetTextureRenderTarget2DResource()->GetTextureRHI();
 
       TArray<FLinearColor> pixel_data = {
@@ -459,7 +459,7 @@ void ABoat::UpdateGPUState(Rigidbody prev_r) {
     TRefCountPtr<FRDGPooledBuffer>* buffer = &m_submerged_triangles_buffer;
     TArray<SubmergedTriangle> submerged_triangles = m_submerged_triangles;
 
-    ENQUEUE_RENDER_COMMAND()([buffer, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) {
+    ENQUEUE_RENDER_COMMAND(void)([buffer, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) {
 
       FRDGBuilder graph_builder(RHI_cmd_list);
 

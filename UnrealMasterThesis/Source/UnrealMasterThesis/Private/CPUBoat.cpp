@@ -27,7 +27,7 @@ void ACPUBoat::UpdateReadbackQueue() {
         m_readback_queue.pop();
 
         FRenderCommandFence fence;
-        ENQUEUE_RENDER_COMMAND()(
+        ENQUEUE_RENDER_COMMAND(void)(
             [src, rtt](FRHICommandListImmediate& RHI_cmd_list) {
                 RHI_cmd_list.CopyToResolveTarget(
                     src->GetRenderTargetResource()->GetRenderTargetTexture(),
