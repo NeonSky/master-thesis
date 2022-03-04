@@ -17,7 +17,7 @@ class IBoatInterface {
     GENERATED_BODY()
 
 public:
-    virtual void Update(UpdatePayload update_payload);
-    virtual UTextureRenderTarget2D* GetBoatRTT();
-    virtual TRefCountPtr<FRDGPooledBuffer> GetSubmergedTriangles();
+    virtual void Update(UpdatePayload update_payload) = 0;
+    virtual UTextureRenderTarget2D* GetBoatRTT() = 0;
+    virtual TRefCountPtr<FRDGPooledBuffer> GetSubmergedTriangles() = 0;
 };
