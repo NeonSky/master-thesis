@@ -52,12 +52,10 @@ void AOceanSurfaceSimulation::BeginPlay() {
 		this->tile_meshes[i]->SetMaterial(0, this->material);
 	}
 
-	if (should_update_wakes) {
-		m_shader_models_module.Clear(this->ewave_h_rtt);
-		m_shader_models_module.Clear(this->ewave_hPrev_rtt);
-		m_shader_models_module.Clear(this->ewave_v_rtt);
-		m_shader_models_module.Clear(this->ewave_vPrev_rtt);
-	}
+	m_shader_models_module.Clear(this->ewave_h_rtt);
+	m_shader_models_module.Clear(this->ewave_hPrev_rtt);
+	m_shader_models_module.Clear(this->ewave_v_rtt);
+	m_shader_models_module.Clear(this->ewave_vPrev_rtt);
 
 	input_pawn->on_fixed_update.AddUObject<AOceanSurfaceSimulation>(this, &AOceanSurfaceSimulation::update);
 }
