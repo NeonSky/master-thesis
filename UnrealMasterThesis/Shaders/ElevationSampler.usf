@@ -3,14 +3,17 @@
 #include "Common.ush"
 
 Texture2D<float4> elevation_texture;
+Texture2D<float4> wake_texture;
 StructuredBuffer<float2> input_sample_coordinates;
 RWTexture2D<float4> output_texture;
+
+float2 ws_boat_coord;
 
 [numthreads(N_THREADS_X, 1, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     float2 ws_coord = input_sample_coordinates[id.x];
-    float elevation = sample_elevation(elevation_texture, ws_coord);
+    float elevation = sample_elevation(elevation_texture, wake_texture, ws_coord, ws_boat_coord);
 
     store_f32(output_texture, uint2(id.x,0), elevation);
 

@@ -71,20 +71,9 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     float3 normal = normalize(cross(v2 - v0, v1 - v0));
 
-    float e0 = sample_elevation(ElevationTexture, v0.xy);
-    float e1 = sample_elevation(ElevationTexture, v1.xy);
-    float e2 = sample_elevation(ElevationTexture, v2.xy);
-
-    const float cm_per_pixel = L * M_TO_CM / N;
-
-    float2 ref_pos = position.xy;
-
-    int2 pixel_pos     = (position.xy * M_TO_CM) / cm_per_pixel;
-    float2 ws_boat_pos = pixel_pos * cm_per_pixel / M_TO_CM;
-
-    e0 += 5.0 * sample_wake_elevation(WakeTexture, M_TO_CM * (v0.xy - ref_pos), ws_boat_pos);
-    e1 += 5.0 * sample_wake_elevation(WakeTexture, M_TO_CM * (v1.xy - ref_pos), ws_boat_pos);
-    e2 += 5.0 * sample_wake_elevation(WakeTexture, M_TO_CM * (v2.xy - ref_pos), ws_boat_pos);
+    float e0 = sample_elevation(ElevationTexture, WakeTexture, v0.xy, position.xy);
+    float e1 = sample_elevation(ElevationTexture, WakeTexture, v1.xy, position.xy);
+    float e2 = sample_elevation(ElevationTexture, WakeTexture, v2.xy, position.xy);
 
     float h0 = v0.z - e0;
     float h1 = v1.z - e1;

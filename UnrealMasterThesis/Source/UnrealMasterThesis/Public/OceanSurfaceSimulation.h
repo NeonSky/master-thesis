@@ -31,7 +31,7 @@ class UNREALMASTERTHESIS_API AOceanSurfaceSimulation : public AActor {
 public:	
 	AOceanSurfaceSimulation();
 
-	TArray<float> sample_elevation_points(TArray<FVector2D> sample_points);
+	TArray<float> sample_elevation_points(TArray<FVector2D> sample_points, FVector2D ws_boat_coord);
 
 protected:
 

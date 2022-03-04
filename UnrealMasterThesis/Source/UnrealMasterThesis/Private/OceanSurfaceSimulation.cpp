@@ -72,12 +72,14 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 	this->update_mesh(0.02f);
 }
 
-TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points) {
+TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points, FVector2D ws_boat_coord) {
 
 	TArray<float> elevation_output;
 
 	m_shader_models_module.SampleElevationPoints(
 		this->spectrum_y_rtt,
+		this->ewave_h_rtt,
+		ws_boat_coord,
 		sample_points,
 		&elevation_output
 	);

@@ -226,16 +226,18 @@ void ShaderModelsModule::ComputeObstruction(
 	});
 }
 	
-void ShaderModelsModule::SampleElevationPoints(UTextureRenderTarget2D* elevations, TArray<FVector2D> input_sample_coordinates, TArray<float>* output) {
+void ShaderModelsModule::SampleElevationPoints(UTextureRenderTarget2D* elevations, UTextureRenderTarget2D* wake_rtt, FVector2D ws_boat_coord, TArray<FVector2D> input_sample_coordinates, TArray<float>* output) {
 
  	TShaderMapRef<ElevationSamplerShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	FRenderCommandFence fence;
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, elevations, input_sample_coordinates, output](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, elevations, wake_rtt, ws_boat_coord, input_sample_coordinates, output](FRHICommandListImmediate& RHI_cmd_list) {
 			shader->BuildAndExecuteGraph(
 				RHI_cmd_list,
 				elevations,
+				wake_rtt,
+				ws_boat_coord,
 				input_sample_coordinates,
 				output
 			);

@@ -230,9 +230,21 @@ float sample_wake_elevation(Texture2D<float4> ewave_H, float2 ws_coord, float2 w
     return elevation;
 }
 
-float sample_elevation(Texture2D<float4> elevation_texture, float2 ws_coord) {
-    // TODO: include wake elevation
-    return sample_ambient_elevation(elevation_texture, ws_coord);
+float sample_elevation(
+    Texture2D<float4> elevation_texture,
+    Texture2D<float4> ewave_H,
+    float2 ws_coord,
+    float2 ws_boat_coord) {
+
+    const float cm_per_pixel = L * M_TO_CM / N;
+
+    int2 pixel_pos     = (ws_boat_coord * M_TO_CM) / cm_per_pixel;
+    float2 ws_boat_pos = pixel_pos * cm_per_pixel / M_TO_CM;
+
+    float e1 = sample_ambient_elevation(elevation_texture, ws_coord);
+    float e2 = 5.0 * sample_wake_elevation(ewave_H, M_TO_CM * (ws_coord - ws_boat_coord), ws_boat_pos);
+
+    return e1 + e2;
 }
 
 /* Memory stuff */
