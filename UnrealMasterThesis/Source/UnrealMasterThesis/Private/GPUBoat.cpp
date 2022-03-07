@@ -21,6 +21,7 @@ void AGPUBoat::Update(UpdatePayload update_payload) {
         update_payload.velocity_input,
         collision_mesh,
         elevation_rtt,
+        wake_rtt,
         boat_rtt,
         readback_rtt,
         m_submerged_triangles,

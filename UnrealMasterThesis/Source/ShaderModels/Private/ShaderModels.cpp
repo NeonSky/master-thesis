@@ -226,16 +226,18 @@ void ShaderModelsModule::ComputeObstruction(
 	});
 }
 	
-void ShaderModelsModule::SampleElevationPoints(UTextureRenderTarget2D* elevations, TArray<FVector2D> input_sample_coordinates, TArray<float>* output) {
+void ShaderModelsModule::SampleElevationPoints(UTextureRenderTarget2D* elevations, UTextureRenderTarget2D* wake_rtt, FVector2D ws_boat_coord, TArray<FVector2D> input_sample_coordinates, TArray<float>* output) {
 
  	TShaderMapRef<ElevationSamplerShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	FRenderCommandFence fence;
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, elevations, input_sample_coordinates, output](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, elevations, wake_rtt, ws_boat_coord, input_sample_coordinates, output](FRHICommandListImmediate& RHI_cmd_list) {
 			shader->BuildAndExecuteGraph(
 				RHI_cmd_list,
 				elevations,
+				wake_rtt,
+				ws_boat_coord,
 				input_sample_coordinates,
 				output
 			);
@@ -264,6 +266,7 @@ void ShaderModelsModule::UpdateGPUBoat(
     FVector2D velocity_input,
 	AStaticMeshActor* collision_mesh,
 	UTextureRenderTarget2D* elevation_texture,
+	UTextureRenderTarget2D* wake_texture,
 	UTextureRenderTarget2D* input_output,
 	UTextureRenderTarget2D* readback_texture,
 	TRefCountPtr<FRDGPooledBuffer>& submerged_triangles_buffer,
@@ -272,12 +275,13 @@ void ShaderModelsModule::UpdateGPUBoat(
 	{
 		TShaderMapRef<SubmergedTrianglesShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 		ENQUEUE_RENDER_COMMAND(shader)(
-			[shader, collision_mesh, elevation_texture, input_output, &submerged_triangles_buffer](FRHICommandListImmediate& RHI_cmd_list) {
+			[shader, collision_mesh, elevation_texture, wake_texture, input_output, &submerged_triangles_buffer](FRHICommandListImmediate& RHI_cmd_list) {
 				shader->BuildAndExecuteGraph(
 					RHI_cmd_list,
 					collision_mesh,
 					elevation_texture,
 					input_output,
+					wake_texture,
 					&submerged_triangles_buffer
 				);
 			}); 

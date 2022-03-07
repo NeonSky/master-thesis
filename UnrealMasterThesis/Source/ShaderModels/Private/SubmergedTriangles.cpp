@@ -40,6 +40,7 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
         AStaticMeshActor* collision_mesh,
         UTextureRenderTarget2D* elevation_texture,
         UTextureRenderTarget2D* boat_texture,
+        UTextureRenderTarget2D* wake_texture,
         TRefCountPtr<FRDGPooledBuffer>* output_buffer) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
@@ -52,6 +53,7 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
 
     PassParameters->ElevationTexture = register_texture4(graph_builder, elevation_texture, "ElevationRenderTarget");
     PassParameters->BoatTexture      = register_texture4(graph_builder, boat_texture, "BoatRenderTarget");
+    PassParameters->WakeTexture      = register_texture4(graph_builder, wake_texture, "WakeRenderTarget");
 
     FStaticMeshLODResources& mesh_res = collision_mesh->GetStaticMeshComponent()->GetStaticMesh()->RenderData->LODResources[0];
     PassParameters->IndexBuffer = RHI_cmd_list.CreateShaderResourceView(mesh_res.IndexBuffer.IndexBufferRHI);

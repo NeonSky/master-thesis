@@ -31,6 +31,7 @@ public:
 
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, ElevationTexture)
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, BoatTexture)
+		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, WakeTexture)
 
 		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<GPUSumbergedTriangle>, OutputBuffer)
 
@@ -51,6 +52,7 @@ public:
 		AStaticMeshActor* collision_mesh,
         UTextureRenderTarget2D* elevation_texture,
         UTextureRenderTarget2D* boat_texture,
+        UTextureRenderTarget2D* wake_texture,
         TRefCountPtr<FRDGPooledBuffer>* output_buffer);
 
 };

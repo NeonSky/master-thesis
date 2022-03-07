@@ -11,7 +11,7 @@
 // Having this in the editor would be nice, but we need to use CreateDefaultSubobject (it seems).
 // This function may only be called from the constructor, which doesn't have access to the initialized editor properties.
 // The NewObject function could potentially work, but it does not appear to give visible results in our case.
-const int TILES_COUNT = 9; // Should be 1 or higher
+const int TILES_COUNT = 49; // Should be 1 or higher
 const int MOVE_SIM_THRESHOLD = 1;
 
 AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
@@ -72,12 +72,14 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 	this->update_mesh(0.02f);
 }
 
-TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points) {
+TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points, FVector2D ws_boat_coord) {
 
 	TArray<float> elevation_output;
 
 	m_shader_models_module.SampleElevationPoints(
 		this->spectrum_y_rtt,
+		this->ewave_h_rtt,
+		ws_boat_coord,
 		sample_points,
 		&elevation_output
 	);
@@ -225,22 +227,24 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
 
-	// Update interactive wake simulation on top of the non-interactive ocean
-	float ewave_scale = 1.0f / ((float)N * (float)N);
-	for (auto boat : boats) {
-		if (boat) {
-			UTextureRenderTarget2D* boat_rtt = boat->GetBoatRTT();
-			TRefCountPtr<FRDGPooledBuffer> submerged_triangles = boat->GetSubmergedTriangles();
+	if (should_update_wakes) {
+		// Update interactive wake simulation on top of the non-interactive ocean
+		float ewave_scale = 1.0f / ((float)N * (float)N);
+		for (auto boat : boats) {
+			if (boat) {
+				UTextureRenderTarget2D* boat_rtt = boat->GetBoatRTT();
+				TRefCountPtr<FRDGPooledBuffer> submerged_triangles = boat->GetSubmergedTriangles();
 
-			m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, 1);
-			m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
-			m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
-			m_shader_models_module.ComputeeWave(dt, L, this->ewave_h_rtt, this->ewave_v_rtt);
-			m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt, 0);
-			m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt, 0);
-			m_shader_models_module.ComputeScale(this->ewave_h_rtt, this->ewave_hPrev_rtt, ewave_scale);
-			m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, ewave_scale);
-			m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, 0);
+				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, 1);
+				m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
+				m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
+				m_shader_models_module.ComputeeWave(dt, L, this->ewave_h_rtt, this->ewave_v_rtt);
+				m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt, 0);
+				m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt, 0);
+				m_shader_models_module.ComputeScale(this->ewave_h_rtt, this->ewave_hPrev_rtt, ewave_scale);
+				m_shader_models_module.ComputeScale(this->ewave_v_rtt, this->ewave_vPrev_rtt, ewave_scale);
+				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, 0);
+			}
 		}
 	}
 }

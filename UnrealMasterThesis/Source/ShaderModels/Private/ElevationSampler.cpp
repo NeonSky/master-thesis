@@ -35,9 +35,11 @@ FRDGTextureRef register_texture2(
 }
 
 void ElevationSamplerShader::BuildAndExecuteGraph(
-    FRHICommandListImmediate &RHI_cmd_list,
-    UTextureRenderTarget2D* elevations,
-    TArray<FVector2D> input_sample_coordinates,
+	FRHICommandListImmediate &RHI_cmd_list,
+	UTextureRenderTarget2D* elevations,
+	UTextureRenderTarget2D* wake_rtt,
+	FVector2D ws_boat_coord,
+	TArray<FVector2D> input_sample_coordinates,
     TArray<float>* output) {
 
 	int N = input_sample_coordinates.Num();
@@ -50,6 +52,7 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
 
   // elevation_texture
 	PassParameters->elevation_texture = register_texture2(graph_builder, elevations, "input_elevations");
+	PassParameters->wake_texture = register_texture2(graph_builder, wake_rtt, "wake_rtt");
 
   // input_sample_coordinates
 	FRDGBufferRef InputSampleCoordinates = CreateStructuredBuffer(
@@ -75,6 +78,8 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
 	FRDGTextureUAVDesc OutTextureUAVDesc(tex_ref);
   FRDGTextureUAVRef tex_uav_ref = graph_builder.CreateUAV(OutTextureUAVDesc);
 	PassParameters->output_texture = tex_uav_ref;
+
+    PassParameters->ws_boat_coord = ws_boat_coord;
 
   // Call compute shader
 	TShaderMapRef<ElevationSamplerShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));

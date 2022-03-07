@@ -5,14 +5,16 @@
 #include "IBoat.h"
 #include "ShaderModels.h"
 
-#include "GPUBoat.generated.h"
+#include <queue>
+
+#include "ArtificialBoat.generated.h"
 
 UCLASS(Blueprintable)
-class UNREALMASTERTHESIS_API AGPUBoat : public AActor, public IBoatInterface {
+class UNREALMASTERTHESIS_API AArtificialBoat : public AActor, public IBoatInterface {
 	GENERATED_BODY()
 	
 public:	
-	AGPUBoat();
+	AArtificialBoat();
 
 	virtual void Update(UpdatePayload update_payload) override;
     virtual UTextureRenderTarget2D* GetBoatRTT() override;
@@ -25,11 +27,7 @@ protected:
 
 private:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	AActor* camera_target;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	bool camera_follow;
+	void UpdateReadbackQueue();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	AStaticMeshActor* collision_mesh;
@@ -45,6 +43,19 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UTextureRenderTarget2D* readback_rtt;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int artificial_frame_delay; // The GPU readback latency in frames
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int artificial_frame_skip; // The number of consecutive frames we don't perform a readback
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TArray<UTextureRenderTarget2D*> readback_bank;
+
+	std::queue<UTextureRenderTarget2D*> m_readback_queue;
+	int m_requested_elevations_on_frame;
+	int m_cur_frame;
 
 	ShaderModelsModule m_shader_models_module; // Reference to the ShaderModels module
 

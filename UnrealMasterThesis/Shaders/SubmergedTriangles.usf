@@ -8,6 +8,7 @@ Buffer<uint> IndexBuffer;
 Buffer<float> PositionBuffer;
 Texture2D<float4> ElevationTexture;
 Texture2D<float4> BoatTexture;
+Texture2D<float4> WakeTexture;
 RWStructuredBuffer<SubmergedTriangle> OutputBuffer;
 
 struct SortItem {
@@ -70,9 +71,9 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     float3 normal = normalize(cross(v2 - v0, v1 - v0));
 
-    float e0 = sample_elevation(ElevationTexture, v0.xy);
-    float e1 = sample_elevation(ElevationTexture, v1.xy);
-    float e2 = sample_elevation(ElevationTexture, v2.xy);
+    float e0 = sample_elevation(ElevationTexture, WakeTexture, v0.xy, position.xy);
+    float e1 = sample_elevation(ElevationTexture, WakeTexture, v1.xy, position.xy);
+    float e2 = sample_elevation(ElevationTexture, WakeTexture, v2.xy, position.xy);
 
     float h0 = v0.z - e0;
     float h1 = v1.z - e1;
