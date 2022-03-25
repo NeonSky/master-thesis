@@ -32,7 +32,8 @@ public:
 	void BuildAndExecuteGraph(
 		FRHICommandListImmediate& RHI_cmd_list,
 		UTextureRenderTarget2D* input_rtt,
-		UTextureRenderTarget2D* serialize_rtt
+		UTextureRenderTarget2D* serialize_rtt,
+		TArray<FFloat16Color>* data
 	);
 private:
 };
