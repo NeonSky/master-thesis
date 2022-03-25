@@ -196,14 +196,29 @@ void ShaderModelsModule::ComputeSerialization(UTextureRenderTarget2D* input_rtt,
 	UTextureRenderTarget2D* input_rtt_param = input_rtt;
 	UTextureRenderTarget2D* serialize_rtt_param = serialize_rtt;
 
+	TArray<FFloat16Color> data;
+	TArray<FFloat16Color>* data_ptr = &data;
+
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, input_rtt_param, serialize_rtt_param](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, input_rtt_param, serialize_rtt_param, data_ptr](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
 			input_rtt_param,
-			serialize_rtt_param
+			serialize_rtt_param,
+			data_ptr
 		);
 	});
+
+	FRenderCommandFence fence;
+	fence.BeginFence();
+	fence.Wait();
+
+	TArray<float> rChannel_raw32bit;
+	for (auto color16 : data) {
+		float color = RECOVER_F32(color16);
+		rChannel_raw32bit.Add(color);
+	}
+	int b = 1;
 }
 
 void ShaderModelsModule::ComputeObstruction(
