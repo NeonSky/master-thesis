@@ -94,14 +94,14 @@ void ACPUBoat::Update(UpdatePayload update_payload) {
   }
   float r_s = submerged_area / m_collision_mesh_surface_area;
 
+  const float dt = 0.02f; // We use a fixed delta time for physics
+
   ApplyGravity();
   ApplyBuoyancy(r_s);
   ApplyUserInput(r_s);
-  ApplyResistanceForces(r_s);
+  ApplyResistanceForces(r_s, dt);
 
-  m_rigidbody.Update(0.02f); // We use a fixed delta time for physics
-
-  // DebugDrawVelocities();
+  m_rigidbody.Update(dt);
 
   SetActorLocation(METERS_TO_UNREAL_UNITS * m_rigidbody.position);
   SetActorRotation(m_rigidbody.orientation, ETeleportType::None);
@@ -376,7 +376,7 @@ void ACPUBoat::ApplyBuoyancy(float r_s) {
 
 }
 
-void ACPUBoat::ApplyResistanceForces(float r_s) {
+void ACPUBoat::ApplyResistanceForces(float r_s, float dt) {
 
   float c_damp = 500.0f;
 
@@ -393,10 +393,11 @@ void ACPUBoat::ApplyResistanceForces(float r_s) {
 
   // Vertical damping to simulate viscosity and slamming (resistance) forces
   float submersion_change = abs(r_s - m_prev_r_s);
-  if (submersion_change > 0.02) {
-      FVector stopping_force = -m_rigidbody.mass * m_rigidbody.linear_velocity * c_damp * submersion_change;
-      m_rigidbody.AddForceAtPosition(FVector(0.0, 0.0, stopping_force.Z), m_rigidbody.position);
-  }
+
+  FVector stopping_force = -m_rigidbody.mass * m_rigidbody.linear_velocity / dt;
+  FVector vdamp_force = stopping_force * submersion_change;
+
+  m_rigidbody.AddForceAtPosition(FVector(0.0, 0.0, vdamp_force.Z), m_rigidbody.position);
 }
 
 void ACPUBoat::ApplyUserInput(float r_s) {

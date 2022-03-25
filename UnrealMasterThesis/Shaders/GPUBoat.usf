@@ -98,10 +98,11 @@ void apply_resistance_forces(inout Rigidbody rigidbody, float r_s, float prev_r_
 
     // Vertical damping to simulate viscosity and slamming (resistance) forces
     float submersion_change = abs(r_s - prev_r_s);
-    if (submersion_change > 0.02) {
-        float3 stopping_force = -rigidbody.mass * rigidbody.linear_velocity * c_damp * submersion_change;
-        add_force_at_position(rigidbody, float3(0.0, 0.0, stopping_force.z), rigidbody.position);
-    }
+
+    float3 stopping_force = -rigidbody.mass * rigidbody.linear_velocity / DELTA_T;
+    float3 vdamp_force = stopping_force * submersion_change;
+
+    add_force_at_position(rigidbody, float3(0.0, 0.0, vdamp_force.z), rigidbody.position);
 }
 
 float compute_ratio_of_submerge() {

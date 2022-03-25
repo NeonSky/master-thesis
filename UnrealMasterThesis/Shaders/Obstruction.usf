@@ -47,7 +47,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	float cm_per_pixel = L * M_TO_CM / N;
 
 	float3 vel = BoatTexture[uint2(2,0)].rgb; // RGB of (2,0) stores velocity
-	float speedScale = pow(length(vel + float3(0.01, 0.01, 0.01)), 1.5) / 500.0; // We add float3(0.01, 0.01, 0.01) to avoid taking length of zero vector
+	float speedScale = pow(length(vel), 1.5) / 500.0;
 
 	float2 pos = BoatTexture[uint2(0,0)].rg; // RG of (0,0) stores horizontal position (see gravity in GPUBoat.usf)
 	int xp = (pos.x * M_TO_CM) / cm_per_pixel;

@@ -100,7 +100,7 @@ private:
 
 	void ApplyGravity();
 	void ApplyBuoyancy(float r_s);
-	void ApplyResistanceForces(float r_s);
+	void ApplyResistanceForces(float r_s, float dt);
 	void ApplyUserInput(float r_s);
 
 	void UseSlowSpeed();

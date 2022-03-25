@@ -7,6 +7,7 @@ static const float DENSITY_OF_WATER = 1000.0;
 static const float HORSEPOWER_TO_NEWTON = 750.0;
 static const float L = 100.0;
 static const float N = 256.0;
+static const float DELTA_T = 0.02;
 
 /* Complex number stuff */
 
