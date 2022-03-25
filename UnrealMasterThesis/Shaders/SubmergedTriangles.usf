@@ -10,6 +10,7 @@ Texture2D<float4> ElevationTexture;
 Texture2D<float4> BoatTexture;
 Texture2D<float4> WakeTexture;
 RWStructuredBuffer<SubmergedTriangle> OutputBuffer;
+// RWStructuredBuffer<float> SubmersionTrackers;
 
 struct SortItem {
     float h;

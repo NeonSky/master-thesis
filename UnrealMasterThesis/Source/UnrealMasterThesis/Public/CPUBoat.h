@@ -83,6 +83,7 @@ private:
 	TArray<float> m_latest_elevations;
 
 	TArray<SubmergedTriangle> m_submerged_triangles;
+	float m_prev_r_s;
 
 	FVector2D m_velocity_input;
 	float m_speed_input;
@@ -99,7 +100,7 @@ private:
 
 	void ApplyGravity();
 	void ApplyBuoyancy(float r_s);
-	void ApplyResistanceForces(float r_s);
+	void ApplyResistanceForces(float r_s, float dt);
 	void ApplyUserInput(float r_s);
 
 	void UseSlowSpeed();

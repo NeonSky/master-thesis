@@ -82,7 +82,7 @@ void apply_user_input(inout Rigidbody rigidbody, float r_s) {
     }
 }
 
-void apply_resistance_forces(inout Rigidbody rigidbody, float r_s) {
+void apply_resistance_forces(inout Rigidbody rigidbody, float r_s, float prev_r_s) {
 
     const float c_damp = 500.0;
     const float angular_drag = 0.1;
@@ -95,6 +95,14 @@ void apply_resistance_forces(inout Rigidbody rigidbody, float r_s) {
 
     // Damping of angular velocity
     rigidbody.angular_velocity -= angular_drag * rigidbody.angular_velocity * (1.0 - r_s);
+
+    // Vertical damping to simulate viscosity and slamming (resistance) forces
+    float submersion_change = abs(r_s - prev_r_s);
+
+    float3 stopping_force = -rigidbody.mass * rigidbody.linear_velocity / DELTA_T;
+    float3 vdamp_force = stopping_force * submersion_change;
+
+    add_force_at_position(rigidbody, float3(0.0, 0.0, vdamp_force.z), rigidbody.position);
 }
 
 float compute_ratio_of_submerge() {
@@ -127,12 +135,15 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     InputOutputTexture[uint2(2,1)].rgb = rigidbody.linear_velocity;
     InputOutputTexture[uint2(3,1)].rgb = rigidbody.angular_velocity;
 
+    float prev_r_s = InputOutputTexture[uint2(3,0)].a;
+    InputOutputTexture[uint2(3,1)].a   = prev_r_s;
+
     float r_s = compute_ratio_of_submerge();
 
     apply_gravity(rigidbody);
     apply_buoyancy(rigidbody);
     apply_user_input(rigidbody, r_s);
-    apply_resistance_forces(rigidbody, r_s);
+    apply_resistance_forces(rigidbody, r_s, prev_r_s);
 
     update_rigidbody(rigidbody);
 
@@ -141,6 +152,7 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     InputOutputTexture[uint2(1,0)]     = rigidbody.orientation;
     InputOutputTexture[uint2(2,0)].rgb = rigidbody.linear_velocity;
     InputOutputTexture[uint2(3,0)].rgb = rigidbody.angular_velocity;
+    InputOutputTexture[uint2(3,0)].a   = r_s;
 
     store_f32(ReadbackTexture, uint2(0,0), rigidbody.position.x);
     store_f32(ReadbackTexture, uint2(1,0), rigidbody.position.y);
@@ -150,6 +162,6 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     store_f32(ReadbackTexture, uint2(5,0), rigidbody.orientation.z);
     store_f32(ReadbackTexture, uint2(6,0), rigidbody.orientation.w);
 
-    store_f32(ReadbackTexture, uint2(7,0), r_s); // Debug
+    store_f32(ReadbackTexture, uint2(7,0), r_s - prev_r_s); // Debug
 
 }
