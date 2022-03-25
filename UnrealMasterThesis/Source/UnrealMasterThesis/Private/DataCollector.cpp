@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+#include "DataCollector.h"
 #include "ImageUtils.h"
 #include "Serialization/BufferArchive.h"
 #include "Engine/TextureRenderTarget2D.h"
 
-#include "DataCollector.h"
+
 
 
 // Sets default values for this component's properties
