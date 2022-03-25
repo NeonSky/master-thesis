@@ -8,6 +8,7 @@
 #include "eWave.h"
 #include "Clear.h"
 #include "Scale.h"
+#include "Serialize.h"
 #include "Obstruction.h"
 #include "ElevationSampler.h"
 #include "ButterflyTexture.h"
@@ -187,6 +188,22 @@ void ShaderModelsModule::ComputeScale(
 		);
 	});
 
+}
+
+void ShaderModelsModule::ComputeSerialization(UTextureRenderTarget2D* input_rtt, UTextureRenderTarget2D* serialize_rtt) {
+	TShaderMapRef<SerializeShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+
+	UTextureRenderTarget2D* input_rtt_param = input_rtt;
+	UTextureRenderTarget2D* serialize_rtt_param = serialize_rtt;
+
+	ENQUEUE_RENDER_COMMAND(shader)(
+		[shader, input_rtt_param, serialize_rtt_param](FRHICommandListImmediate& RHI_cmd_list) {
+		shader->BuildAndExecuteGraph(
+			RHI_cmd_list,
+			input_rtt_param,
+			serialize_rtt_param
+		);
+	});
 }
 
 void ShaderModelsModule::ComputeObstruction(
