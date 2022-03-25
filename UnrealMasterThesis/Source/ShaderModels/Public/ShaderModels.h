@@ -42,6 +42,8 @@ public:
 		UTextureRenderTarget2D* copy_rtt,
 		float scale);
 
+	void ComputeSerialization(UTextureRenderTarget2D* input_rtt, UTextureRenderTarget2D* serialize_rtt);
+
 	void ComputeObstruction(
 		UTextureRenderTarget2D* boat_rtt,
 		TRefCountPtr<FRDGPooledBuffer> submerged_triangles,

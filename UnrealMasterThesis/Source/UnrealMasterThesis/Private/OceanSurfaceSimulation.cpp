@@ -78,6 +78,8 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 	}
 
 	this->update_mesh(0.02f);
+
+	m_shader_models_module.ComputeSerialization(ewave_h_rtt, serialization_rtt);
 }
 
 TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points, FVector2D ws_boat_coord) {
