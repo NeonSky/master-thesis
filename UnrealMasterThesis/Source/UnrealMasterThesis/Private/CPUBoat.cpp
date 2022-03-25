@@ -19,6 +19,8 @@ void ACPUBoat::BeginPlay() {
   m_requested_elevations_on_frame = 0;
   m_cur_frame = 0;
 
+  m_prev_r_s = 0.0f;
+
   // Sync the rigidbody transform with the UE transform
   m_rigidbody.position = GetActorLocation() / METERS_TO_UNREAL_UNITS;
   m_rigidbody.orientation = GetActorQuat();
@@ -106,6 +108,7 @@ void ACPUBoat::Update(UpdatePayload update_payload) {
 
   UpdateGPUState(prev_rigidbody);
 
+  m_prev_r_s = r_s;
   m_cur_frame++;
 }
 
@@ -387,6 +390,13 @@ void ACPUBoat::ApplyResistanceForces(float r_s) {
   // Based on: https://forum.unity.com/threads/how-is-angular-drag-applied-to-a-rigidbody-in-unity-how-is-angular-damping-applied-in-physx.369599/#:~:text=13-,After%20many%20tests%20I%27ve%20determined%20that%20this%20highly%20advanced%20formula%20reveals%20the%20secrets,-to%20PhysX%27s%20angular
   // Multiplying by (1.0f - r_s) isn't very realistic, but the results are pretty good.
   m_rigidbody.angular_velocity -= angular_drag * m_rigidbody.angular_velocity * (1.0f - r_s);
+
+  // Vertical damping to simulate viscosity and slamming (resistance) forces
+  float submersion_change = abs(r_s - m_prev_r_s);
+  if (submersion_change > 0.02) {
+      FVector stopping_force = -m_rigidbody.mass * m_rigidbody.linear_velocity * c_damp * submersion_change;
+      m_rigidbody.AddForceAtPosition(FVector(0.0, 0.0, stopping_force.Z), m_rigidbody.position);
+  }
 }
 
 void ACPUBoat::ApplyUserInput(float r_s) {

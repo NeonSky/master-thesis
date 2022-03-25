@@ -122,12 +122,6 @@ void update_rigidbody(inout Rigidbody rigidbody) {
 
 /* Ocean stuff */
 
-// struct TrianglesubmersionTracker {
-// 	float area;
-// 	float current_submersion_ratio;
-// 	float prev_submersion_ratio;
-// };
-
 struct SubmergedTriangle {
 	float4 normal_and_height;
 	float4 center_and_area;
