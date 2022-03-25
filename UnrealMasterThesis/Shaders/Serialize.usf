@@ -1,5 +1,7 @@
 #include "/Engine/Public/Platform.ush"
 
+#include "Common.ush"
+
 RWTexture2D<float4> input_rtt;
 RWTexture2D<float4> serialize_rtt;
 
@@ -7,5 +9,5 @@ RWTexture2D<float4> serialize_rtt;
 void mainCompute(uint3 id : SV_DispatchThreadID) {
     float value = input_rtt[id.xy].r;
 	
-    serialize_rtt[id.xy] = float4(0.0, 0.0, 0.0, 1.0);
+	store_f32(serialize_rtt, id.xy, value);
 }
