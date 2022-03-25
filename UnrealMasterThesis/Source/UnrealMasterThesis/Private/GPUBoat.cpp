@@ -21,7 +21,7 @@ void AGPUBoat::Update(UpdatePayload update_payload) {
         update_payload.velocity_input,
         collision_mesh,
         elevation_rtt,
-        wake_rtt,
+        ewave_rtts.eWaveH,
         boat_rtt,
         readback_rtt,
         m_submerged_triangles,
@@ -30,6 +30,10 @@ void AGPUBoat::Update(UpdatePayload update_payload) {
 
 UTextureRenderTarget2D* AGPUBoat::GetBoatRTT() {
     return boat_rtt;
+}
+
+FeWaveRTTs AGPUBoat::GeteWaveRTTs() {
+    return ewave_rtts;
 }
 
 TRefCountPtr<FRDGPooledBuffer> AGPUBoat::GetSubmergedTriangles() {

@@ -61,7 +61,7 @@ void AArtificialBoat::Update(UpdatePayload update_payload) {
         velocity_input,
         collision_mesh,
         m_readback_queue.front(),
-        wake_rtt,
+        ewave_rtts.eWaveH,
         boat_rtt,
         readback_rtt,
         m_submerged_triangles,
@@ -72,6 +72,10 @@ void AArtificialBoat::Update(UpdatePayload update_payload) {
 
 UTextureRenderTarget2D* AArtificialBoat::GetBoatRTT() {
     return boat_rtt;
+}
+
+FeWaveRTTs AArtificialBoat::GeteWaveRTTs() {
+    return ewave_rtts;
 }
 
 TRefCountPtr<FRDGPooledBuffer> AArtificialBoat::GetSubmergedTriangles() {

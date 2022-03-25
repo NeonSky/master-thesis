@@ -65,18 +65,6 @@ private:
 	UTextureRenderTarget2D* spectrum_z_rtt;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* ewave_h_rtt;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* ewave_hPrev_rtt;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* ewave_v_rtt;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* ewave_vPrev_rtt;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TEnumAsByte<WaveSpectrumType> wave_spectrum;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))

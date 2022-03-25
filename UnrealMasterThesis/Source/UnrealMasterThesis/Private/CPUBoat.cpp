@@ -427,6 +427,10 @@ UTextureRenderTarget2D* ACPUBoat::GetBoatRTT() {
     return boat_rtt;
 }
 
+FeWaveRTTs ACPUBoat::GeteWaveRTTs() {
+    return ewave_rtts;
+}
+
 TRefCountPtr<FRDGPooledBuffer> ACPUBoat::GetSubmergedTriangles() {
     return m_submerged_triangles_buffer;
 }

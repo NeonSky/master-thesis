@@ -37,6 +37,7 @@ public:
 
 	virtual void Update(UpdatePayload update_payload) override;
     virtual UTextureRenderTarget2D* GetBoatRTT() override;
+    virtual FeWaveRTTs GeteWaveRTTs() override;
     virtual TRefCountPtr<FRDGPooledBuffer> GetSubmergedTriangles() override;
 
 protected:
@@ -69,6 +70,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UTextureRenderTarget2D* boat_rtt;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	FeWaveRTTs ewave_rtts;
 
 	Rigidbody m_rigidbody;
 
