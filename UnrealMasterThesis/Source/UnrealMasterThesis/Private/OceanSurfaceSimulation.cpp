@@ -2,6 +2,7 @@
 
 #include "OceanSurfaceSimulation.h"
 #include "Globals/StatelessHelpers.h"
+#include "DataCollector.h"
 
 #include "ImageUtils.h"
 #include "KismetProceduralMeshLibrary.h"
@@ -20,6 +21,9 @@ AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
 		FName name = FName(*FString::Printf(TEXT("Ocean tile %i"), i+1));
 		this->tile_meshes[i] = CreateDefaultSubobject<UProceduralMeshComponent>(name);
 	}
+
+	data_collector = CreateDefaultSubobject<UDataCollector>(TEXT("Data Collector"));
+	data_collector->SetupAttachment(RootComponent);
 }
 
 void AOceanSurfaceSimulation::BeginPlay() {
@@ -57,6 +61,10 @@ void AOceanSurfaceSimulation::BeginPlay() {
 
 
 	input_pawn->on_fixed_update.AddUObject<AOceanSurfaceSimulation>(this, &AOceanSurfaceSimulation::update);
+
+	
+	
+	data_collector->saveTextureToFile(butterfly_rtt);
 }
 
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
