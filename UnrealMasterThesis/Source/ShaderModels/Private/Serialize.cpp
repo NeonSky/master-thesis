@@ -44,44 +44,42 @@ struct CustomUAV {
     FRDGTextureUAVRef uav_ref;
 };
 
-void ReadbackRTT_serialize(FRHICommandListImmediate& RHI_cmd_list, UTextureRenderTarget2D* rtt) {
-    FRHIResourceCreateInfo CreateInfo;
-    FTexture2DRHIRef readback_tex = RHICreateTexture2D(
-        rtt->SizeX,
-        rtt->SizeY,
-        PF_FloatRGBA,
-        1,
-        1,
-        TexCreate_RenderTargetable,
-        CreateInfo);
+TArray<FFloat16Color> readback_RTT_serialize(FRHICommandListImmediate& RHI_cmd_list, UTextureRenderTarget2D* rtt) {
+	FRHIResourceCreateInfo CreateInfo;
+	FTexture2DRHIRef readback_tex = RHICreateTexture2D(
+		rtt->SizeX,
+		rtt->SizeY,
+		PF_FloatRGBA,
+		1,
+		1,
+		TexCreate_RenderTargetable,
+		CreateInfo);
 
-    RHI_cmd_list.CopyToResolveTarget(
-        rtt->GetRenderTargetResource()->TextureRHI,
-        readback_tex->GetTexture2D(),
-        FResolveParams()
-    );
+	RHI_cmd_list.CopyToResolveTarget(
+		rtt->GetRenderTargetResource()->TextureRHI,
+		readback_tex->GetTexture2D(),
+		FResolveParams()
+	);
 
-    FReadSurfaceDataFlags read_flags(RCM_MinMax);
-    read_flags.SetLinearToGamma(false);
+	FReadSurfaceDataFlags read_flags(RCM_MinMax);
+	read_flags.SetLinearToGamma(false);
 
-    TArray<FFloat16Color> data;
-    RHI_cmd_list.ReadSurfaceFloatData(
-        readback_tex->GetTexture2D(),
-        FIntRect(0, 0, rtt->SizeX, rtt->SizeY),
-        data,
-        read_flags
-    );
+	TArray<FFloat16Color> data;
+	RHI_cmd_list.ReadSurfaceFloatData(
+		readback_tex->GetTexture2D(),
+		FIntRect(0, 0, rtt->SizeX, rtt->SizeY),
+		data,
+		read_flags
+	);
 
-    for (int i = 0; i < data.Num(); i++) {
-        UE_LOG(LogTemp, Warning, TEXT("%i: (%f, %f, %f, %f)"), i, data[i].R.GetFloat(), data[i].G.GetFloat(), data[i].B.GetFloat(), data[i].A.GetFloat());
-    }
-
+	return data;
 }
 
 void SerializeShader::BuildAndExecuteGraph(
     FRHICommandListImmediate& RHI_cmd_list,
     UTextureRenderTarget2D* input_rtt,
-    UTextureRenderTarget2D* serialize_rtt) {
+    UTextureRenderTarget2D* serialize_rtt,
+    TArray<FFloat16Color>* data) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
 
@@ -107,5 +105,17 @@ void SerializeShader::BuildAndExecuteGraph(
         FIntVector(NN, NN, 1)
     );
 
+    TRefCountPtr<IPooledRenderTarget> PooledComputeTarget;
+    graph_builder.QueueTextureExtraction(io_tex_ref2, &PooledComputeTarget);
+ 
+
     graph_builder.Execute();
+
+    RHI_cmd_list.CopyToResolveTarget(
+        PooledComputeTarget.GetReference()->GetRenderTargetItem().TargetableTexture,
+        serialize_rtt->GetRenderTargetResource()->TextureRHI,
+        FResolveParams()
+    );
+    *data = readback_RTT_serialize(RHI_cmd_list, serialize_rtt);
+	int a = 1;
 }
