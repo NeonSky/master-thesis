@@ -90,6 +90,9 @@ private:
 	ShaderModelsModule m_shader_models_module; // Reference to the ShaderModels module
 
 	TArray<UProceduralMeshComponent*> tile_meshes; // Each tile is a separate mesh but they share material
+	
+	class UDataCollector* data_collector;
+
 
 	TArray<TRefCountPtr<FRDGPooledBuffer>> m_submerged_triangles_buffers;
 
