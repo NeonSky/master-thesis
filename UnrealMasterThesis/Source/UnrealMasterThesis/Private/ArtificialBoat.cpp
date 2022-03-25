@@ -54,9 +54,11 @@ void AArtificialBoat::Update(UpdatePayload update_payload) {
 
     UpdateReadbackQueue();
 
+    FVector2D velocity_input = use_p2_inputs ? update_payload.velocity_input2 : update_payload.velocity_input;
+
     m_shader_models_module.UpdateGPUBoat(
         update_payload.speed_input,
-        update_payload.velocity_input,
+        velocity_input,
         collision_mesh,
         m_readback_queue.front(),
         wake_rtt,
