@@ -64,7 +64,7 @@ void AOceanSurfaceSimulation::BeginPlay() {
 
 	
 	
-	data_collector->saveTextureToFile(butterfly_rtt);
+	// data_collector->saveTextureToFile(butterfly_rtt);
 }
 
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
