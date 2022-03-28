@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-
+#include "Globals/StatelessHelpers.h"
 #include "InputPawn.generated.h"
 
 struct UpdatePayload {
@@ -27,6 +27,8 @@ public:
 
     FOnFixedUpdate on_fixed_update;
 
+	InputState getInputState();
+
 protected:
 
 	// Called once on "Play"
@@ -48,10 +50,15 @@ private:
 
 	FVector2D m_velocity_input;
 	float m_speed_input;
+	InputState currentState;
 
 	void UseSlowSpeed();
 	void UseNormalSpeed();
 	void UseFastSpeed();
+
+	void ReleaseKey_Speed1();
+	void ReleaseKey_Speed2();
+	void ReleaseKey_Speed3();
 
 	void HorizontalAxis(float input);
 	void VerticalAxis(float input);

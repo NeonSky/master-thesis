@@ -79,9 +79,11 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 
 	this->update_mesh(0.02f);
 
-	TArray<float> h_rtt_r_channel_data;
-	m_shader_models_module.ComputeSerialization(ewave_h_rtt, serialization_rtt, h_rtt_r_channel_data);
-	data_collector->saveDataToFile(h_rtt_r_channel_data);
+	//TArray<float> h_rtt_r_channel_data;
+	//m_shader_models_module.ComputeSerialization(ewave_h_rtt, serialization_rtt, h_rtt_r_channel_data);
+	// data_collector->saveeWaveDataToFile(h_rtt_r_channel_data);
+
+	data_collector->collectInputData(input_pawn->getInputState());
 }
 
 TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points, FVector2D ws_boat_coord) {

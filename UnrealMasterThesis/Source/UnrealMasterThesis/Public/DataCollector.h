@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
+#include "Globals/StatelessHelpers.h"
 #include "DataCollector.generated.h"
 
 
@@ -24,11 +25,20 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void collectBoatData(FVector boatPos);
-	void saveDataToFile(TArray<float>& data);
+	
+	void collectInputData(InputState state);
+
+	void saveeWaveDataToFile(TArray<float>& data);
 	void saveTextureToFile(UTextureRenderTarget2D* rtt);
+	void saveInputToFile();
 
 
 private:
 	TArray<FVector> boatPositions;
+	TArray<InputState> inputStates;
 	int frameNumber = 0;
+	int framesToCollect = 60 * 5;
+	bool shouldCollectBoatData = false;
+	bool shouldCollecteWaveTextures = false;
+	bool shouldCollectInputStates = true;
 };
