@@ -42,7 +42,7 @@ public:
 		UTextureRenderTarget2D* copy_rtt,
 		float scale);
 
-	void ComputeSerialization(UTextureRenderTarget2D* input_rtt, UTextureRenderTarget2D* serialize_rtt);
+	void ComputeSerialization(UTextureRenderTarget2D* input_rtt, UTextureRenderTarget2D* serialize_rtt, TArray<float>& out_param);
 
 	void ComputeObstruction(
 		UTextureRenderTarget2D* boat_rtt,

@@ -24,10 +24,11 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void collectBoatData(FVector boatPos);
-	void saveBoatDataToFile();
+	void saveDataToFile(TArray<float>& data);
 	void saveTextureToFile(UTextureRenderTarget2D* rtt);
 
 
 private:
 	TArray<FVector> boatPositions;
+	int frameNumber = 0;
 };

@@ -193,7 +193,7 @@ void ShaderModelsModule::ComputeScale(
 
 }
 
-void ShaderModelsModule::ComputeSerialization(UTextureRenderTarget2D* input_rtt, UTextureRenderTarget2D* serialize_rtt) {
+void ShaderModelsModule::ComputeSerialization(UTextureRenderTarget2D* input_rtt, UTextureRenderTarget2D* serialize_rtt, TArray<float>& out_param) {
 	TShaderMapRef<SerializeShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	UTextureRenderTarget2D* input_rtt_param = input_rtt;
@@ -216,12 +216,12 @@ void ShaderModelsModule::ComputeSerialization(UTextureRenderTarget2D* input_rtt,
 	fence.BeginFence();
 	fence.Wait();
 
-	TArray<float> rChannel_raw32bit;
+	// TArray<float> rChannel_raw32bit;
 	for (auto color16 : data) {
 		float color = RECOVER_F32(color16);
-		rChannel_raw32bit.Add(color);
+		out_param.Add(color);
 	}
-	int b = 1;
+	// int b = 1;
 }
 
 void ShaderModelsModule::ComputeObstruction(

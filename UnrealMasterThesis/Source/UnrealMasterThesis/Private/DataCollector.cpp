@@ -41,14 +41,24 @@ void UDataCollector::collectBoatData(FVector boatPos) {
 	boatPositions.Add(boatPos);
 }
 
-void UDataCollector::saveBoatDataToFile() {
-	FString fname;
+void UDataCollector::saveDataToFile(TArray<float>& data) {
+	FString fname = *FString(TEXT("TempTestData/TestData") + FString::FromInt(frameNumber++) + TEXT(".txt"));
 	FString AbsoluteFilePath = FPaths::ProjectDir() + fname;
 
-	FString textToSave;
-
+	FString textToSave = TEXT("Test\n");
+	int i = 0;
+	for (float f : data) {
+		FString floatString = FString::SanitizeFloat(f);
+		textToSave.Append(TEXT("r: ") + floatString + TEXT(", "));
+		if (i >= 255) { 
+			textToSave.Append(TEXT(" \n"));
+			i = 0; 
+		}
+		i++;
+	}
+	//UE_LOG(LogTemp, Error, TEXT("\n\nTEST: %f\n\n"), data[256]);
 	//UE_LOG(LogTemp, Error, TEXT("Saving to file: %s"), AbsoluteFilePath);
-	//FFileHelper::SaveStringToFile(textToSave, *SaveDirectory)
+	FFileHelper::SaveStringToFile(textToSave, *AbsoluteFilePath);
 }
 
 void UDataCollector::saveTextureToFile(UTextureRenderTarget2D* rtt) {
