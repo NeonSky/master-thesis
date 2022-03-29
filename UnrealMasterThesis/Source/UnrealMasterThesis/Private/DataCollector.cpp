@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "DataCollector.h"
 #include "ImageUtils.h"
+#include "Serialization/JsonSerializer.h"
 #include "Serialization/BufferArchive.h"
 #include "Engine/TextureRenderTarget2D.h"
 
@@ -79,7 +80,7 @@ void UDataCollector::collectInputData(InputState state) {
 }
 
 void UDataCollector::saveInputToFile() {
-	FString fname = *FString(TEXT("SavedInputData/TestData") + FString::FromInt(frameNumber) + TEXT(".txt"));
+	FString fname = *FString(TEXT("SavedInputData/TestData.json"));
 	FString AbsoluteFilePath = FPaths::ProjectDir() + fname;
 
 	FString textToSave = TEXT("{\n\t\"array\":[\n");
@@ -109,6 +110,34 @@ void UDataCollector::saveInputToFile() {
 	//UE_LOG(LogTemp, Error, TEXT("\n\nTEST: %f\n\n"), data[256]);
 	//UE_LOG(LogTemp, Error, TEXT("Saving to file: %s"), AbsoluteFilePath);
 	FFileHelper::SaveStringToFile(textToSave, *AbsoluteFilePath);
+}
+
+void UDataCollector::readInputJSON() {
+	FString fname = *FString(TEXT("SavedInputData/TestData.json"));
+	FString AbsoluteFilePath = FPaths::ProjectDir() + fname;
+
+	FString inputData;
+	bool success = FFileHelper::LoadFileToString(inputData, *AbsoluteFilePath);
+	inputStates.Empty();
+	if (success) {
+		TSharedPtr<FJsonObject> JsonParsed;
+		TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(inputData);
+		success = FJsonSerializer::Deserialize(JsonReader, JsonParsed);
+		if (success) {
+			auto JsonArray = JsonParsed->GetArrayField("array");
+			for (int i = 0; i < JsonArray.Num(); i++) {
+				auto obj = JsonArray[i]->AsObject();
+				InputState state;
+				state.speed_1 = obj->GetIntegerField("speed_1");
+				state.speed_2 = obj->GetIntegerField("speed_2");
+				state.speed_3 = obj->GetIntegerField("speed_3");
+				state.horizontal = obj->GetIntegerField("horizontal");
+				state.vertical = obj->GetIntegerField("vertical");
+				inputStates.Add(state);
+			}
+		}
+	}
+	int a = 0;
 }
 
 // TODO remove
