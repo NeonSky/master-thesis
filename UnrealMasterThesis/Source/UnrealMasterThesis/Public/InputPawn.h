@@ -26,6 +26,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
     FOnFixedUpdate on_fixed_update;
+	TArray<InputState> inputSequence;
+	bool playBackInputSequence = true;
 
 	InputState getInputState();
 
@@ -50,15 +52,12 @@ private:
 
 	FVector2D m_velocity_input;
 	float m_speed_input;
+	int frame = 0;
 	InputState currentState;
 
 	void UseSlowSpeed();
 	void UseNormalSpeed();
 	void UseFastSpeed();
-
-	void ReleaseKey_Speed1();
-	void ReleaseKey_Speed2();
-	void ReleaseKey_Speed3();
 
 	void HorizontalAxis(float input);
 	void VerticalAxis(float input);

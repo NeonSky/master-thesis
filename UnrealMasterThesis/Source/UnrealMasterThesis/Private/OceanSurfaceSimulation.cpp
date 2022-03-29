@@ -62,11 +62,12 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	m_shader_models_module.Clear(this->ewave_vPrev_rtt);
 
 	input_pawn->on_fixed_update.AddUObject<AOceanSurfaceSimulation>(this, &AOceanSurfaceSimulation::update);
-
-	
-	
-	// data_collector->saveTextureToFile(butterfly_rtt);
-	data_collector->readInputJSON();
+	data_collector->inputPawn = input_pawn;
+	data_collector->shaderModule = &m_shader_models_module;
+	data_collector->eWave_h_rtt = ewave_h_rtt;
+	data_collector->eWave_v_rtt = ewave_v_rtt;
+	data_collector->serialization_rtt = serialization_rtt;
+	data_collector->readInputJSON(input_pawn->inputSequence);
 }
 
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
@@ -79,12 +80,6 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 	}
 
 	this->update_mesh(0.02f);
-
-	//TArray<float> h_rtt_r_channel_data;
-	//m_shader_models_module.ComputeSerialization(ewave_h_rtt, serialization_rtt, h_rtt_r_channel_data);
-	// data_collector->saveeWaveDataToFile(h_rtt_r_channel_data);
-
-	//data_collector->collectInputData(input_pawn->getInputState());
 }
 
 TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points, FVector2D ws_boat_coord) {

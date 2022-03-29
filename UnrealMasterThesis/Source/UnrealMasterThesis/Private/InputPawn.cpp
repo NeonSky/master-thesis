@@ -12,10 +12,18 @@ void AInputPawn::BeginPlay() {
 
     m_velocity_input = FVector2D(0.0f);
     m_speed_input = slow_speed;
+    currentState.speed = slow_speed;
 }
 
 void AInputPawn::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
+
+    if (playBackInputSequence && frame < inputSequence.Num()) {
+        InputState& state = inputSequence[frame++];
+        m_speed_input = state.speed;
+        m_velocity_input.X = state.horizontal;
+        m_velocity_input.Y = state.vertical;
+    }
 
     UpdatePayload payload;
     payload.speed_input = m_speed_input;
@@ -33,10 +41,6 @@ void AInputPawn::SetupPlayerInputComponent(class UInputComponent* inputComponent
   inputComponent->BindAction("Speed2", IE_Pressed, this, &AInputPawn::UseNormalSpeed);
   inputComponent->BindAction("Speed3", IE_Pressed, this, &AInputPawn::UseFastSpeed);
 
-  inputComponent->BindAction("Speed1", IE_Released, this, &AInputPawn::ReleaseKey_Speed1);
-  inputComponent->BindAction("Speed2", IE_Released, this, &AInputPawn::ReleaseKey_Speed2);
-  inputComponent->BindAction("Speed3", IE_Released, this, &AInputPawn::ReleaseKey_Speed3);
-
   inputComponent->BindAxis("HorizontalAxis", this, &AInputPawn::HorizontalAxis);
   inputComponent->BindAxis("VerticalAxis", this, &AInputPawn::VerticalAxis);
 }
@@ -47,35 +51,25 @@ InputState AInputPawn::getInputState() {
 
 void AInputPawn::UseSlowSpeed()   { 
     m_speed_input = slow_speed; 
-    currentState.speed_1 = 1; 
+    currentState.speed = slow_speed;
 }
 
 void AInputPawn::UseNormalSpeed() { 
     m_speed_input = normal_speed; 
-    currentState.speed_2 = 1; 
+    currentState.speed = normal_speed;
 }
 
 void AInputPawn::UseFastSpeed() { 
     m_speed_input = fast_speed;  
-    currentState.speed_3 = 1;
-}
-
-void AInputPawn::ReleaseKey_Speed1() { 
-    currentState.speed_1 = 0; 
-}
-void AInputPawn::ReleaseKey_Speed2() { 
-    currentState.speed_2 = 0; 
-}
-void AInputPawn::ReleaseKey_Speed3() { 
-    currentState.speed_3 = 0; 
+    currentState.speed = fast_speed;
 }
 
 void AInputPawn::HorizontalAxis(float input) {
   m_velocity_input.X = input;
-  currentState.horizontal = (input > 0) ? (1) : ((input < 0) ? (-1) : (0));
+  currentState.horizontal = input;
 }
 
 void AInputPawn::VerticalAxis(float input) {
   m_velocity_input.Y = input;
-  currentState.vertical = (input > 0) ? (1) : ((input < 0) ? (-1) : (0));
+  currentState.vertical = input;
 }
