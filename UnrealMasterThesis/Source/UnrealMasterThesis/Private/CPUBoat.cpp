@@ -187,7 +187,7 @@ void ACPUBoat::UpdateReadbackQueue() {
       FVector v_ws = transform.TransformPosition(v);
       sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
     }
-    TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points, FVector2D(m_rigidbody.position.X, m_rigidbody.position.Y));
+    TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
 
     m_readback_queue.push(elevations);
   }
@@ -513,4 +513,8 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r) {
     fence.BeginFence();
     fence.Wait();
   }
+}
+
+FVector2D ACPUBoat::WorldPosition() {
+  return FVector2D(m_rigidbody.position.X, m_rigidbody.position.Y);
 }

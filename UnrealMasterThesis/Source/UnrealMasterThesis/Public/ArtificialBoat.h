@@ -20,6 +20,7 @@ public:
     virtual UTextureRenderTarget2D* GetBoatRTT() override;
     virtual FeWaveRTTs GeteWaveRTTs() override;
     virtual TRefCountPtr<FRDGPooledBuffer> GetSubmergedTriangles() override;
+	virtual FVector2D WorldPosition() override;
 
 protected:
 

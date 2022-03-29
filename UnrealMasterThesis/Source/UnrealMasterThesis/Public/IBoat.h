@@ -38,4 +38,5 @@ public:
     virtual UTextureRenderTarget2D* GetBoatRTT() = 0;
     virtual FeWaveRTTs GeteWaveRTTs() = 0;
     virtual TRefCountPtr<FRDGPooledBuffer> GetSubmergedTriangles() = 0;
+	virtual FVector2D WorldPosition() = 0;
 };

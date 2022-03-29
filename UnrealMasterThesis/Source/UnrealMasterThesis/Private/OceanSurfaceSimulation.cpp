@@ -78,26 +78,27 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 	this->update_mesh(0.02f);
 }
 
-TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points, FVector2D ws_boat_coord) {
+TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points) {
 
 	TArray<float> elevation_output;
 
-	// TODO: update SampleElevationPoints such that it takes a list of RTTs instead
+	TArray<UTextureRenderTarget2D*> wake_rtts;
+	TArray<FVector2D> ws_boat_coords;
+
 	for (auto boat : boats) {
 		if (boat) {
-			FeWaveRTTs ewave_rtts = boat->GeteWaveRTTs();
-
-			m_shader_models_module.SampleElevationPoints(
-				this->spectrum_y_rtt,
-				ewave_rtts.eWaveH,
-				ws_boat_coord,
-				sample_points,
-				&elevation_output
-			);
-
-			break;
+			wake_rtts.Add(boat->GeteWaveRTTs().eWaveH);
+			ws_boat_coords.Add(boat->WorldPosition());
 		}
 	}
+
+	m_shader_models_module.SampleElevationPoints(
+		this->spectrum_y_rtt,
+		wake_rtts,
+		ws_boat_coords,
+		sample_points,
+		&elevation_output
+	);
 
 	return elevation_output;
 }

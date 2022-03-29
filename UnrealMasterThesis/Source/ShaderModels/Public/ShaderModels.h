@@ -54,8 +54,8 @@ public:
 
 	void SampleElevationPoints(
 		UTextureRenderTarget2D* elevations,
-		UTextureRenderTarget2D* wake_rtt,
-		FVector2D ws_boat_coord,
+		TArray<UTextureRenderTarget2D*> wake_rtts,
+		TArray<FVector2D> ws_boat_coords,
 		TArray<FVector2D> input_sample_coordinates,
 		TArray<float>* output);
 

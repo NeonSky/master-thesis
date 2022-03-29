@@ -1,5 +1,7 @@
 #include "ArtificialBoat.h"
 
+#include "Globals/StatelessHelpers.h"
+
 #include "Engine/TextureRenderTarget2D.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -80,4 +82,8 @@ FeWaveRTTs AArtificialBoat::GeteWaveRTTs() {
 
 TRefCountPtr<FRDGPooledBuffer> AArtificialBoat::GetSubmergedTriangles() {
     return m_submerged_triangles;
+}
+
+FVector2D AArtificialBoat::WorldPosition() {
+  return FVector2D(this->GetActorLocation().X, this->GetActorLocation().Y) / METERS_TO_UNREAL_UNITS;
 }

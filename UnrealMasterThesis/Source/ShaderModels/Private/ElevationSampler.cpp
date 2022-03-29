@@ -1,10 +1,14 @@
 #include "ElevationSampler.h"
 
+#include <algorithm>
+
 #include "RenderGraph.h"
 #include "RenderTargetPool.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
+#include "TextureResource.h"
+#include "Engine/Texture2DArray.h"
 
 IMPLEMENT_GLOBAL_SHADER(ElevationSamplerShader, "/Project/UnrealMasterThesis/ElevationSampler.usf", "MainCompute", SF_Compute);
 
@@ -37,8 +41,8 @@ FRDGTextureRef register_texture2(
 void ElevationSamplerShader::BuildAndExecuteGraph(
 	FRHICommandListImmediate &RHI_cmd_list,
 	UTextureRenderTarget2D* elevations,
-	UTextureRenderTarget2D* wake_rtt,
-	FVector2D ws_boat_coord,
+	TArray<UTextureRenderTarget2D*> wake_rtts,
+	TArray<FVector2D> ws_boat_coords,
 	TArray<FVector2D> input_sample_coordinates,
     TArray<float>* output) {
 
@@ -52,7 +56,13 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
 
   // elevation_texture
 	PassParameters->elevation_texture = register_texture2(graph_builder, elevations, "input_elevations");
-	PassParameters->wake_texture = register_texture2(graph_builder, wake_rtt, "wake_rtt");
+
+	PassParameters->wake_texture = register_texture2(graph_builder, wake_rtts[0], "wake_rtt");
+
+	// See comment in ElevationSampler.usf
+	if (wake_rtts.Num() > 1) {
+		PassParameters->wake_texture2 = register_texture2(graph_builder, wake_rtts[1], "wake_rtt2");
+	}
 
   // input_sample_coordinates
 	FRDGBufferRef InputSampleCoordinates = CreateStructuredBuffer(
@@ -79,7 +89,9 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
   FRDGTextureUAVRef tex_uav_ref = graph_builder.CreateUAV(OutTextureUAVDesc);
 	PassParameters->output_texture = tex_uav_ref;
 
-    PassParameters->ws_boat_coord = ws_boat_coord;
+	for (int i = 0; i < std::min(PassParameters->ws_boat_coords.Num(), ws_boat_coords.Num()); i++) {
+		PassParameters->ws_boat_coords[i] = ws_boat_coords[i];
+	}
 
   // Call compute shader
 	TShaderMapRef<ElevationSamplerShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));

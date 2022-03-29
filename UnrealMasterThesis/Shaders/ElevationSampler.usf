@@ -2,18 +2,47 @@
 
 #include "Common.ush"
 
+#define BOAT_COUNT 2
+
 Texture2D<float4> elevation_texture;
 Texture2D<float4> wake_texture;
+
+// Unreal supports texture arrays, but they are exposed as different textures in HLSL shader: https://mcro.de/c/rdg#:~:text=uniform%20variable%20names.-,Shader%20(USL/HLSL)%3A,-RWTexture2D%3Cfloat4%3E%20OutputMips_0_SceneColor
+// This is also prelevant in the engine code, which is not able to index the textures of an array.
+// Here is a relevant post (not ours): https://forums.unrealengine.com/t/global-shaders-and-array-of-textures/501357
+// Also presented in the official docs (slide 61): https://epicgames.ent.box.com/s/ul1h44ozs0t2850ug0hrohlzm53kxwrz
+//
+// In our case, we simply roll with this and define an indepent wake texture here, instead of using an array of them.
+// Had we needed more wake textures, then we would have generated this shader using a Python script.
+Texture2D<float4> wake_texture2;
+
 StructuredBuffer<float2> input_sample_coordinates;
 RWTexture2D<float4> output_texture;
 
-float2 ws_boat_coord;
+float2 ws_boat_coords[2];
 
 [numthreads(N_THREADS_X, 1, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     float2 ws_coord = input_sample_coordinates[id.x];
-    float elevation = sample_elevation(elevation_texture, wake_texture, ws_coord, ws_boat_coord);
+    // float elevation = sample_elevation(elevation_texture, wake_textures[0], ws_coord, ws_boat_coord);
+
+    SamplerState Sampler {
+        Filter = MIN_MAG_MIP_LINEAR;
+        AddressU = Wrap;
+        AddressV = Wrap;
+    };
+
+    float2 uv = sample_ambient_elevation(ws_coord);
+    float elevation = elevation_texture.SampleLevel(Sampler, uv, 0).r;
+
+    uv = sample_wake_elevation(ws_coord, ws_boat_coords[0]);
+    elevation += 5.0 * wake_texture.SampleLevel(Sampler, float3(uv.x, uv.y, 0.0), 0).r;
+
+    #if BOAT_COUNT > 1
+    uv = sample_wake_elevation(ws_coord, ws_boat_coords[1]);
+    elevation += 5.0 * wake_texture2.SampleLevel(Sampler, float3(uv.x, uv.y, 0.0), 0).r;
+    #endif
 
     store_f32(output_texture, uint2(id.x,0), elevation);
 

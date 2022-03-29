@@ -1,5 +1,7 @@
 #include "GPUBoat.h"
 
+#include "Globals/StatelessHelpers.h"
+
 #include "Kismet/GameplayStatics.h"
 
 AGPUBoat::AGPUBoat() {}
@@ -38,4 +40,8 @@ FeWaveRTTs AGPUBoat::GeteWaveRTTs() {
 
 TRefCountPtr<FRDGPooledBuffer> AGPUBoat::GetSubmergedTriangles() {
     return m_submerged_triangles;
+}
+
+FVector2D AGPUBoat::WorldPosition() {
+  return FVector2D(camera_target->GetActorLocation().X, camera_target->GetActorLocation().Y) / METERS_TO_UNREAL_UNITS;
 }
