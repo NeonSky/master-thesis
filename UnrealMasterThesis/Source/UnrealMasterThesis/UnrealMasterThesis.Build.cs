@@ -15,6 +15,7 @@ public class UnrealMasterThesis : ModuleRules {
 			"ProceduralMeshComponent",
 			"RHI",
 			"RenderCore",
+			"Json",
 			"ShaderModels"
 		});
 

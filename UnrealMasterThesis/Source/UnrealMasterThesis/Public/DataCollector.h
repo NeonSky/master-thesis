@@ -32,6 +32,8 @@ public:
 	void saveTextureToFile(UTextureRenderTarget2D* rtt);
 	void saveInputToFile();
 
+	void readInputJSON();
+
 
 private:
 	TArray<FVector> boatPositions;
