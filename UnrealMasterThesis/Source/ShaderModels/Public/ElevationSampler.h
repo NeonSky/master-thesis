@@ -14,8 +14,7 @@ public:
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, ) 
 
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, elevation_texture)
-		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, wake_texture)
-		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, wake_texture2)
+		SHADER_PARAMETER_RDG_TEXTURE_ARRAY(Texture2D<FVector4>, wake_textures, [2])
 
 		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<FVector2D>, input_sample_coordinates)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, output_texture)

@@ -81,7 +81,7 @@ void ACPUBoat::Update(UpdatePayload update_payload) {
   Rigidbody prev_rigidbody = m_rigidbody;
 
   m_speed_input = update_payload.speed_input;
-  m_velocity_input = update_payload.velocity_input;
+  m_velocity_input = use_p2_inputs ? update_payload.velocity_input2 : update_payload.velocity_input;
 
   FlushPersistentDebugLines(this->GetWorld());
 

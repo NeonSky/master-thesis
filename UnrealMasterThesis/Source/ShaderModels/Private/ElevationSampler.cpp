@@ -57,11 +57,14 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
   // elevation_texture
 	PassParameters->elevation_texture = register_texture2(graph_builder, elevations, "input_elevations");
 
-	PassParameters->wake_texture = register_texture2(graph_builder, wake_rtts[0], "wake_rtt");
+	PassParameters->wake_textures[0] = register_texture2(graph_builder, wake_rtts[0], "wake_rtt");
 
 	// See comment in ElevationSampler.usf
 	if (wake_rtts.Num() > 1) {
-		PassParameters->wake_texture2 = register_texture2(graph_builder, wake_rtts[1], "wake_rtt2");
+		PassParameters->wake_textures[1] = register_texture2(graph_builder, wake_rtts[1], "wake_rtt2");
+	} else {
+		// Assign arbitrary valid texture to prevent crash. It will not be used anyway.
+		PassParameters->wake_textures[1] = register_texture2(graph_builder, wake_rtts[0], "wake_rtt2");
 	}
 
   // input_sample_coordinates
