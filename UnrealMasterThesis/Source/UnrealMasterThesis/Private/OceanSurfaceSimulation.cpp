@@ -61,11 +61,12 @@ void AOceanSurfaceSimulation::BeginPlay() {
 
 
 	input_pawn->on_fixed_update.AddUObject<AOceanSurfaceSimulation>(this, &AOceanSurfaceSimulation::update);
-
-	
-	
-	// data_collector->saveTextureToFile(butterfly_rtt);
-	data_collector->readInputJSON();
+	data_collector->inputPawn = input_pawn;
+	data_collector->shaderModule = &m_shader_models_module;
+	data_collector->eWave_h_rtt = ewave_h_rtt;
+	data_collector->eWave_v_rtt = ewave_v_rtt;
+	data_collector->serialization_rtt = serialization_rtt;
+	data_collector->readInputJSON(input_pawn->inputSequence);
 }
 
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
