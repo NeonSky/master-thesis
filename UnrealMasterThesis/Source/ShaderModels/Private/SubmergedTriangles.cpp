@@ -86,10 +86,10 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
         PassParameters,
         FIntVector(N/2, 1, 1));
 
-    TRefCountPtr<FRDGPooledBuffer> PooledComputeTarget;
-    graph_builder.QueueBufferExtraction(rdg_buffer_ref, &PooledComputeTarget);
+    // TRefCountPtr<FRDGPooledBuffer> PooledComputeTarget;
+    graph_builder.QueueBufferExtraction(rdg_buffer_ref, output_buffer);
 
     graph_builder.Execute();
 
-    *output_buffer = PooledComputeTarget;
+    // *output_buffer = PooledComputeTarget;
 }

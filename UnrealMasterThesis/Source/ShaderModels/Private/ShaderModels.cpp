@@ -277,10 +277,13 @@ void ShaderModelsModule::UpdateGPUBoat(
 	TRefCountPtr<FRDGPooledBuffer>& submerged_triangles_buffer,
 	AActor* update_target) {
 
+	TArray<FFloat16Color> data;
 	{
 		TShaderMapRef<SubmergedTrianglesShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+		TShaderMapRef<GPUBoatShader> shader2(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+
 		ENQUEUE_RENDER_COMMAND(shader)(
-			[shader, collision_mesh, elevation_texture, wake_texture, input_output, &submerged_triangles_buffer](FRHICommandListImmediate& RHI_cmd_list) {
+			[shader, shader2, speed_input, velocity_input, collision_mesh, elevation_texture, wake_texture, input_output, &submerged_triangles_buffer, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
 				shader->BuildAndExecuteGraph(
 					RHI_cmd_list,
 					collision_mesh,
@@ -289,19 +292,15 @@ void ShaderModelsModule::UpdateGPUBoat(
 					wake_texture,
 					&submerged_triangles_buffer
 				);
-			}); 
-		// TODO: Maybe not needed? In Vulkan we would use a semaphore here instead of a fence.
-		FRenderCommandFence fence;
-		fence.BeginFence();
-		fence.Wait();
-	}
 
-	TArray<FFloat16Color> data;
-	{
-		TShaderMapRef<GPUBoatShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
-		ENQUEUE_RENDER_COMMAND(shader)(
-			[shader, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, input_output, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
-				shader->BuildAndExecuteGraph(
+				// Works?
+				// if (submerged_triangles_buffer == nullptr) {
+				// 	FRenderCommandFence fence;
+				// 	fence.BeginFence();
+				// 	fence.Wait();
+				// }
+
+				shader2->BuildAndExecuteGraph(
 					RHI_cmd_list,
 					speed_input,
 					velocity_input,
@@ -312,6 +311,29 @@ void ShaderModelsModule::UpdateGPUBoat(
 					update_target ? (&data) : nullptr
 				);
 			}); 
+
+		// TODO: Remove. This implicitly causes a CPU stall, while we simply want to move a buffer from one shader to another.
+		// FRenderCommandFence fence;
+		// fence.BeginFence();
+		// fence.Wait();
+	}
+
+	// TArray<FFloat16Color> data;
+	{
+		// TShaderMapRef<GPUBoatShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+		// ENQUEUE_RENDER_COMMAND(shader)(
+		// 	[shader, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, input_output, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
+		// 		shader->BuildAndExecuteGraph(
+		// 			RHI_cmd_list,
+		// 			speed_input,
+		// 			velocity_input,
+		// 			elevation_texture,
+		// 			submerged_triangles_buffer,
+		// 			input_output,
+		// 			readback_texture,
+		// 			update_target ? (&data) : nullptr
+		// 		);
+		// 	}); 
 	}
 
 	if (update_target) {
