@@ -61,11 +61,12 @@ CustomUAV create_UAV(
   return uav;
 }
 
-TArray<FFloat16Color> create_init_data(int N, float L, std::function<float (FVector2D)> wave_spectrum) {
+TArray<FFloat16Color> create_init_data(int N, float L, std::function<float (FVector2D)> wave_spectrum, int seed) {
 
   std::random_device rd{};
   std::mt19937 rng{rd()};
   std::normal_distribution<float> dist;
+  rng.seed(seed);
 
   TArray<FFloat16Color> res;
 
@@ -99,11 +100,11 @@ TArray<FFloat16Color> create_init_data(int N, float L, std::function<float (FVec
 
 }
 
-void FourierComponentsShader::Buildh0Textures(int N, float L, std::function<float (FVector2D)> wave_spectrum) {
+void FourierComponentsShader::Buildh0Textures(int N, float L, std::function<float (FVector2D)> wave_spectrum, int seed) {
 
   this->m_N = N;
 
-  TArray<FFloat16Color> init_data = create_init_data(N, L, wave_spectrum);
+  TArray<FFloat16Color> init_data = create_init_data(N, L, wave_spectrum, seed);
 
   //////////////////////////////
   //////////////////////////////
