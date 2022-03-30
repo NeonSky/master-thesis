@@ -88,6 +88,10 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), meta=(UIMin = "0.01", UIMax = "10.0"))
 	bool should_update_wakes;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), meta = (UIMin = "0", UIMax = "10000"))
+	int oceanSeed;
+	float oceanTime;
+
 	int32 N; // Resolution in terms of vertices per horizontal unit axis.
 
 	ShaderModelsModule m_shader_models_module; // Reference to the ShaderModels module

@@ -29,6 +29,11 @@ AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
 void AOceanSurfaceSimulation::BeginPlay() {
 	Super::BeginPlay();
 
+	if (oceanSeed == 0) {
+		oceanSeed = FMath::RandRange(1, 10000);
+	}
+	oceanTime = oceanSeed;
+
 	// Check that RTTs have correct dimensions.
 	// The alternative of resizing RTTs during runtime doesn't appear to be a great idea: https://answers.unrealengine.com/questions/177345/changing-rendertexture-size-at-runtime-dramaticall.html?sort=oldest
 	this->N = pow(2, this->butterfly_rtt->SizeX); // ensures power of 2
