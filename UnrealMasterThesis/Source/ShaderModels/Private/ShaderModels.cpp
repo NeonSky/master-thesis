@@ -94,12 +94,12 @@ void ShaderModelsModule::FFT_Forward(UTextureRenderTarget2D* butterfly, UTexture
 	});
 }
 
-void ShaderModelsModule::Buildh0Textures(int N, float L, std::function<float (FVector2D)> wave_spectrum) {
+void ShaderModelsModule::Buildh0Textures(int N, float L, std::function<float (FVector2D)> wave_spectrum, int seed) {
  	TShaderMapRef<FourierComponentsShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, N, L, wave_spectrum](FRHICommandListImmediate& RHI_cmd_list) {
-			shader->Buildh0Textures(N, L, wave_spectrum);
+		[shader, N, L, wave_spectrum, seed](FRHICommandListImmediate& RHI_cmd_list) {
+			shader->Buildh0Textures(N, L, wave_spectrum, seed);
 		}); 
 
 }
