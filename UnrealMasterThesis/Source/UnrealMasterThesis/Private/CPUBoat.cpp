@@ -500,5 +500,5 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r) {
   }
 }
 
-FVector ACPUBoat::getPosition() { return GetActorLocation() / METERS_TO_UNREAL_UNITS;}
-FQuat ACPUBoat::getRotation() { return GetActorQuat(); }
+FVector ACPUBoat::getPosition() { return m_rigidbody.position; }
+FQuat ACPUBoat::getRotation() { return m_rigidbody.orientation; }

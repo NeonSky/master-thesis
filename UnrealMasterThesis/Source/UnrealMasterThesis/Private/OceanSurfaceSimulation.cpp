@@ -30,6 +30,11 @@ AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
 void AOceanSurfaceSimulation::BeginPlay() {
 	Super::BeginPlay();
 
+	if (oceanSeed == 0) {
+		oceanSeed = FMath::RandRange(1, 10000);
+	}
+	oceanTime = oceanSeed;
+
 	// Check that RTTs have correct dimensions.
 	// The alternative of resizing RTTs during runtime doesn't appear to be a great idea: https://answers.unrealengine.com/questions/177345/changing-rendertexture-size-at-runtime-dramaticall.html?sort=oldest
 	this->N = pow(2, this->butterfly_rtt->SizeX); // ensures power of 2
@@ -88,7 +93,10 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 				FVector boatPos = boat->getPosition();
 				data_collector->boatPositions.Add(boat->getPosition());
 				// boatOrientations.Add(boat->getOrientation()); // TODO
-			}	
+			}
+			else {
+				data_collector->boatPositions.Add(FVector(0.0f, 0.0f, 0.0f));
+			}
 		}
 	}
 }
@@ -240,13 +248,13 @@ void AOceanSurfaceSimulation::create_mesh() {
 
 void AOceanSurfaceSimulation::update_mesh(float dt) {
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-
+	oceanTime += 0.02;
 	// Update non-interactive ocean.
-	m_shader_models_module.ComputeFourierComponents(realtimeSeconds, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
+	/*m_shader_models_module.ComputeFourierComponents(oceanSeed, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
 
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_x_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
-	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
+	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);*/
 
 	if (should_update_wakes) {
 		// Update interactive wake simulation on top of the non-interactive ocean
@@ -259,7 +267,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, this->ewave_h_rtt, this->ewave_v_rtt, this->ewave_hPrev_rtt, this->ewave_vPrev_rtt, 1);
 				m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_h_rtt); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
 				m_shader_models_module.FFT_Forward(this->butterfly_rtt, this->ewave_v_rtt);
-				m_shader_models_module.ComputeeWave(dt, L, this->ewave_h_rtt, this->ewave_v_rtt);
+				m_shader_models_module.ComputeeWave(0.02, L, this->ewave_h_rtt, this->ewave_v_rtt);
 				m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_h_rtt, 0);
 				m_shader_models_module.FFT(this->butterfly_rtt, this->ewave_v_rtt, 0);
 				m_shader_models_module.ComputeScale(this->ewave_h_rtt, this->ewave_hPrev_rtt, ewave_scale);
