@@ -250,10 +250,6 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 				UTextureRenderTarget2D* boat_rtt = boat->GetBoatRTT();
 				TRefCountPtr<FRDGPooledBuffer> submerged_triangles = boat->GetSubmergedTriangles();
 
-				// if (submerged_triangles == nullptr) {
-				// 	continue;
-				// }
-
 				FeWaveRTTs ewave_rtts = boat->GeteWaveRTTs();
 
 				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveH, ewave_rtts.eWaveV, ewave_rtts.eWaveH_prev, ewave_rtts.eWaveV_prev, 1);

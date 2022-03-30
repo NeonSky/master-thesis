@@ -19,6 +19,10 @@
 #include "ShaderCore.h" 
 #include "Engine/TextureRenderTarget2D.h"
 
+struct Test {
+	TRefCountPtr<FRDGPooledBuffer> buffer;
+};
+
 void ShaderModelsModule::StartupModule() {
 	UE_LOG(LogTemp, Warning, TEXT("ShaderModelsModule::StartupModule()"));
 
@@ -283,37 +287,41 @@ void ShaderModelsModule::UpdateGPUBoat(
 	submerged_triangles_buffer = nullptr;
 
 	// auto callback = [&](TRefCountPtr<FRDGPooledBuffer> submerged_triangles){
+	// 	UE_LOG(LogTemp, Warning, TEXT("Render thread? %i"), IsInRenderingThread()); // 1
 	// 	UE_LOG(LogTemp, Warning, TEXT("This is a test"));
-	// 	UE_LOG(LogTemp, Warning, TEXT("valid? %i"), submerged_triangles.IsValid());
+	// 	UE_LOG(LogTemp, Warning, TEXT("valid? %i"), submerged_triangles.IsValid()); // 1
 
-	// 	TArray<FFloat16Color> data;
-	// 	TShaderMapRef<GPUBoatShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
-	// 	ENQUEUE_RENDER_COMMAND(shader)(
-	// 		[shader, speed_input, velocity_input, elevation_texture, submerged_triangles, input_output, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) { // works
-	// 		// [shader, speed_input, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) { // works
-	// 		// [shader, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) { // works
+	// 	// TArray<FFloat16Color> data;
+	// 	// TShaderMapRef<GPUBoatShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+	// 	// ENQUEUE_RENDER_COMMAND(shader)(
+	// 	// 	[shader, speed_input, velocity_input, elevation_texture, submerged_triangles, input_output, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) { // works
+	// 	// 	// [shader, speed_input, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) { // works
+	// 	// 	// [shader, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) { // works
 
-	// 		UE_LOG(LogTemp, Warning, TEXT("valid2? %i"), submerged_triangles.IsValid()); // 1
-	// 	// 		// // UE_LOG(LogTemp, Warning, TEXT("step 4: %i"), submerged_triangles_buffer.IsValid()); // 1
-	// 	// 		// double start = FPlatformTime::Seconds();
-	// 	// 		// // while (!flag) {}
-	// 	// 		// while (!submerged_triangles_buffer.IsValid()) {}
-	// 	// 		// // while (!submerged_triangles_buffer.IsValid()) {}
-	// 	// 		// double end = FPlatformTime::Seconds();
-	// 	// 		// UE_LOG(LogTemp, Warning, TEXT("code executed in %f seconds."), end-start);
+	// 	// 	UE_LOG(LogTemp, Warning, TEXT("valid2? %i"), submerged_triangles.IsValid()); // 1
+	// 	// // 		// // UE_LOG(LogTemp, Warning, TEXT("step 4: %i"), submerged_triangles_buffer.IsValid()); // 1
+	// 	// // 		// double start = FPlatformTime::Seconds();
+	// 	// // 		// // while (!flag) {}
+	// 	// // 		// while (!submerged_triangles_buffer.IsValid()) {}
+	// 	// // 		// // while (!submerged_triangles_buffer.IsValid()) {}
+	// 	// // 		// double end = FPlatformTime::Seconds();
+	// 	// // 		// UE_LOG(LogTemp, Warning, TEXT("code executed in %f seconds."), end-start);
 
-	// 			shader->BuildAndExecuteGraph(
-	// 				RHI_cmd_list,
-	// 				speed_input,
-	// 				velocity_input,
-	// 				elevation_texture,
-	// 				submerged_triangles,
-	// 				input_output,
-	// 				readback_texture,
-	// 				update_target ? (&data) : nullptr
-	// 			);
-	// 		}); 
+	// 	// 		shader->BuildAndExecuteGraph(
+	// 	// 			RHI_cmd_list,
+	// 	// 			speed_input,
+	// 	// 			velocity_input,
+	// 	// 			elevation_texture,
+	// 	// 			submerged_triangles,
+	// 	// 			input_output,
+	// 	// 			readback_texture,
+	// 	// 			update_target ? (&data) : nullptr
+	// 	// 		);
+	// 	// 	}); 
 	// };
+
+	// static Test test_res;
+	// test_res.buffer = nullptr;
 
 	// UE_LOG(LogTemp, Warning, TEXT("step 1: %i"), submerged_triangles_buffer.IsValid()); // 0
 	TArray<FFloat16Color> data;
@@ -323,8 +331,11 @@ void ShaderModelsModule::UpdateGPUBoat(
 
 		// TODO: mutex?
 
+		// int test = 0;
+		// int test2 = 4;
 		ENQUEUE_RENDER_COMMAND(shader)(
-			// [callback, shader, shader2, speed_input, velocity_input, collision_mesh, elevation_texture, wake_texture, input_output, &submerged_triangles_buffer, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
+			// [callback, shader, speed_input, velocity_input, collision_mesh, elevation_texture, wake_texture, input_output, &submerged_triangles_buffer, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
+			// [shader, speed_input, velocity_input, collision_mesh, elevation_texture, wake_texture, input_output, &submerged_triangles_buffer, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
 			[shader, speed_input, velocity_input, collision_mesh, elevation_texture, wake_texture, input_output, &submerged_triangles_buffer, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
 
 				// UE_LOG(LogTemp, Warning, TEXT("step 2: %i"), submerged_triangles_buffer.IsValid()); // 0
@@ -338,26 +349,28 @@ void ShaderModelsModule::UpdateGPUBoat(
 					&submerged_triangles_buffer
 				);
 
+				// test = 5;
+
 				// callback(submerged_triangles_buffer);
 
 				// UE_LOG(LogTemp, Warning, TEXT("step 3: %i"), submerged_triangles_buffer.IsValid()); // 1
 				// while (!submerged_triangles_buffer.IsValid()) {}
 				// flag = true;
 
-				TShaderMapRef<GPUBoatShader> shader2(GetGlobalShaderMap(GMaxRHIFeatureLevel));
-				ENQUEUE_RENDER_COMMAND(shader2)(
-					[shader2, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, input_output, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) { // works
-					shader2->BuildAndExecuteGraph(
-						RHI_cmd_list,
-						speed_input,
-						velocity_input,
-						elevation_texture,
-						submerged_triangles_buffer,
-						input_output,
-						readback_texture,
-						update_target ? (&data) : nullptr
-					);
-				});
+				// TShaderMapRef<GPUBoatShader> shader2(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+				// ENQUEUE_RENDER_COMMAND(shader2)(
+				// 	[shader2, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, input_output, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) { // works
+				// 	shader2->BuildAndExecuteGraph(
+				// 		RHI_cmd_list,
+				// 		speed_input,
+				// 		velocity_input,
+				// 		elevation_texture,
+				// 		submerged_triangles_buffer,
+				// 		input_output,
+				// 		readback_texture,
+				// 		update_target ? (&data) : nullptr
+				// 	);
+				// });
 
 				// event = RHI_cmd_list.RenderThreadTaskFence(); // RHIThreadFence
 
@@ -365,7 +378,12 @@ void ShaderModelsModule::UpdateGPUBoat(
 				// RHI_cmd_list.FlushResources();
 				// RHI_cmd_list.SubmitCommandsAndFlushGPU();
 				// RHI_cmd_list.WaitOnRenderThreadTaskFence
+
+				// return 4;
 			}); 
+
+		// UE_LOG(LogTemp, Warning, TEXT("test  = %i"), test);
+		// UE_LOG(LogTemp, Warning, TEXT("test2 = %i"), test2);
 
 		// TODO: Remove. This implicitly causes a CPU stall, while we simply want to move a buffer from one shader to another.
 		// FRenderCommandFence fence;
@@ -373,9 +391,130 @@ void ShaderModelsModule::UpdateGPUBoat(
 		// fence.Wait();
 	}
 
+
+	{
+		/* Works */
+		// int i = 0;
+		// std::function<void(int)> f;
+		// f = [&f](int i) {
+		// 	UE_LOG(LogTemp, Warning, TEXT("counter = %i"), i);
+		// 	if (i < 10) {
+		// 		f(i+1);
+		// 	}
+		// };
+		// f(i);
+
+		// int i = 0;
+		// std::function<void(int)> f;
+		// f = [&f](int i) {
+		// 	UE_LOG(LogTemp, Warning, TEXT("counter = %i"), i);
+
+
+		// 	TShaderMapRef<GPUBoatShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+		// 	ENQUEUE_RENDER_COMMAND(shader)(
+		// 		[shader, f, i](FRHICommandListImmediate& RHI_cmd_list) {
+		// 			// f(i+1);
+
+		// 		if (i < 10) {
+		// 			f(i+1);
+		// 		}
+		// 	});
+		// };
+		// f(i);
+
+		// int i = 0;
+		// TShaderMapRef<GPUBoatShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+		// std::function<void(int, TShaderMapRef<GPUBoatShader>)> f;
+		// f = [&f](int i, TShaderMapRef<GPUBoatShader> shader) {
+		// 	ENQUEUE_RENDER_COMMAND(shader)(
+		// 		[shader, &f, i](FRHICommandListImmediate& RHI_cmd_list) {
+
+		// 		// UE_LOG(LogTemp, Warning, TEXT("test_res valid? %i"), test_res.buffer.IsValid());
+		// 		UE_LOG(LogTemp, Warning, TEXT("This is a test %i"), i);
+
+		// 		if (i < 5) {
+		// 			f(i+1, shader);
+		// 		}
+
+		// 	});
+		// };
+		// f(i, shader);
+
+		// TShaderMapRef<GPUBoatShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+		// auto test1 = [shader]() {
+		// 	auto test2 = [shader](auto& test1_ref) {
+		// 		ENQUEUE_RENDER_COMMAND(shader)(
+		// 			[shader, test1_ref](FRHICommandListImmediate& RHI_cmd_list) { // works
+
+		// 			UE_LOG(LogTemp, Warning, TEXT("test_res valid? %i"), test_res.buffer.IsValid());
+		// 			test1_ref();
+
+		// 		});
+		// 	};
+		// 	test2(test1);
+		// };
+		// test1();
+
+		// TShaderMapRef<GPUBoatShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+		// auto test1 = [shader]() {
+		// 	ENQUEUE_RENDER_COMMAND(shader)(
+		// 		[shader, &test1](FRHICommandListImmediate& RHI_cmd_list) { // works
+
+		// 		UE_LOG(LogTemp, Warning, TEXT("test_res valid? %i"), test_res.buffer.IsValid());
+		// 		test1();
+
+		// 	});
+		// };
+		// test1();
+	}
+
+	while (submerged_triangles_buffer == nullptr) {
+		UE_LOG(LogTemp, Warning, TEXT("Not yet"));
+	}
+
+	bool flag = false;
+	{
+		TShaderMapRef<GPUBoatShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+		ENQUEUE_RENDER_COMMAND(shader)(
+			// [shader](FRHICommandListImmediate& RHI_cmd_list) { // works
+			[&flag, shader, speed_input, velocity_input, elevation_texture, &submerged_triangles_buffer, input_output, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) { // works
+			// [shader, speed_input, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) { // works
+			// [shader, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) { // works
+
+				// do {
+				// 	UE_LOG(LogTemp, Warning, TEXT("test_res valid? %i"), test_res.buffer.IsValid());
+				// } while(!test_res.buffer.IsValid());
+
+		// 		// // UE_LOG(LogTemp, Warning, TEXT("step 4: %i"), submerged_triangles_buffer.IsValid()); // 1
+		// 		// double start = FPlatformTime::Seconds();
+		// 		// // while (!flag) {}
+		// 		// while (!submerged_triangles_buffer.IsValid()) {}
+		// 		// // while (!submerged_triangles_buffer.IsValid()) {}
+		// 		// double end = FPlatformTime::Seconds();
+		// 		// UE_LOG(LogTemp, Warning, TEXT("code executed in %f seconds."), end-start);
+
+				shader->BuildAndExecuteGraph(
+					RHI_cmd_list,
+					speed_input,
+					velocity_input,
+					elevation_texture,
+					submerged_triangles_buffer,
+					input_output,
+					readback_texture,
+					update_target ? (&data) : nullptr
+				);
+
+				flag = true;
+			}); 
+	}
+
+	while (!flag) {
+		UE_LOG(LogTemp, Warning, TEXT("Not yet 2"));
+	}
+
+	// TODO: needs to wait for flag here.
+
 	// while (!flag) {
-	// 	UE_LOG(LogTemp, Warning, TEXT("Not yet"));
-	// }
 	// UE_LOG(LogTemp, Warning, TEXT("Done!"));
 
 	// TArray<FFloat16Color> data;
