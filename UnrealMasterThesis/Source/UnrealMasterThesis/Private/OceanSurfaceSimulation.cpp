@@ -67,6 +67,21 @@ void AOceanSurfaceSimulation::BeginPlay() {
 
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 
+	// int n_valid_boats = 0;
+	// for (auto boat : boats) {
+	// 	if (boat) {
+	// 		n_valid_boats++;
+	// 	}
+	// }
+
+	// static int counter = 0;
+	// auto callback = [n_valid_boats]() {
+	// 	counter++;
+	// 	if (counter >= n_valid_boats) {
+	// 		UE_LOG(LogTemp, Warning, TEXT("All boats ready"));
+	// 	}
+	// };
+
 	for (auto boat : boats) {
 		// Allow "None", i.e. nullptr, to be assigned for boats in the editor.
 		if (boat) {
