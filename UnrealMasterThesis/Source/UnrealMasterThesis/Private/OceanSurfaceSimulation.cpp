@@ -66,6 +66,7 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	data_collector->eWave_h_rtt = ewave_h_rtt;
 	data_collector->eWave_v_rtt = ewave_v_rtt;
 	data_collector->serialization_rtt = serialization_rtt;
+	for (auto boat : boats) { data_collector->boat_ptrs.Add(boat); } // TODO: hmm
 	data_collector->readInputJSON(input_pawn->inputSequence);
 }
 

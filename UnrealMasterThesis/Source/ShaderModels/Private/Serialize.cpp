@@ -117,5 +117,4 @@ void SerializeShader::BuildAndExecuteGraph(
         FResolveParams()
     );
     *data = readback_RTT_serialize(RHI_cmd_list, serialize_rtt);
-	int a = 1;
 }
