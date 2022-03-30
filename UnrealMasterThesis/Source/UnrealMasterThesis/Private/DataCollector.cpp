@@ -23,7 +23,7 @@ UDataCollector::UDataCollector()
 void UDataCollector::BeginPlay()
 {
 	Super::BeginPlay();
-	// readInputJSON(inputPawn->inputSequence); 
+	// readInputJSON(inputPawn->inputSequence); // TODO, this is currently called in oceansurfaceSimulations beginplay instead. inputPawn is nullptr here. 
 }
 
 
@@ -35,6 +35,9 @@ void UDataCollector::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	if (frameNumber >= framesToCollect) {
 		if (shouldCollectInputStates) {
 			saveInputToFile();
+		}
+		if (shouldCollectBoatData) {
+			saveBoatDataToFile();
 		}
 		shouldCollectBoatData = false;
 		shouldCollecteWaveTextures = false;
@@ -52,8 +55,13 @@ void UDataCollector::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	}
 
 	if (shouldCollectBoatData) {
-		FVector boatPos; // TODO get info from boat
-		boatPositions.Add(boatPos);
+		for (auto boat : boat_ptrs) {
+			if (boat) {
+				// boatPositions.Add(boat->getPosition());
+				// boatOrientations.Add(boat->getOrientation()); // TODO
+			}
+			
+		}
 	}
 
 }
@@ -94,6 +102,33 @@ void UDataCollector::saveInputToFile() {
 		states.Add(MakeShareable(new FJsonValueString(OutputString)));
 	}
 	JsonRootObject->SetArrayField("inputStates", states);
+
+	FString OutputString;
+	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
+	FJsonSerializer::Serialize(JsonRootObject, Writer);
+
+	FFileHelper::SaveStringToFile(OutputString, *AbsoluteFilePath);
+}
+
+void UDataCollector::saveBoatDataToFile() {
+	FString fname = *FString(TEXT("SavedBoatData/TestData_Boat.json"));
+	FString AbsoluteFilePath = FPaths::ProjectDir() + fname;
+	TSharedRef<FJsonObject> JsonRootObject = MakeShareable(new FJsonObject);
+	TArray<TSharedPtr<FJsonValue>> boatStates;
+	for (const auto& pos : boatPositions) {
+		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+		JsonObject->SetNumberField("position_x", pos.X);
+		JsonObject->SetNumberField("position_y", pos.Y);
+		JsonObject->SetNumberField("position_z", pos.Z);
+		// JsonObject->SetNumberField("orientation_x", state.horizontal); // TODO
+
+		FString OutputString;
+		TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
+		FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
+
+		boatStates.Add(MakeShareable(new FJsonValueString(OutputString)));
+	}
+	JsonRootObject->SetArrayField("boatOrientations", boatStates);
 
 	FString OutputString;
 	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);

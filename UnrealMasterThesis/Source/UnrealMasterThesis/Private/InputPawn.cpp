@@ -19,7 +19,7 @@ void AInputPawn::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
     if (playBackInputSequence && frame < inputSequence.Num()) {
-        InputState& state = inputSequence[frame++];
+        InputState& state = inputSequence[frame++]; // TODO
         m_speed_input = state.speed;
         m_velocity_input.X = state.horizontal;
         m_velocity_input.Y = state.vertical;
