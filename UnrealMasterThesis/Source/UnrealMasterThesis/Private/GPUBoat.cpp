@@ -12,7 +12,7 @@ void AGPUBoat::BeginPlay() {
     m_shader_models_module.ResetGPUBoat(boat_rtt);
 }
 
-void AGPUBoat::Update(UpdatePayload update_payload) {
+void AGPUBoat::Update(UpdatePayload update_payload, std::function<void()> callback) {
 
     if (IsHidden()) {
         SetActorHiddenInGame(false);
@@ -27,7 +27,10 @@ void AGPUBoat::Update(UpdatePayload update_payload) {
         boat_rtt,
         readback_rtt,
         m_submerged_triangles,
-        camera_follow ? camera_target : nullptr);
+        camera_follow ? camera_target : nullptr,
+        callback);
+
+    // callback();
 }
 
 UTextureRenderTarget2D* AGPUBoat::GetBoatRTT() {
@@ -38,7 +41,7 @@ FeWaveRTTs AGPUBoat::GeteWaveRTTs() {
     return ewave_rtts;
 }
 
-TRefCountPtr<FRDGPooledBuffer> AGPUBoat::GetSubmergedTriangles() {
+TRefCountPtr<FRDGPooledBuffer>& AGPUBoat::GetSubmergedTriangles() {
     return m_submerged_triangles;
 }
 

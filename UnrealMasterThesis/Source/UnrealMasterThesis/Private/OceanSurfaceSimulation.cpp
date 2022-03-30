@@ -67,29 +67,31 @@ void AOceanSurfaceSimulation::BeginPlay() {
 
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 
-	// int n_valid_boats = 0;
-	// for (auto boat : boats) {
-	// 	if (boat) {
-	// 		n_valid_boats++;
-	// 	}
-	// }
+	int n_valid_boats = 0;
+	for (auto boat : boats) {
+		if (boat) {
+			n_valid_boats++;
+		}
+	}
 
-	// static int counter = 0;
-	// auto callback = [n_valid_boats]() {
-	// 	counter++;
-	// 	if (counter >= n_valid_boats) {
-	// 		UE_LOG(LogTemp, Warning, TEXT("All boats ready"));
-	// 	}
-	// };
+	static int counter = 0;
+	auto callback = [n_valid_boats, this]() {
+		// UE_LOG(LogTemp, Warning, TEXT("Render thread? %i"), IsInRenderingThread()); // 1
+		counter++;
+		if (counter >= n_valid_boats) {
+			this->update_mesh(0.02f);
+			// UE_LOG(LogTemp, Warning, TEXT("All boats ready"));
+		}
+	};
 
 	for (auto boat : boats) {
 		// Allow "None", i.e. nullptr, to be assigned for boats in the editor.
 		if (boat) {
-			boat->Update(update_payload);
+			boat->Update(update_payload, callback);
 		}
 	}
 
-	this->update_mesh(0.02f);
+	// this->update_mesh(0.02f);
 }
 
 TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points) {
@@ -263,11 +265,11 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 		for (auto boat : boats) {
 			if (boat) {
 				UTextureRenderTarget2D* boat_rtt = boat->GetBoatRTT();
-				TRefCountPtr<FRDGPooledBuffer> submerged_triangles = boat->GetSubmergedTriangles();
+				// TRefCountPtr<FRDGPooledBuffer>& submerged_triangles = boat->GetSubmergedTriangles();
 
 				FeWaveRTTs ewave_rtts = boat->GeteWaveRTTs();
 
-				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveH, ewave_rtts.eWaveV, ewave_rtts.eWaveH_prev, ewave_rtts.eWaveV_prev, 1);
+				m_shader_models_module.ComputeObstruction(boat_rtt, boat->GetSubmergedTriangles(), this->eWave_addition_rtt, ewave_rtts.eWaveH, ewave_rtts.eWaveV, ewave_rtts.eWaveH_prev, ewave_rtts.eWaveV_prev, 1);
 				m_shader_models_module.FFT_Forward(this->butterfly_rtt, ewave_rtts.eWaveH); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
 				m_shader_models_module.FFT_Forward(this->butterfly_rtt, ewave_rtts.eWaveV);
 				m_shader_models_module.ComputeeWave(dt, L, ewave_rtts.eWaveH, ewave_rtts.eWaveV);
@@ -275,7 +277,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 				m_shader_models_module.FFT(this->butterfly_rtt, ewave_rtts.eWaveV, 0);
 				m_shader_models_module.ComputeScale(ewave_rtts.eWaveH, ewave_rtts.eWaveH_prev, ewave_scale);
 				m_shader_models_module.ComputeScale(ewave_rtts.eWaveV, ewave_rtts.eWaveV_prev, ewave_scale);
-				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveH, ewave_rtts.eWaveV, ewave_rtts.eWaveH_prev, ewave_rtts.eWaveV_prev, 0);
+				m_shader_models_module.ComputeObstruction(boat_rtt, boat->GetSubmergedTriangles(), this->eWave_addition_rtt, ewave_rtts.eWaveH, ewave_rtts.eWaveV, ewave_rtts.eWaveH_prev, ewave_rtts.eWaveV_prev, 0);
 			}
 		}
 	}

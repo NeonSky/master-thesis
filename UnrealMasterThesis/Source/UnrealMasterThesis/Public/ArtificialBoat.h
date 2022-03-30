@@ -16,10 +16,10 @@ class UNREALMASTERTHESIS_API AArtificialBoat : public AActor, public IBoatInterf
 public:	
 	AArtificialBoat();
 
-	virtual void Update(UpdatePayload update_payload) override;
+	virtual void Update(UpdatePayload update_payload, std::function<void()> callback) override;
     virtual UTextureRenderTarget2D* GetBoatRTT() override;
     virtual FeWaveRTTs GeteWaveRTTs() override;
-    virtual TRefCountPtr<FRDGPooledBuffer> GetSubmergedTriangles() override;
+    virtual TRefCountPtr<FRDGPooledBuffer>& GetSubmergedTriangles() override;
 	virtual FVector2D WorldPosition() override;
 
 protected:

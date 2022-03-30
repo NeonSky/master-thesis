@@ -34,6 +34,8 @@ FRDGTextureRef register_texture4(
 	return RDG_tex_ref;
 }
 
+// void SubmergedTrianglesShader::ResetBuffer(
+
 
 void SubmergedTrianglesShader::BuildAndExecuteGraph(
         FRHICommandListImmediate &RHI_cmd_list,

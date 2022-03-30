@@ -48,7 +48,7 @@ void AArtificialBoat::UpdateReadbackQueue() {
 
 }
 
-void AArtificialBoat::Update(UpdatePayload update_payload) {
+void AArtificialBoat::Update(UpdatePayload update_payload, std::function<void()> callback) {
 
     if (IsHidden()) {
         SetActorHiddenInGame(false);
@@ -67,7 +67,8 @@ void AArtificialBoat::Update(UpdatePayload update_payload) {
         boat_rtt,
         readback_rtt,
         m_submerged_triangles,
-        this);
+        this,
+        callback);
 
     m_cur_frame++;
 }
@@ -80,7 +81,7 @@ FeWaveRTTs AArtificialBoat::GeteWaveRTTs() {
     return ewave_rtts;
 }
 
-TRefCountPtr<FRDGPooledBuffer> AArtificialBoat::GetSubmergedTriangles() {
+TRefCountPtr<FRDGPooledBuffer>& AArtificialBoat::GetSubmergedTriangles() {
     return m_submerged_triangles;
 }
 
