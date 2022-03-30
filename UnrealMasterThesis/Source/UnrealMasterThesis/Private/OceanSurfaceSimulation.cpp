@@ -67,6 +67,7 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	data_collector->eWave_h_rtt = ewave_h_rtt;
 	data_collector->eWave_v_rtt = ewave_v_rtt;
 	data_collector->serialization_rtt = serialization_rtt;
+	for (auto boat : boats) { data_collector->boat_ptrs.Add(boat); } // TODO: hmm
 	data_collector->readInputJSON(input_pawn->inputSequence);
 }
 
@@ -80,6 +81,16 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 	}
 
 	this->update_mesh(0.02f);
+
+	if (true) {
+		for (auto boat : boats) {
+			if (boat) {
+				FVector boatPos = boat->getPosition();
+				data_collector->boatPositions.Add(boat->getPosition());
+				// boatOrientations.Add(boat->getOrientation()); // TODO
+			}	
+		}
+	}
 }
 
 TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points, FVector2D ws_boat_coord) {

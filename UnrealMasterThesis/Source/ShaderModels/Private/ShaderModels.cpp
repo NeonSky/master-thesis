@@ -216,12 +216,10 @@ void ShaderModelsModule::ComputeSerialization(UTextureRenderTarget2D* input_rtt,
 	fence.BeginFence();
 	fence.Wait();
 
-	// TArray<float> rChannel_raw32bit;
 	for (auto color16 : data) {
 		float color = RECOVER_F32(color16);
 		out_param.Add(color);
 	}
-	// int b = 1;
 }
 
 void ShaderModelsModule::ComputeObstruction(

@@ -20,4 +20,6 @@ public:
     virtual void Update(UpdatePayload update_payload) = 0;
     virtual UTextureRenderTarget2D* GetBoatRTT() = 0;
     virtual TRefCountPtr<FRDGPooledBuffer> GetSubmergedTriangles() = 0;
+    virtual FVector getPosition() = 0;
+    virtual FQuat getRotation() = 0;
 };

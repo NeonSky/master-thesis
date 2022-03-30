@@ -499,3 +499,6 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r) {
     fence.Wait();
   }
 }
+
+FVector ACPUBoat::getPosition() { return GetActorLocation() / METERS_TO_UNREAL_UNITS;}
+FQuat ACPUBoat::getRotation() { return GetActorQuat(); }

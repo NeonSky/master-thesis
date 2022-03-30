@@ -38,6 +38,8 @@ public:
 	virtual void Update(UpdatePayload update_payload) override;
     virtual UTextureRenderTarget2D* GetBoatRTT() override;
     virtual TRefCountPtr<FRDGPooledBuffer> GetSubmergedTriangles() override;
+	virtual FVector getPosition() override;
+	virtual FQuat getRotation() override;
 
 protected:
 

@@ -35,3 +35,6 @@ UTextureRenderTarget2D* AGPUBoat::GetBoatRTT() {
 TRefCountPtr<FRDGPooledBuffer> AGPUBoat::GetSubmergedTriangles() {
     return m_submerged_triangles;
 }
+
+FVector AGPUBoat::getPosition() { return camera_target->GetActorLocation() / METERS_TO_UNREAL_UNITS; }
+FQuat AGPUBoat::getRotation() { return camera_target->GetActorQuat(); }

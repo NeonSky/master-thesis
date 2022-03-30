@@ -75,3 +75,6 @@ UTextureRenderTarget2D* AArtificialBoat::GetBoatRTT() {
 TRefCountPtr<FRDGPooledBuffer> AArtificialBoat::GetSubmergedTriangles() {
     return m_submerged_triangles;
 }
+
+FVector AArtificialBoat::getPosition() { return GetActorLocation() / METERS_TO_UNREAL_UNITS; }
+FQuat AArtificialBoat::getRotation() { return GetActorQuat(); }
