@@ -96,6 +96,6 @@ private:
 
 	void update(UpdatePayload update_payload);
 	void create_mesh();
-	void update_mesh(float dt);
+	void update_mesh(float dt, TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer);
 
 };

@@ -44,7 +44,7 @@ public:
 
 	void ComputeObstruction(
 		UTextureRenderTarget2D* boat_rtt,
-		TRefCountPtr<FRDGPooledBuffer>& submerged_triangles,
+		TRefCountPtr<FRDGPooledBuffer> submerged_triangles,
 		UTextureRenderTarget2D* obstructionMap_rtt,
 		UTextureRenderTarget2D* h_rtt,
 		UTextureRenderTarget2D* v_rtt,
@@ -71,6 +71,6 @@ public:
 		UTextureRenderTarget2D* readback_texture,
 		TRefCountPtr<FRDGPooledBuffer>& submerged_triangles_buffer,
 		AActor* update_target,
-		std::function<void()> callback);
+		std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback);
 
 };

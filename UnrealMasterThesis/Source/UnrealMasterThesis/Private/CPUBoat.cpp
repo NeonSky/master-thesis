@@ -72,7 +72,7 @@ void ACPUBoat::FetchCollisionMeshData() {
   m_collision_mesh_surface_area = 27.045519f; // debug
 }
 
-void ACPUBoat::Update(UpdatePayload update_payload, std::function<void()> callback) {
+void ACPUBoat::Update(UpdatePayload update_payload, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) {
 
   if (IsHidden()) {
       SetActorHiddenInGame(false);
@@ -431,7 +431,7 @@ FeWaveRTTs ACPUBoat::GeteWaveRTTs() {
     return ewave_rtts;
 }
 
-TRefCountPtr<FRDGPooledBuffer>& ACPUBoat::GetSubmergedTriangles() {
+TRefCountPtr<FRDGPooledBuffer> ACPUBoat::GetSubmergedTriangles() {
     return m_submerged_triangles_buffer;
 }
 

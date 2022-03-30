@@ -198,7 +198,7 @@ void ShaderModelsModule::ComputeScale(
 
 void ShaderModelsModule::ComputeObstruction(
     UTextureRenderTarget2D* boat_rtt,
-	TRefCountPtr<FRDGPooledBuffer>& submerged_triangles,
+	TRefCountPtr<FRDGPooledBuffer> submerged_triangles,
 	UTextureRenderTarget2D* obstructionMap_rtt,
 	UTextureRenderTarget2D* h_rtt,
 	UTextureRenderTarget2D* v_rtt,
@@ -215,9 +215,12 @@ void ShaderModelsModule::ComputeObstruction(
 	UTextureRenderTarget2D* vPrev_rtt_param = v_rtt;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, boat_rtt, &submerged_triangles, obstructionMap_rtt_param, h_rtt_param, v_rtt_param, hPrev_rtt_param, vPrev_rtt_param, preFFT](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, boat_rtt, submerged_triangles, obstructionMap_rtt_param, h_rtt_param, v_rtt_param, hPrev_rtt_param, vPrev_rtt_param, preFFT](FRHICommandListImmediate& RHI_cmd_list) {
 		// UE_LOG(LogTemp, Warning, TEXT("is valid?: %i"), submerged_triangles.IsValid()); // mostly 1 but sometimes 0
-		if (submerged_triangles.IsValid()) {
+			if (!submerged_triangles.IsValid()) {
+				UE_LOG(LogTemp, Warning, TEXT("Not valid2"));
+				return;
+			}
 			shader->BuildAndExecuteGraph(
 				RHI_cmd_list,
 				boat_rtt,
@@ -229,7 +232,6 @@ void ShaderModelsModule::ComputeObstruction(
 				vPrev_rtt_param,
 				preFFT
 			);
-		}
 	});
 }
 	
@@ -283,12 +285,12 @@ void ShaderModelsModule::UpdateGPUBoat(
 	UTextureRenderTarget2D* readback_texture,
 	TRefCountPtr<FRDGPooledBuffer>& submerged_triangles_buffer,
 	AActor* update_target,
-	std::function<void()> callback) {
+	std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) {
 
 	// bool flag = false;
 	// TRefCountPtr<FGraphEvent> event;
 
-	submerged_triangles_buffer = nullptr;
+	submerged_triangles_buffer = nullptr; // Makes debugging easier (because faulty code gives NPE)
 
 	// auto callback = [&](TRefCountPtr<FRDGPooledBuffer> submerged_triangles){
 	// 	UE_LOG(LogTemp, Warning, TEXT("Render thread? %i"), IsInRenderingThread()); // 1
@@ -391,7 +393,7 @@ void ShaderModelsModule::UpdateGPUBoat(
 						update_target ? (&data) : nullptr
 					);
 
-					callback();
+					callback(submerged_triangles_buffer);
 
 					// ENQUEUE_RENDER_COMMAND(callback)(
 					// 	[callback](FRHICommandListImmediate& RHI_cmd_list) {
