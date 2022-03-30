@@ -55,12 +55,15 @@ void UDataCollector::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	}
 
 	if (shouldCollectBoatData) {
-		for (auto boat : boat_ptrs) {
+		for (auto boat : boats) {
 			if (boat) {
-				// boatPositions.Add(boat->getPosition());
+				FVector boatPos = boat->getPosition();
+				boatPositions.Add(boat->getPosition());
 				// boatOrientations.Add(boat->getOrientation()); // TODO
 			}
-			
+			else {
+				boatPositions.Add(FVector(0.0f, 0.0f, 0.0f));
+			}
 		}
 	}
 
