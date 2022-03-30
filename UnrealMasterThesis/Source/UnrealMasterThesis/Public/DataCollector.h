@@ -8,11 +8,6 @@
 #include "IBoat.h"
 #include "DataCollector.generated.h"
 
-/*struct BoatState {
-	FVector;
-	FQuat;
-};*/
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UNREALMASTERTHESIS_API UDataCollector : public USceneComponent
 {
@@ -26,7 +21,7 @@ public:
 	UTextureRenderTarget2D* eWave_v_rtt;
 	UTextureRenderTarget2D* serialization_rtt;
 	class ShaderModelsModule* shaderModule;
-	TArray<TScriptInterface<IBoatInterface>> boat_ptrs; // TODO
+	TArray<TScriptInterface<IBoatInterface>> boats;
 	TArray<FVector> boatPositions;
 protected:
 	// Called when the game starts
