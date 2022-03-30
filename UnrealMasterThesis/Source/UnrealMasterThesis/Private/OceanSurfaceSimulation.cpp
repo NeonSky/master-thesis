@@ -72,7 +72,7 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	data_collector->eWave_h_rtt = ewave_h_rtt;
 	data_collector->eWave_v_rtt = ewave_v_rtt;
 	data_collector->serialization_rtt = serialization_rtt;
-	for (auto boat : boats) { data_collector->boat_ptrs.Add(boat); } // TODO: hmm
+	for (auto boat : boats) { data_collector->boats.Add(boat); } // TODO: hmm
 	data_collector->readInputJSON(input_pawn->inputSequence);
 }
 
@@ -86,19 +86,6 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 	}
 
 	this->update_mesh(0.02f);
-
-	if (true) {
-		for (auto boat : boats) {
-			if (boat) {
-				FVector boatPos = boat->getPosition();
-				data_collector->boatPositions.Add(boat->getPosition());
-				// boatOrientations.Add(boat->getOrientation()); // TODO
-			}
-			else {
-				data_collector->boatPositions.Add(FVector(0.0f, 0.0f, 0.0f));
-			}
-		}
-	}
 }
 
 TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points, FVector2D ws_boat_coord) {
@@ -250,7 +237,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
 	oceanTime += dt; // dt is fixed 
 	// Update non-interactive ocean.
-	m_shader_models_module.ComputeFourierComponents(1, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
+	m_shader_models_module.ComputeFourierComponents(oceanTime, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
 
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_x_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
