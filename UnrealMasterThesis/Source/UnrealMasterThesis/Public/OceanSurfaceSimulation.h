@@ -94,8 +94,10 @@ private:
 
 	TArray<UProceduralMeshComponent*> tile_meshes; // Each tile is a separate mesh but they share material
 
+	TArray<TRefCountPtr<FRDGPooledBuffer>> m_submerged_triangles_buffers;
+
 	void update(UpdatePayload update_payload);
 	void create_mesh();
-	void update_mesh(float dt, TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer);
+	void update_mesh(float dt);
 
 };
