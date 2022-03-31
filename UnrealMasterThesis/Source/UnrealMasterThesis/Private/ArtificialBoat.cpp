@@ -13,13 +13,14 @@ struct SharedState {
 static SharedState shared_state;
 
 AArtificialBoat::AArtificialBoat() {}
+AArtificialBoat::~AArtificialBoat() {
+    shared_state = SharedState();
+}
 
 void AArtificialBoat::BeginPlay() {
     Super::BeginPlay();
 
     m_shader_models_module.ResetGPUBoat(boat_rtt);
-    shared_state.boat_rtts.Push(this->boat_rtt);
-    shared_state.ewave_rtts.Push(this->ewave_rtts.eWaveH);
 
     for (int i = 0; i < artificial_frame_delay+1; i++) {
         m_readback_queue.push(readback_bank[i]);
@@ -61,6 +62,8 @@ void AArtificialBoat::Update(UpdatePayload update_payload, std::function<void(TR
 
     if (IsHidden()) {
         SetActorHiddenInGame(false);
+        shared_state.boat_rtts.Push(this->boat_rtt);
+        shared_state.ewave_rtts.Push(this->ewave_rtts.eWaveH);
     }
 
     UpdateReadbackQueue();

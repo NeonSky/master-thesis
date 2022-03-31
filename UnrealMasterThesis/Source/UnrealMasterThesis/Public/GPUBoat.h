@@ -13,6 +13,7 @@ class UNREALMASTERTHESIS_API AGPUBoat : public AActor, public IBoatInterface {
 	
 public:	
 	AGPUBoat();
+	~AGPUBoat();
 
 	virtual void Update(UpdatePayload update_payload, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) override;
     virtual UTextureRenderTarget2D* GetBoatRTT() override;

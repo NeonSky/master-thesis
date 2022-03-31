@@ -12,19 +12,22 @@ struct SharedState {
 static SharedState shared_state;
 
 AGPUBoat::AGPUBoat() {}
+AGPUBoat::~AGPUBoat() {
+    shared_state = SharedState();
+}
 
 void AGPUBoat::BeginPlay() {
 	  Super::BeginPlay();
 
     m_shader_models_module.ResetGPUBoat(boat_rtt);
-    shared_state.boat_rtts.Push(this->boat_rtt);
-    shared_state.ewave_rtts.Push(this->ewave_rtts.eWaveH);
 }
 
 void AGPUBoat::Update(UpdatePayload update_payload, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) {
 
     if (IsHidden()) {
         SetActorHiddenInGame(false);
+        shared_state.boat_rtts.Push(this->boat_rtt);
+        shared_state.ewave_rtts.Push(this->ewave_rtts.eWaveH);
     }
 
     FVector2D velocity_input = use_p2_inputs ? update_payload.velocity_input2 : update_payload.velocity_input;

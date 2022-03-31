@@ -15,6 +15,7 @@ class UNREALMASTERTHESIS_API AArtificialBoat : public AActor, public IBoatInterf
 	
 public:	
 	AArtificialBoat();
+	~AArtificialBoat();
 
 	virtual void Update(UpdatePayload update_payload, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) override;
     virtual UTextureRenderTarget2D* GetBoatRTT() override;
