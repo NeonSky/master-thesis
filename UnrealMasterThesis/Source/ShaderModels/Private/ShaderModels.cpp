@@ -280,8 +280,9 @@ void ShaderModelsModule::UpdateGPUBoat(
     FVector2D velocity_input,
 	AStaticMeshActor* collision_mesh,
 	UTextureRenderTarget2D* elevation_texture,
-	UTextureRenderTarget2D* wake_texture,
-	UTextureRenderTarget2D* input_output,
+	TArray<UTextureRenderTarget2D*> wake_textures,
+	UTextureRenderTarget2D* boat_texture,
+	TArray<UTextureRenderTarget2D*> other_boat_textures,
 	UTextureRenderTarget2D* readback_texture,
 	AActor* update_target,
 	std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) {
@@ -290,15 +291,16 @@ void ShaderModelsModule::UpdateGPUBoat(
 	{
 		TShaderMapRef<SubmergedTrianglesShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 		ENQUEUE_RENDER_COMMAND(shader)(
-			[callback, shader, speed_input, velocity_input, collision_mesh, elevation_texture, wake_texture, input_output, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
+			[callback, shader, speed_input, velocity_input, collision_mesh, elevation_texture, wake_textures, boat_texture, other_boat_textures, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
 
 				TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer;
 				shader->BuildAndExecuteGraph(
 					RHI_cmd_list,
 					collision_mesh,
 					elevation_texture,
-					input_output,
-					wake_texture,
+					boat_texture,
+					other_boat_textures,
+					wake_textures,
 					&submerged_triangles_buffer
 				);
 
@@ -309,7 +311,7 @@ void ShaderModelsModule::UpdateGPUBoat(
 
 				TShaderMapRef<GPUBoatShader> shader2(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 				ENQUEUE_RENDER_COMMAND(shader2)(
-					[callback, shader2, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, input_output, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) { // works
+					[callback, shader2, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, boat_texture, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) { // works
 
 					shader2->BuildAndExecuteGraph(
 						RHI_cmd_list,
@@ -317,7 +319,7 @@ void ShaderModelsModule::UpdateGPUBoat(
 						velocity_input,
 						elevation_texture,
 						submerged_triangles_buffer,
-						input_output,
+						boat_texture,
 						readback_texture,
 						update_target ? (&data) : nullptr
 					);

@@ -8,7 +8,12 @@ Buffer<uint> IndexBuffer;
 Buffer<float> PositionBuffer;
 Texture2D<float4> ElevationTexture;
 Texture2D<float4> BoatTexture;
-Texture2D<float4> WakeTexture;
+
+// See ElevationSampler.usf
+Texture2D<float4> OtherBoatTextures_0;
+Texture2D<float4> WakeTextures_0;
+Texture2D<float4> WakeTextures_1;
+
 RWStructuredBuffer<SubmergedTriangle> OutputBuffer;
 
 struct SortItem {
@@ -73,12 +78,12 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     // TODO: change index 1
     Texture2D<float4> wake_textures[BOAT_COUNT];
-    wake_textures[0] = WakeTexture;
-    wake_textures[1] = WakeTexture;
+    wake_textures[0] = WakeTextures_0;
+    wake_textures[1] = WakeTextures_1;
 
     float2 ws_boat_coords[BOAT_COUNT];
     ws_boat_coords[0] = position.xy;
-    ws_boat_coords[1] = position.xy;
+    ws_boat_coords[1] = OtherBoatTextures_0[uint2(0,0)].rg;
 
     float e0 = sample_elevation(ElevationTexture, wake_textures, v0.xy, ws_boat_coords);
     float e1 = sample_elevation(ElevationTexture, wake_textures, v1.xy, ws_boat_coords);
