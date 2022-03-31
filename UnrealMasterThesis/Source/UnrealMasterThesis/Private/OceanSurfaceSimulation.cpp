@@ -98,6 +98,15 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 		}
 	}
 
+	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+
+	// Update non-interactive ocean.
+	m_shader_models_module.ComputeFourierComponents(realtimeSeconds, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
+
+	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_x_rtt);
+	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
+	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
+
 	// this->update_mesh(0.02f);
 }
 
@@ -258,19 +267,11 @@ void AOceanSurfaceSimulation::create_mesh() {
 
 // void AOceanSurfaceSimulation::update_mesh(float dt) {
 void AOceanSurfaceSimulation::update_mesh(float dt, TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer) {
-	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-
-	// Update non-interactive ocean.
-	m_shader_models_module.ComputeFourierComponents(realtimeSeconds, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
-
-	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_x_rtt);
-	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
-	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
 
 	if (should_update_wakes) {
 		// Update interactive wake simulation on top of the non-interactive ocean
 		float ewave_scale = 1.0f / ((float)N * (float)N);
-		for (auto boat : boats) {
+		for (auto boat : boats) {// ProfileGPU
 			if (boat) {
 				UTextureRenderTarget2D* boat_rtt = boat->GetBoatRTT();
 				// TRefCountPtr<FRDGPooledBuffer> submerged_triangles = boat->GetSubmergedTriangles();
