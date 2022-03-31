@@ -38,7 +38,6 @@ public:
 	virtual void Update(UpdatePayload update_payload, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) override;
     virtual UTextureRenderTarget2D* GetBoatRTT() override;
     virtual FeWaveRTTs GeteWaveRTTs() override;
-    virtual TRefCountPtr<FRDGPooledBuffer> GetSubmergedTriangles() override;
 	virtual FVector2D WorldPosition() override;
 
 protected:
@@ -96,8 +95,6 @@ private:
 	FVector2D m_velocity_input;
 	float m_speed_input;
 
-	TRefCountPtr<FRDGPooledBuffer> m_submerged_triangles_buffer;
-
 	void FetchCollisionMeshData();
 
 	void DebugDrawTriangle(FVector v0, FVector v1, FVector v2, FColor color);
@@ -118,5 +115,5 @@ private:
 	void HorizontalAxis(float input);
 	void VerticalAxis(float input);
 
-	void UpdateGPUState(Rigidbody prev_r);
+	void UpdateGPUState(Rigidbody prev_r, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback);
 };

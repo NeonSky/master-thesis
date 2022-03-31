@@ -271,7 +271,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt, TRefCountPtr<FRDGPooledBuffe
 	if (should_update_wakes) {
 		// Update interactive wake simulation on top of the non-interactive ocean
 		float ewave_scale = 1.0f / ((float)N * (float)N);
-		for (auto boat : boats) {// ProfileGPU
+		for (auto boat : boats) {
 			if (boat) {
 				UTextureRenderTarget2D* boat_rtt = boat->GetBoatRTT();
 				// TRefCountPtr<FRDGPooledBuffer> submerged_triangles = boat->GetSubmergedTriangles();

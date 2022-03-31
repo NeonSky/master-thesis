@@ -106,7 +106,7 @@ void ACPUBoat::Update(UpdatePayload update_payload, std::function<void(TRefCount
   SetActorLocation(METERS_TO_UNREAL_UNITS * m_rigidbody.position);
   SetActorRotation(m_rigidbody.orientation, ETeleportType::None);
 
-  UpdateGPUState(prev_rigidbody);
+  UpdateGPUState(prev_rigidbody, callback);
 
   m_prev_r_s = r_s;
   m_cur_frame++;
@@ -431,11 +431,7 @@ FeWaveRTTs ACPUBoat::GeteWaveRTTs() {
     return ewave_rtts;
 }
 
-TRefCountPtr<FRDGPooledBuffer> ACPUBoat::GetSubmergedTriangles() {
-    return m_submerged_triangles_buffer;
-}
-
-void ACPUBoat::UpdateGPUState(Rigidbody prev_r) {
+void ACPUBoat::UpdateGPUState(Rigidbody prev_r, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) {
 
   /* Update boat_rtt */
   {
@@ -471,10 +467,9 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r) {
 
   /* Update m_submerged_triangles_buffer */
   {
-    TRefCountPtr<FRDGPooledBuffer>* buffer = &m_submerged_triangles_buffer;
     TArray<SubmergedTriangle> submerged_triangles = m_submerged_triangles;
 
-    ENQUEUE_RENDER_COMMAND(void)([buffer, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) {
+    ENQUEUE_RENDER_COMMAND(void)([callback, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) {
 
       FRDGBuilder graph_builder(RHI_cmd_list);
 
@@ -504,8 +499,11 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r) {
           ERDGInitialDataFlags::None
       );
 
-      graph_builder.QueueBufferExtraction(rdg_buffer_ref, buffer);
+      TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer;
+      graph_builder.QueueBufferExtraction(rdg_buffer_ref, &submerged_triangles_buffer);
       graph_builder.Execute();
+
+      callback(submerged_triangles_buffer);
 
     });
 

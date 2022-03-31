@@ -17,7 +17,6 @@ public:
 	virtual void Update(UpdatePayload update_payload, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) override;
     virtual UTextureRenderTarget2D* GetBoatRTT() override;
     virtual FeWaveRTTs GeteWaveRTTs() override;
-    virtual TRefCountPtr<FRDGPooledBuffer> GetSubmergedTriangles() override;
 	virtual FVector2D WorldPosition() override;
 
 protected:
@@ -29,6 +28,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	AActor* camera_target;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool use_p2_inputs;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	bool camera_follow;
@@ -50,5 +52,4 @@ private:
 
 	ShaderModelsModule m_shader_models_module; // Reference to the ShaderModels module
 
-	TRefCountPtr<FRDGPooledBuffer> m_submerged_triangles;
 };

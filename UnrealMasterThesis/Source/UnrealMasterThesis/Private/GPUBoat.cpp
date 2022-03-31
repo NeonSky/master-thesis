@@ -18,19 +18,19 @@ void AGPUBoat::Update(UpdatePayload update_payload, std::function<void(TRefCount
         SetActorHiddenInGame(false);
     }
 
+    FVector2D velocity_input = use_p2_inputs ? update_payload.velocity_input2 : update_payload.velocity_input;
+
     m_shader_models_module.UpdateGPUBoat(
         update_payload.speed_input,
-        update_payload.velocity_input,
+        velocity_input,
         collision_mesh,
         elevation_rtt,
         ewave_rtts.eWaveH,
         boat_rtt,
         readback_rtt,
-        m_submerged_triangles,
         camera_follow ? camera_target : nullptr,
         callback);
 
-    // callback();
 }
 
 UTextureRenderTarget2D* AGPUBoat::GetBoatRTT() {
@@ -39,10 +39,6 @@ UTextureRenderTarget2D* AGPUBoat::GetBoatRTT() {
 
 FeWaveRTTs AGPUBoat::GeteWaveRTTs() {
     return ewave_rtts;
-}
-
-TRefCountPtr<FRDGPooledBuffer> AGPUBoat::GetSubmergedTriangles() {
-    return m_submerged_triangles;
 }
 
 FVector2D AGPUBoat::WorldPosition() {

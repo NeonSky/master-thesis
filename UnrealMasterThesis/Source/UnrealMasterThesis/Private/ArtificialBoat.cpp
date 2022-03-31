@@ -66,7 +66,6 @@ void AArtificialBoat::Update(UpdatePayload update_payload, std::function<void(TR
         ewave_rtts.eWaveH,
         boat_rtt,
         readback_rtt,
-        m_submerged_triangles,
         this,
         callback);
 
@@ -79,10 +78,6 @@ UTextureRenderTarget2D* AArtificialBoat::GetBoatRTT() {
 
 FeWaveRTTs AArtificialBoat::GeteWaveRTTs() {
     return ewave_rtts;
-}
-
-TRefCountPtr<FRDGPooledBuffer> AArtificialBoat::GetSubmergedTriangles() {
-    return m_submerged_triangles;
 }
 
 FVector2D AArtificialBoat::WorldPosition() {

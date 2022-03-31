@@ -69,7 +69,6 @@ public:
 		UTextureRenderTarget2D* wake_texture,
 		UTextureRenderTarget2D* input_output,
 		UTextureRenderTarget2D* readback_texture,
-		TRefCountPtr<FRDGPooledBuffer>& submerged_triangles_buffer,
 		AActor* update_target,
 		std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback);
 
