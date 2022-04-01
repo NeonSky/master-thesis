@@ -74,9 +74,6 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 		// Offset when sampling from prev textures to move the simulation.
 		sampleCoordinates = int2(id.x + boat_dx, id.y + boat_dy);
 	}
-
-	float h = hPrev_rtt[sampleCoordinates.xy].r;
-	float v = vPrev_rtt[sampleCoordinates.xy].r;
 	
 	if(preFFT == 2){
 		// Compute the obstruction map
@@ -113,9 +110,16 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 			}
 		}
 
+		hPrev_rtt[id.xy] = h_rtt[id.xy];
+		vPrev_rtt[id.xy] = v_rtt[id.xy];
+
 		return;
 
 	}
+
+	float h = hPrev_rtt[sampleCoordinates.xy].r;
+	float v = vPrev_rtt[sampleCoordinates.xy].r;
+
 	// ----------------------------------------------------------------------------------
 	// Step 1, Apply obstruction:
 	// ----------------------------------------------------------------------------------
