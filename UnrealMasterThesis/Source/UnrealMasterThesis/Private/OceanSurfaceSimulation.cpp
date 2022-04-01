@@ -65,6 +65,9 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	m_shader_models_module.Clear(this->ewave_hPrev_rtt);
 	m_shader_models_module.Clear(this->ewave_v_rtt);
 	m_shader_models_module.Clear(this->ewave_vPrev_rtt);
+	m_shader_models_module.Clear(this->spectrum_x_rtt);
+	m_shader_models_module.Clear(this->spectrum_y_rtt);
+	m_shader_models_module.Clear(this->spectrum_z_rtt);
 
 	input_pawn->on_fixed_update.AddUObject<AOceanSurfaceSimulation>(this, &AOceanSurfaceSimulation::update);
 	data_collector->inputPawn = input_pawn;
@@ -237,7 +240,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
 	oceanTime += dt; // dt is fixed 
 	// Update non-interactive ocean.
-	m_shader_models_module.ComputeFourierComponents(oceanTime, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
+	m_shader_models_module.ComputeFourierComponents(oceanSeed, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
 
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_x_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
