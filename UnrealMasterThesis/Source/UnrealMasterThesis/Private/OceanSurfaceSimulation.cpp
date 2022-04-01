@@ -286,6 +286,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 
 				FeWaveRTTs ewave_rtts = boat->GeteWaveRTTs();
 
+				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveH, ewave_rtts.eWaveV, ewave_rtts.eWaveH_prev, ewave_rtts.eWaveV_prev, 2);
 				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveH, ewave_rtts.eWaveV, ewave_rtts.eWaveH_prev, ewave_rtts.eWaveV_prev, 1);
 				m_shader_models_module.FFT_Forward(this->butterfly_rtt, ewave_rtts.eWaveH); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
 				m_shader_models_module.FFT_Forward(this->butterfly_rtt, ewave_rtts.eWaveV);

@@ -181,7 +181,7 @@ void ShaderModelsModule::ComputeScale(
 	TShaderMapRef<ScaleShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	UTextureRenderTarget2D* input_output_rtt_param = input_output_rtt;
-	UTextureRenderTarget2D* copy_rtt_param = input_output_rtt;
+	UTextureRenderTarget2D* copy_rtt_param = copy_rtt;
 	float scale_param = scale;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
@@ -211,8 +211,8 @@ void ShaderModelsModule::ComputeObstruction(
 	UTextureRenderTarget2D* obstructionMap_rtt_param = obstructionMap_rtt;
 	UTextureRenderTarget2D* h_rtt_param = h_rtt;
 	UTextureRenderTarget2D* v_rtt_param = v_rtt;
-	UTextureRenderTarget2D* hPrev_rtt_param = h_rtt;
-	UTextureRenderTarget2D* vPrev_rtt_param = v_rtt;
+	UTextureRenderTarget2D* hPrev_rtt_param = hPrev_rtt;
+	UTextureRenderTarget2D* vPrev_rtt_param = vPrev_rtt;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
 		[shader, boat_rtt, submerged_triangles, obstructionMap_rtt_param, h_rtt_param, v_rtt_param, hPrev_rtt_param, vPrev_rtt_param, preFFT](FRHICommandListImmediate& RHI_cmd_list) {
