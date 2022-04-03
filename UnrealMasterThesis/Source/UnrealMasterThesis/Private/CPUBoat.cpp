@@ -19,6 +19,8 @@ void ACPUBoat::BeginPlay() {
   m_requested_elevations_on_frame = 0;
   m_cur_frame = 0;
 
+  m_prev_r_s = 0.0f;
+
   // Sync the rigidbody transform with the UE transform
   m_rigidbody.position = GetActorLocation() / METERS_TO_UNREAL_UNITS;
   m_rigidbody.orientation = GetActorQuat();
@@ -70,7 +72,7 @@ void ACPUBoat::FetchCollisionMeshData() {
   m_collision_mesh_surface_area = 27.045519f; // debug
 }
 
-void ACPUBoat::Update(UpdatePayload update_payload) {
+void ACPUBoat::Update(UpdatePayload update_payload, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) {
 
   if (IsHidden()) {
       SetActorHiddenInGame(false);
@@ -79,7 +81,7 @@ void ACPUBoat::Update(UpdatePayload update_payload) {
   Rigidbody prev_rigidbody = m_rigidbody;
 
   m_speed_input = update_payload.speed_input;
-  m_velocity_input = update_payload.velocity_input;
+  m_velocity_input = use_p2_inputs ? update_payload.velocity_input2 : update_payload.velocity_input;
 
   FlushPersistentDebugLines(this->GetWorld());
 
@@ -92,20 +94,21 @@ void ACPUBoat::Update(UpdatePayload update_payload) {
   }
   float r_s = submerged_area / m_collision_mesh_surface_area;
 
+  const float dt = 0.02f; // We use a fixed delta time for physics
+
   ApplyGravity();
   ApplyBuoyancy(r_s);
   ApplyUserInput(r_s);
-  ApplyResistanceForces(r_s);
+  ApplyResistanceForces(r_s, dt);
 
-  m_rigidbody.Update(0.02f); // We use a fixed delta time for physics
-
-  // DebugDrawVelocities();
+  m_rigidbody.Update(dt);
 
   SetActorLocation(METERS_TO_UNREAL_UNITS * m_rigidbody.position);
   SetActorRotation(m_rigidbody.orientation, ETeleportType::None);
 
-  UpdateGPUState(prev_rigidbody);
+  UpdateGPUState(prev_rigidbody, callback);
 
+  m_prev_r_s = r_s;
   m_cur_frame++;
 }
 
@@ -184,7 +187,7 @@ void ACPUBoat::UpdateReadbackQueue() {
       FVector v_ws = transform.TransformPosition(v);
       sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
     }
-    TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points, FVector2D(m_rigidbody.position.X, m_rigidbody.position.Y));
+    TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
 
     m_readback_queue.push(elevations);
   }
@@ -373,7 +376,7 @@ void ACPUBoat::ApplyBuoyancy(float r_s) {
 
 }
 
-void ACPUBoat::ApplyResistanceForces(float r_s) {
+void ACPUBoat::ApplyResistanceForces(float r_s, float dt) {
 
   float c_damp = 500.0f;
 
@@ -387,6 +390,14 @@ void ACPUBoat::ApplyResistanceForces(float r_s) {
   // Based on: https://forum.unity.com/threads/how-is-angular-drag-applied-to-a-rigidbody-in-unity-how-is-angular-damping-applied-in-physx.369599/#:~:text=13-,After%20many%20tests%20I%27ve%20determined%20that%20this%20highly%20advanced%20formula%20reveals%20the%20secrets,-to%20PhysX%27s%20angular
   // Multiplying by (1.0f - r_s) isn't very realistic, but the results are pretty good.
   m_rigidbody.angular_velocity -= angular_drag * m_rigidbody.angular_velocity * (1.0f - r_s);
+
+  // Vertical damping to simulate viscosity and slamming (resistance) forces
+  float submersion_change = abs(r_s - m_prev_r_s);
+
+  FVector stopping_force = -m_rigidbody.mass * m_rigidbody.linear_velocity / dt;
+  FVector vdamp_force = stopping_force * submersion_change;
+
+  m_rigidbody.AddForceAtPosition(FVector(0.0, 0.0, vdamp_force.Z), m_rigidbody.position);
 }
 
 void ACPUBoat::ApplyUserInput(float r_s) {
@@ -416,11 +427,11 @@ UTextureRenderTarget2D* ACPUBoat::GetBoatRTT() {
     return boat_rtt;
 }
 
-TRefCountPtr<FRDGPooledBuffer> ACPUBoat::GetSubmergedTriangles() {
-    return m_submerged_triangles_buffer;
+FeWaveRTTs ACPUBoat::GeteWaveRTTs() {
+    return ewave_rtts;
 }
 
-void ACPUBoat::UpdateGPUState(Rigidbody prev_r) {
+void ACPUBoat::UpdateGPUState(Rigidbody prev_r, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) {
 
   /* Update boat_rtt */
   {
@@ -456,10 +467,9 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r) {
 
   /* Update m_submerged_triangles_buffer */
   {
-    TRefCountPtr<FRDGPooledBuffer>* buffer = &m_submerged_triangles_buffer;
     TArray<SubmergedTriangle> submerged_triangles = m_submerged_triangles;
 
-    ENQUEUE_RENDER_COMMAND(void)([buffer, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) {
+    ENQUEUE_RENDER_COMMAND(void)([callback, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) {
 
       FRDGBuilder graph_builder(RHI_cmd_list);
 
@@ -489,8 +499,11 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r) {
           ERDGInitialDataFlags::None
       );
 
-      graph_builder.QueueBufferExtraction(rdg_buffer_ref, buffer);
+      TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer;
+      graph_builder.QueueBufferExtraction(rdg_buffer_ref, &submerged_triangles_buffer);
       graph_builder.Execute();
+
+      callback(submerged_triangles_buffer);
 
     });
 
@@ -500,5 +513,6 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r) {
   }
 }
 
-FVector ACPUBoat::getPosition() { return m_rigidbody.position; }
-FQuat ACPUBoat::getRotation() { return m_rigidbody.orientation; }
+FVector2D ACPUBoat::WorldPosition() {
+  return FVector2D(m_rigidbody.position.X, m_rigidbody.position.Y);
+}

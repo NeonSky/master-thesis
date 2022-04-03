@@ -35,11 +35,10 @@ class UNREALMASTERTHESIS_API ACPUBoat : public AActor, public IBoatInterface {
 public:	
 	ACPUBoat();
 
-	virtual void Update(UpdatePayload update_payload) override;
+	virtual void Update(UpdatePayload update_payload, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) override;
     virtual UTextureRenderTarget2D* GetBoatRTT() override;
-    virtual TRefCountPtr<FRDGPooledBuffer> GetSubmergedTriangles() override;
-	virtual FVector getPosition() override;
-	virtual FQuat getRotation() override;
+    virtual FeWaveRTTs GeteWaveRTTs() override;
+	virtual FVector2D WorldPosition() override;
 
 protected:
 
@@ -58,6 +57,9 @@ private:
 	AStaticMeshActor* collision_mesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool use_p2_inputs;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int artificial_frame_delay; // The GPU readback latency in frames
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -72,6 +74,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UTextureRenderTarget2D* boat_rtt;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	FeWaveRTTs ewave_rtts;
+
 	Rigidbody m_rigidbody;
 
 	int m_requested_elevations_on_frame;
@@ -85,11 +90,10 @@ private:
 	TArray<float> m_latest_elevations;
 
 	TArray<SubmergedTriangle> m_submerged_triangles;
+	float m_prev_r_s;
 
 	FVector2D m_velocity_input;
 	float m_speed_input;
-
-	TRefCountPtr<FRDGPooledBuffer> m_submerged_triangles_buffer;
 
 	void FetchCollisionMeshData();
 
@@ -101,7 +105,7 @@ private:
 
 	void ApplyGravity();
 	void ApplyBuoyancy(float r_s);
-	void ApplyResistanceForces(float r_s);
+	void ApplyResistanceForces(float r_s, float dt);
 	void ApplyUserInput(float r_s);
 
 	void UseSlowSpeed();
@@ -111,5 +115,5 @@ private:
 	void HorizontalAxis(float input);
 	void VerticalAxis(float input);
 
-	void UpdateGPUState(Rigidbody prev_r);
+	void UpdateGPUState(Rigidbody prev_r, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback);
 };

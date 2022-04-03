@@ -3,17 +3,31 @@
 #include "Common.ush"
 
 Texture2D<float4> elevation_texture;
-Texture2D<float4> wake_texture;
+
+// Unreal supports texture arrays, but they are exposed as different textures in HLSL shader: https://mcro.de/c/rdg#:~:text=uniform%20variable%20names.-,Shader%20(USL/HLSL)%3A,-RWTexture2D%3Cfloat4%3E%20OutputMips_0_SceneColor
+// This is also prelevant in the engine code, which is not able to index the textures of an array.
+// Here is a relevant post (not ours): https://forums.unrealengine.com/t/global-shaders-and-array-of-textures/501357
+// Also presented in the official docs (slide 61): https://epicgames.ent.box.com/s/ul1h44ozs0t2850ug0hrohlzm53kxwrz
+//
+// Had we needed more wake textures, then we would have generated this shader using a Python script.
+Texture2D<float4> wake_textures_0;
+Texture2D<float4> wake_textures_1;
+
 StructuredBuffer<float2> input_sample_coordinates;
 RWTexture2D<float4> output_texture;
 
-float2 ws_boat_coord;
+float2 ws_boat_coords[2];
 
 [numthreads(N_THREADS_X, 1, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     float2 ws_coord = input_sample_coordinates[id.x];
-    float elevation = sample_elevation(elevation_texture, wake_texture, ws_coord, ws_boat_coord);
+
+    Texture2D<float4> wake_textures[BOAT_COUNT];
+    wake_textures[0] = wake_textures_0;
+    wake_textures[1] = wake_textures_1;
+
+    float elevation = sample_elevation(elevation_texture, wake_textures, ws_coord, ws_boat_coords);
 
     store_f32(output_texture, uint2(id.x,0), elevation);
 

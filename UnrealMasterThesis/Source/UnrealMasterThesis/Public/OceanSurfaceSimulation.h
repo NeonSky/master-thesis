@@ -31,7 +31,7 @@ class UNREALMASTERTHESIS_API AOceanSurfaceSimulation : public AActor {
 public:	
 	AOceanSurfaceSimulation();
 
-	TArray<float> sample_elevation_points(TArray<FVector2D> sample_points, FVector2D ws_boat_coord);
+	TArray<float> sample_elevation_points(TArray<FVector2D> sample_points);
 
 protected:
 
@@ -63,21 +63,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UTextureRenderTarget2D* spectrum_z_rtt;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* ewave_h_rtt;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* ewave_hPrev_rtt;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* ewave_v_rtt;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* ewave_vPrev_rtt;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* serialization_rtt;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TEnumAsByte<WaveSpectrumType> wave_spectrum;
@@ -115,6 +100,8 @@ private:
 	
 	class UDataCollector* data_collector;
 
+
+	TArray<TRefCountPtr<FRDGPooledBuffer>> m_submerged_triangles_buffers;
 
 	void update(UpdatePayload update_payload);
 	void create_mesh();

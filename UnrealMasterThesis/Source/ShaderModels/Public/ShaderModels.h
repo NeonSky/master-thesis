@@ -56,8 +56,8 @@ public:
 
 	void SampleElevationPoints(
 		UTextureRenderTarget2D* elevations,
-		UTextureRenderTarget2D* wake_rtt,
-		FVector2D ws_boat_coord,
+		TArray<UTextureRenderTarget2D*> wake_rtts,
+		TArray<FVector2D> ws_boat_coords,
 		TArray<FVector2D> input_sample_coordinates,
 		TArray<float>* output);
 
@@ -68,10 +68,11 @@ public:
 		FVector2D velocity_input,
 		AStaticMeshActor* collision_mesh,
 		UTextureRenderTarget2D* elevation_texture,
-		UTextureRenderTarget2D* wake_texture,
-		UTextureRenderTarget2D* input_output,
+		TArray<UTextureRenderTarget2D*> wake_textures,
+		UTextureRenderTarget2D* boat_texture,
+		TArray<UTextureRenderTarget2D*> other_boat_textures,
 		UTextureRenderTarget2D* readback_texture,
-		TRefCountPtr<FRDGPooledBuffer>& submerged_triangles_buffer,
-		AActor* update_target);
+		AActor* update_target,
+		std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback);
 
 };

@@ -1,5 +1,7 @@
 #pragma once
 
+#define BOAT_COUNT 2
+
 static const float PI = 3.1415926535897933;
 static const float M_TO_CM = 100.0;
 static const float GRAVITY = 9.82;
@@ -7,6 +9,7 @@ static const float DENSITY_OF_WATER = 1000.0;
 static const float HORSEPOWER_TO_NEWTON = 750.0;
 static const float L = 100.0;
 static const float N = 256.0;
+static const float DELTA_T = 0.02;
 
 /* Complex number stuff */
 
@@ -148,7 +151,13 @@ float sample_ambient_elevation(Texture2D<float4> elevation_texture, float2 ws_co
     return elevation;
 }
 
-float sample_wake_elevation(Texture2D<float4> ewave_H, float2 ws_coord, float2 ws_boat_pos) {
+float sample_wake_elevation(Texture2D<float4> eWave_H, float2 ws_coord, float2 ws_boat_coord) {
+
+    const float cm_per_pixel = L * M_TO_CM / N;
+
+    int2 pixel_pos     = (ws_boat_coord * M_TO_CM) / cm_per_pixel;
+    float2 ws_boat_pos = pixel_pos * cm_per_pixel / M_TO_CM;
+    ws_coord = M_TO_CM * (ws_coord - ws_boat_coord);
 
     ////////////////////////////
     float x = ws_coord.x;
@@ -225,26 +234,24 @@ float sample_wake_elevation(Texture2D<float4> ewave_H, float2 ws_coord, float2 w
         AddressV = Clamp;
     };
 
-    float elevation = ewave_H.SampleLevel(Sampler, coord, 0).r;
+    float elevation = 5.0 * eWave_H.SampleLevel(Sampler, coord, 0).r;
 
     return elevation;
 }
 
 float sample_elevation(
     Texture2D<float4> elevation_texture,
-    Texture2D<float4> ewave_H,
+    Texture2D<float4> wake_textures[BOAT_COUNT],
     float2 ws_coord,
-    float2 ws_boat_coord) {
+    float2 ws_boat_coords[BOAT_COUNT]) {
 
-    const float cm_per_pixel = L * M_TO_CM / N;
+    float elevation = sample_ambient_elevation(elevation_texture, ws_coord);
 
-    int2 pixel_pos     = (ws_boat_coord * M_TO_CM) / cm_per_pixel;
-    float2 ws_boat_pos = pixel_pos * cm_per_pixel / M_TO_CM;
+    for (int i = 0; i < BOAT_COUNT; i++) {
+        elevation += sample_wake_elevation(wake_textures[i], ws_coord, ws_boat_coords[i]);
+    }
 
-    float e1 = sample_ambient_elevation(elevation_texture, ws_coord);
-    float e2 = 5.0 * sample_wake_elevation(ewave_H, M_TO_CM * (ws_coord - ws_boat_coord), ws_boat_pos);
-
-    return e1 + e2;
+    return elevation;
 }
 
 /* Memory stuff */

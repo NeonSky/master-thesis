@@ -14,11 +14,12 @@ public:
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, ) 
 
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, elevation_texture)
-		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, wake_texture)
+		SHADER_PARAMETER_RDG_TEXTURE_ARRAY(Texture2D<FVector4>, wake_textures, [2])
+
 		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<FVector2D>, input_sample_coordinates)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, output_texture)
 
-		SHADER_PARAMETER(FVector2D, ws_boat_coord)
+		SHADER_PARAMETER_ARRAY(FVector2D, ws_boat_coords, [2])
 
 	END_SHADER_PARAMETER_STRUCT()
 
@@ -35,8 +36,8 @@ public:
 	void BuildAndExecuteGraph(
 		FRHICommandListImmediate &RHI_cmd_list,
 		UTextureRenderTarget2D* elevations,
-		UTextureRenderTarget2D* wake_rtt,
-		FVector2D ws_boat_coord,
+		TArray<UTextureRenderTarget2D*> wake_rtts,
+		TArray<FVector2D> ws_boat_coords,
 		TArray<FVector2D> input_sample_coordinates,
 		TArray<float>* output
 	);

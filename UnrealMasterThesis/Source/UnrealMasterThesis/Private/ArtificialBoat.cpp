@@ -1,9 +1,21 @@
 #include "ArtificialBoat.h"
 
+#include "Globals/StatelessHelpers.h"
+
 #include "Engine/TextureRenderTarget2D.h"
 #include "Kismet/GameplayStatics.h"
 
+// Aritifical boats will only affect other artificial boats, making it possible to compare GPU and Artificial boat without interactions between them.
+struct SharedState {
+    TArray<UTextureRenderTarget2D*> boat_rtts;
+    TArray<UTextureRenderTarget2D*> ewave_rtts;
+};
+static SharedState shared_state;
+
 AArtificialBoat::AArtificialBoat() {}
+AArtificialBoat::~AArtificialBoat() {
+    shared_state = SharedState();
+}
 
 void AArtificialBoat::BeginPlay() {
     Super::BeginPlay();
@@ -46,24 +58,36 @@ void AArtificialBoat::UpdateReadbackQueue() {
 
 }
 
-void AArtificialBoat::Update(UpdatePayload update_payload) {
+void AArtificialBoat::Update(UpdatePayload update_payload, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) {
 
     if (IsHidden()) {
         SetActorHiddenInGame(false);
+        shared_state.boat_rtts.Push(this->boat_rtt);
+        shared_state.ewave_rtts.Push(this->ewave_rtts.eWaveH);
     }
 
     UpdateReadbackQueue();
 
+    FVector2D velocity_input = use_p2_inputs ? update_payload.velocity_input2 : update_payload.velocity_input;
+
+    TArray<UTextureRenderTarget2D*> other_boat_textures;
+    for (auto& rtt : shared_state.boat_rtts) {
+        if (rtt != boat_rtt) {
+            other_boat_textures.Push(rtt);
+        }
+    }
+
     m_shader_models_module.UpdateGPUBoat(
         update_payload.speed_input,
-        update_payload.velocity_input,
+        velocity_input,
         collision_mesh,
         m_readback_queue.front(),
-        wake_rtt,
+        shared_state.ewave_rtts,
         boat_rtt,
+        other_boat_textures,
         readback_rtt,
-        m_submerged_triangles,
-        this);
+        this,
+        callback);
 
     m_cur_frame++;
 }
@@ -72,9 +96,10 @@ UTextureRenderTarget2D* AArtificialBoat::GetBoatRTT() {
     return boat_rtt;
 }
 
-TRefCountPtr<FRDGPooledBuffer> AArtificialBoat::GetSubmergedTriangles() {
-    return m_submerged_triangles;
+FeWaveRTTs AArtificialBoat::GeteWaveRTTs() {
+    return ewave_rtts;
 }
 
-FVector AArtificialBoat::getPosition() { return GetActorLocation() / METERS_TO_UNREAL_UNITS; }
-FQuat AArtificialBoat::getRotation() { return GetActorQuat(); }
+FVector2D AArtificialBoat::WorldPosition() {
+  return FVector2D(this->GetActorLocation().X, this->GetActorLocation().Y) / METERS_TO_UNREAL_UNITS;
+}

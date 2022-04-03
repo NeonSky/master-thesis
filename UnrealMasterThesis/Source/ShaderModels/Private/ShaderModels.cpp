@@ -20,6 +20,10 @@
 #include "ShaderCore.h" 
 #include "Engine/TextureRenderTarget2D.h"
 
+struct Test {
+	TRefCountPtr<FRDGPooledBuffer> buffer;
+};
+
 void ShaderModelsModule::StartupModule() {
 	UE_LOG(LogTemp, Warning, TEXT("ShaderModelsModule::StartupModule()"));
 
@@ -178,7 +182,7 @@ void ShaderModelsModule::ComputeScale(
 	TShaderMapRef<ScaleShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	UTextureRenderTarget2D* input_output_rtt_param = input_output_rtt;
-	UTextureRenderTarget2D* copy_rtt_param = input_output_rtt;
+	UTextureRenderTarget2D* copy_rtt_param = copy_rtt;
 	float scale_param = scale;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
@@ -237,37 +241,47 @@ void ShaderModelsModule::ComputeObstruction(
 	UTextureRenderTarget2D* obstructionMap_rtt_param = obstructionMap_rtt;
 	UTextureRenderTarget2D* h_rtt_param = h_rtt;
 	UTextureRenderTarget2D* v_rtt_param = v_rtt;
-	UTextureRenderTarget2D* hPrev_rtt_param = h_rtt;
-	UTextureRenderTarget2D* vPrev_rtt_param = v_rtt;
+	UTextureRenderTarget2D* hPrev_rtt_param = hPrev_rtt;
+	UTextureRenderTarget2D* vPrev_rtt_param = vPrev_rtt;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
 		[shader, boat_rtt, submerged_triangles, obstructionMap_rtt_param, h_rtt_param, v_rtt_param, hPrev_rtt_param, vPrev_rtt_param, preFFT](FRHICommandListImmediate& RHI_cmd_list) {
-		shader->BuildAndExecuteGraph(
-			RHI_cmd_list,
-			boat_rtt,
-			submerged_triangles,
-			obstructionMap_rtt_param,
-			h_rtt_param,
-			v_rtt_param,
-			hPrev_rtt_param,
-			vPrev_rtt_param,
-			preFFT
-		);
+		// UE_LOG(LogTemp, Warning, TEXT("is valid?: %i"), submerged_triangles.IsValid()); // mostly 1 but sometimes 0
+			if (!submerged_triangles.IsValid()) {
+				UE_LOG(LogTemp, Warning, TEXT("Not valid3"));
+				return;
+			}
+			shader->BuildAndExecuteGraph(
+				RHI_cmd_list,
+				boat_rtt,
+				submerged_triangles,
+				obstructionMap_rtt_param,
+				h_rtt_param,
+				v_rtt_param,
+				hPrev_rtt_param,
+				vPrev_rtt_param,
+				preFFT
+			);
 	});
 }
 	
-void ShaderModelsModule::SampleElevationPoints(UTextureRenderTarget2D* elevations, UTextureRenderTarget2D* wake_rtt, FVector2D ws_boat_coord, TArray<FVector2D> input_sample_coordinates, TArray<float>* output) {
+void ShaderModelsModule::SampleElevationPoints(
+	UTextureRenderTarget2D* elevations,
+	TArray<UTextureRenderTarget2D*> wake_rtts,
+	TArray<FVector2D> ws_boat_coords,
+	TArray<FVector2D> input_sample_coordinates,
+	TArray<float>* output) {
 
  	TShaderMapRef<ElevationSamplerShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	FRenderCommandFence fence;
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, elevations, wake_rtt, ws_boat_coord, input_sample_coordinates, output](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, elevations, wake_rtts, ws_boat_coords, input_sample_coordinates, output](FRHICommandListImmediate& RHI_cmd_list) {
 			shader->BuildAndExecuteGraph(
 				RHI_cmd_list,
 				elevations,
-				wake_rtt,
-				ws_boat_coord,
+				wake_rtts,
+				ws_boat_coords,
 				input_sample_coordinates,
 				output
 			);
@@ -296,49 +310,58 @@ void ShaderModelsModule::UpdateGPUBoat(
     FVector2D velocity_input,
 	AStaticMeshActor* collision_mesh,
 	UTextureRenderTarget2D* elevation_texture,
-	UTextureRenderTarget2D* wake_texture,
-	UTextureRenderTarget2D* input_output,
+	TArray<UTextureRenderTarget2D*> wake_textures,
+	UTextureRenderTarget2D* boat_texture,
+	TArray<UTextureRenderTarget2D*> other_boat_textures,
 	UTextureRenderTarget2D* readback_texture,
-	TRefCountPtr<FRDGPooledBuffer>& submerged_triangles_buffer,
-	AActor* update_target) {
+	AActor* update_target,
+	std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) {
 
+	TArray<FFloat16Color> data;
 	{
 		TShaderMapRef<SubmergedTrianglesShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 		ENQUEUE_RENDER_COMMAND(shader)(
-			[shader, collision_mesh, elevation_texture, wake_texture, input_output, &submerged_triangles_buffer](FRHICommandListImmediate& RHI_cmd_list) {
+			[callback, shader, speed_input, velocity_input, collision_mesh, elevation_texture, wake_textures, boat_texture, other_boat_textures, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
+
+				TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer;
 				shader->BuildAndExecuteGraph(
 					RHI_cmd_list,
 					collision_mesh,
 					elevation_texture,
-					input_output,
-					wake_texture,
+					boat_texture,
+					other_boat_textures,
+					wake_textures,
 					&submerged_triangles_buffer
 				);
+
+				if (!submerged_triangles_buffer.IsValid()) {
+					UE_LOG(LogTemp, Error, TEXT("Submerged triangles buffer is not valid. This should never happen."));
+					return;
+				}
+
+				TShaderMapRef<GPUBoatShader> shader2(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+				ENQUEUE_RENDER_COMMAND(shader2)(
+					[callback, shader2, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, boat_texture, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) { // works
+
+					shader2->BuildAndExecuteGraph(
+						RHI_cmd_list,
+						speed_input,
+						velocity_input,
+						elevation_texture,
+						submerged_triangles_buffer,
+						boat_texture,
+						readback_texture,
+						update_target ? (&data) : nullptr
+					);
+
+					callback(submerged_triangles_buffer);
+
+				});
+
 			}); 
-		// TODO: Maybe not needed? In Vulkan we would use a semaphore here instead of a fence.
-		FRenderCommandFence fence;
-		fence.BeginFence();
-		fence.Wait();
 	}
 
-	TArray<FFloat16Color> data;
-	{
-		TShaderMapRef<GPUBoatShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
-		ENQUEUE_RENDER_COMMAND(shader)(
-			[shader, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, input_output, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
-				shader->BuildAndExecuteGraph(
-					RHI_cmd_list,
-					speed_input,
-					velocity_input,
-					elevation_texture,
-					submerged_triangles_buffer,
-					input_output,
-					readback_texture,
-					update_target ? (&data) : nullptr
-				);
-			}); 
-	}
-
+	// Optional. Only used for the current camera workaround (see report).
 	if (update_target) {
 		FRenderCommandFence fence;
 		fence.BeginFence();
