@@ -20,6 +20,7 @@ void AInputPawn::Tick(float DeltaTime) {
     UpdatePayload payload;
     payload.speed_input = m_speed_input;
     payload.velocity_input = m_velocity_input;
+    payload.velocity_input2 = m_velocity_input2;
     on_fixed_update.Broadcast(payload);
 
     APlayerController* controller = UGameplayStatics::GetPlayerController(GetWorld(), 0);
@@ -35,6 +36,9 @@ void AInputPawn::SetupPlayerInputComponent(class UInputComponent* inputComponent
 
   inputComponent->BindAxis("HorizontalAxis", this, &AInputPawn::HorizontalAxis);
   inputComponent->BindAxis("VerticalAxis", this, &AInputPawn::VerticalAxis);
+
+  inputComponent->BindAxis("HorizontalAxis2", this, &AInputPawn::HorizontalAxis2);
+  inputComponent->BindAxis("VerticalAxis2", this, &AInputPawn::VerticalAxis2);
 }
 
 void AInputPawn::UseSlowSpeed()   { m_speed_input = slow_speed; }
@@ -47,4 +51,12 @@ void AInputPawn::HorizontalAxis(float input) {
 
 void AInputPawn::VerticalAxis(float input) {
   m_velocity_input.Y = input;
+}
+
+void AInputPawn::HorizontalAxis2(float input) {
+  m_velocity_input2.X = input;
+}
+
+void AInputPawn::VerticalAxis2(float input) {
+  m_velocity_input2.Y = input;
 }

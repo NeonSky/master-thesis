@@ -31,7 +31,7 @@ class UNREALMASTERTHESIS_API AOceanSurfaceSimulation : public AActor {
 public:	
 	AOceanSurfaceSimulation();
 
-	TArray<float> sample_elevation_points(TArray<FVector2D> sample_points, FVector2D ws_boat_coord);
+	TArray<float> sample_elevation_points(TArray<FVector2D> sample_points);
 
 protected:
 
@@ -65,18 +65,6 @@ private:
 	UTextureRenderTarget2D* spectrum_z_rtt;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* ewave_h_rtt;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* ewave_hPrev_rtt;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* ewave_v_rtt;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* ewave_vPrev_rtt;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TEnumAsByte<WaveSpectrumType> wave_spectrum;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -105,6 +93,8 @@ private:
 	ShaderModelsModule m_shader_models_module; // Reference to the ShaderModels module
 
 	TArray<UProceduralMeshComponent*> tile_meshes; // Each tile is a separate mesh but they share material
+
+	TArray<TRefCountPtr<FRDGPooledBuffer>> m_submerged_triangles_buffers;
 
 	void update(UpdatePayload update_payload);
 	void create_mesh();

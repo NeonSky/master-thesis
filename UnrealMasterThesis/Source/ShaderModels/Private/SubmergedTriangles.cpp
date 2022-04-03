@@ -34,13 +34,13 @@ FRDGTextureRef register_texture4(
 	return RDG_tex_ref;
 }
 
-
 void SubmergedTrianglesShader::BuildAndExecuteGraph(
         FRHICommandListImmediate &RHI_cmd_list,
-        AStaticMeshActor* collision_mesh,
+		AStaticMeshActor* collision_mesh,
         UTextureRenderTarget2D* elevation_texture,
         UTextureRenderTarget2D* boat_texture,
-        UTextureRenderTarget2D* wake_texture,
+        TArray<UTextureRenderTarget2D*> other_boat_textures,
+        TArray<UTextureRenderTarget2D*> wake_textures,
         TRefCountPtr<FRDGPooledBuffer>* output_buffer) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
@@ -53,7 +53,24 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
 
     PassParameters->ElevationTexture = register_texture4(graph_builder, elevation_texture, "ElevationRenderTarget");
     PassParameters->BoatTexture      = register_texture4(graph_builder, boat_texture, "BoatRenderTarget");
-    PassParameters->WakeTexture      = register_texture4(graph_builder, wake_texture, "WakeRenderTarget");
+
+	// See comment in ElevationSampler.usf
+	if (other_boat_textures.Num() > 0) {
+        PassParameters->OtherBoatTextures[0] = register_texture4(graph_builder, other_boat_textures[0], "BoatRenderTarget2");
+    } else {
+		// Assign arbitrary valid texture to prevent crash. It will not be used anyway.
+        PassParameters->OtherBoatTextures[0] = register_texture4(graph_builder, boat_texture, "BoatRenderTarget2");
+    }
+
+    PassParameters->WakeTextures[0] = register_texture4(graph_builder, wake_textures[0], "WakeRenderTarget");
+
+	// See comment in ElevationSampler.usf
+	if (wake_textures.Num() > 1) {
+		PassParameters->WakeTextures[1] = register_texture4(graph_builder, wake_textures[1], "WakeRenderTarget2");
+	} else {
+		// Assign arbitrary valid texture to prevent crash. It will not be used anyway.
+		PassParameters->WakeTextures[1] = register_texture4(graph_builder, wake_textures[0], "WakeRenderTarget2");
+	}
 
     FStaticMeshLODResources& mesh_res = collision_mesh->GetStaticMeshComponent()->GetStaticMesh()->RenderData->LODResources[0];
     PassParameters->IndexBuffer = RHI_cmd_list.CreateShaderResourceView(mesh_res.IndexBuffer.IndexBufferRHI);
@@ -86,10 +103,10 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
         PassParameters,
         FIntVector(N/2, 1, 1));
 
-    TRefCountPtr<FRDGPooledBuffer> PooledComputeTarget;
-    graph_builder.QueueBufferExtraction(rdg_buffer_ref, &PooledComputeTarget);
+    // TRefCountPtr<FRDGPooledBuffer> PooledComputeTarget;
+    graph_builder.QueueBufferExtraction(rdg_buffer_ref, output_buffer);
 
     graph_builder.Execute();
 
-    *output_buffer = PooledComputeTarget;
+    // *output_buffer = PooledComputeTarget;
 }

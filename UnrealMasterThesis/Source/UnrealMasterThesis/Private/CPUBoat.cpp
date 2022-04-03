@@ -72,7 +72,7 @@ void ACPUBoat::FetchCollisionMeshData() {
   m_collision_mesh_surface_area = 27.045519f; // debug
 }
 
-void ACPUBoat::Update(UpdatePayload update_payload) {
+void ACPUBoat::Update(UpdatePayload update_payload, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) {
 
   if (IsHidden()) {
       SetActorHiddenInGame(false);
@@ -81,7 +81,7 @@ void ACPUBoat::Update(UpdatePayload update_payload) {
   Rigidbody prev_rigidbody = m_rigidbody;
 
   m_speed_input = update_payload.speed_input;
-  m_velocity_input = update_payload.velocity_input;
+  m_velocity_input = use_p2_inputs ? update_payload.velocity_input2 : update_payload.velocity_input;
 
   FlushPersistentDebugLines(this->GetWorld());
 
@@ -106,7 +106,7 @@ void ACPUBoat::Update(UpdatePayload update_payload) {
   SetActorLocation(METERS_TO_UNREAL_UNITS * m_rigidbody.position);
   SetActorRotation(m_rigidbody.orientation, ETeleportType::None);
 
-  UpdateGPUState(prev_rigidbody);
+  UpdateGPUState(prev_rigidbody, callback);
 
   m_prev_r_s = r_s;
   m_cur_frame++;
@@ -187,7 +187,7 @@ void ACPUBoat::UpdateReadbackQueue() {
       FVector v_ws = transform.TransformPosition(v);
       sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
     }
-    TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points, FVector2D(m_rigidbody.position.X, m_rigidbody.position.Y));
+    TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
 
     m_readback_queue.push(elevations);
   }
@@ -427,11 +427,11 @@ UTextureRenderTarget2D* ACPUBoat::GetBoatRTT() {
     return boat_rtt;
 }
 
-TRefCountPtr<FRDGPooledBuffer> ACPUBoat::GetSubmergedTriangles() {
-    return m_submerged_triangles_buffer;
+FeWaveRTTs ACPUBoat::GeteWaveRTTs() {
+    return ewave_rtts;
 }
 
-void ACPUBoat::UpdateGPUState(Rigidbody prev_r) {
+void ACPUBoat::UpdateGPUState(Rigidbody prev_r, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) {
 
   /* Update boat_rtt */
   {
@@ -467,10 +467,9 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r) {
 
   /* Update m_submerged_triangles_buffer */
   {
-    TRefCountPtr<FRDGPooledBuffer>* buffer = &m_submerged_triangles_buffer;
     TArray<SubmergedTriangle> submerged_triangles = m_submerged_triangles;
 
-    ENQUEUE_RENDER_COMMAND(void)([buffer, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) {
+    ENQUEUE_RENDER_COMMAND(void)([callback, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) {
 
       FRDGBuilder graph_builder(RHI_cmd_list);
 
@@ -500,8 +499,11 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r) {
           ERDGInitialDataFlags::None
       );
 
-      graph_builder.QueueBufferExtraction(rdg_buffer_ref, buffer);
+      TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer;
+      graph_builder.QueueBufferExtraction(rdg_buffer_ref, &submerged_triangles_buffer);
       graph_builder.Execute();
+
+      callback(submerged_triangles_buffer);
 
     });
 
@@ -509,4 +511,8 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r) {
     fence.BeginFence();
     fence.Wait();
   }
+}
+
+FVector2D ACPUBoat::WorldPosition() {
+  return FVector2D(m_rigidbody.position.X, m_rigidbody.position.Y);
 }

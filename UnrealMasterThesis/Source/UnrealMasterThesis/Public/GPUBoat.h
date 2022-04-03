@@ -13,10 +13,12 @@ class UNREALMASTERTHESIS_API AGPUBoat : public AActor, public IBoatInterface {
 	
 public:	
 	AGPUBoat();
+	~AGPUBoat();
 
-	virtual void Update(UpdatePayload update_payload) override;
+	virtual void Update(UpdatePayload update_payload, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) override;
     virtual UTextureRenderTarget2D* GetBoatRTT() override;
-    virtual TRefCountPtr<FRDGPooledBuffer> GetSubmergedTriangles() override;
+    virtual FeWaveRTTs GeteWaveRTTs() override;
+	virtual FVector2D WorldPosition() override;
 
 protected:
 
@@ -29,6 +31,9 @@ private:
 	AActor* camera_target;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool use_p2_inputs;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	bool camera_follow;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -38,7 +43,7 @@ private:
 	UTextureRenderTarget2D* elevation_rtt;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* wake_rtt;
+	FeWaveRTTs ewave_rtts;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UTextureRenderTarget2D* boat_rtt;
@@ -48,5 +53,4 @@ private:
 
 	ShaderModelsModule m_shader_models_module; // Reference to the ShaderModels module
 
-	TRefCountPtr<FRDGPooledBuffer> m_submerged_triangles;
 };

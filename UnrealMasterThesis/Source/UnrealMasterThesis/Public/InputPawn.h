@@ -7,6 +7,7 @@
 struct UpdatePayload {
     float speed_input;
     FVector2D velocity_input;
+    FVector2D velocity_input2; // Used for "player 2"
 };
 
 // DECLARE_DELEGATE_OneParam(FOnFixedUpdate, UpdatePayload);
@@ -47,6 +48,7 @@ private:
 	float fast_speed;
 
 	FVector2D m_velocity_input;
+	FVector2D m_velocity_input2;
 	float m_speed_input;
 
 	void UseSlowSpeed();
@@ -55,4 +57,6 @@ private:
 
 	void HorizontalAxis(float input);
 	void VerticalAxis(float input);
+	void HorizontalAxis2(float input);
+	void VerticalAxis2(float input);
 };
