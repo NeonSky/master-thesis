@@ -69,20 +69,27 @@ void AOceanSurfaceSimulation::BeginPlay() {
 			m_shader_models_module.Clear(ewave_rtts.eWaveH_prev);
 		}
 	}
+	m_shader_models_module.Clear(spectrum_x_rtt);
+	m_shader_models_module.Clear(spectrum_y_rtt);
+	m_shader_models_module.Clear(spectrum_z_rtt);
 
 
 	input_pawn->on_fixed_update.AddUObject<AOceanSurfaceSimulation>(this, &AOceanSurfaceSimulation::update);
 	data_collector->inputPawn = input_pawn;
 	data_collector->shaderModule = &m_shader_models_module;
-	data_collector->eWave_h_rtt = ewave_h_rtt;
-	data_collector->eWave_v_rtt = ewave_v_rtt;
-	data_collector->serialization_rtt = serialization_rtt;
+
+	FeWaveRTTs ewave_rtts = boats[0]->GeteWaveRTTs();
+
+	data_collector->eWave_h_rtt = ewave_rtts.eWaveH;
+	data_collector->eWave_v_rtt = ewave_rtts.eWaveV;
+	//data_collector->serialization_rtt = serialization_rtt;
 	for (auto boat : boats) { data_collector->boats.Add(boat); } // TODO: hmm
 	data_collector->readInputJSON(input_pawn->inputSequence);
 }
 
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
-
+	const float dt = 0.02f;
+	oceanTime += dt;
 	this->m_submerged_triangles_buffers.SetNum(boats.Num());
 
 	int n_valid_boats = 0;
@@ -100,7 +107,7 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 		// Allow "None", i.e. nullptr, to be assigned for boats in the editor.
 		if (boat) {
 
-			auto callback = [n_valid_boats, i, this](TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer) {
+			auto callback = [n_valid_boats, i, this, dt](TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer) {
 
 				if (!submerged_triangles_buffer.IsValid()) {
 					UE_LOG(LogTemp, Warning, TEXT("This shouldn't be possible"));
@@ -112,7 +119,7 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 
 				if (counter == n_valid_boats) {
 					counter = 0;
-					this->update_mesh(0.02f);
+					this->update_mesh(dt);
 				}
 			};
 
@@ -123,7 +130,7 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
 
 	// Update non-interactive ocean.
-	m_shader_models_module.ComputeFourierComponents(realtimeSeconds, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
+	m_shader_models_module.ComputeFourierComponents(oceanTime, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
 
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_x_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);

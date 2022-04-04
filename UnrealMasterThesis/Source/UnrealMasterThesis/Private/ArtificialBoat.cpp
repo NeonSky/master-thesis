@@ -103,3 +103,7 @@ FeWaveRTTs AArtificialBoat::GeteWaveRTTs() {
 FVector2D AArtificialBoat::WorldPosition() {
   return FVector2D(this->GetActorLocation().X, this->GetActorLocation().Y) / METERS_TO_UNREAL_UNITS;
 }
+
+FVector AArtificialBoat::WorldPosition3D() {
+    return this->GetActorLocation() / METERS_TO_UNREAL_UNITS;
+}

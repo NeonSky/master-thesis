@@ -40,4 +40,5 @@ public:
     virtual UTextureRenderTarget2D* GetBoatRTT() = 0;
     virtual FeWaveRTTs GeteWaveRTTs() = 0;
 	virtual FVector2D WorldPosition() = 0;
+    virtual FVector WorldPosition3D() = 0;
 };
