@@ -105,10 +105,8 @@ void ObstructionShader::BuildAndExecuteGraph(
     UTextureRenderTarget2D* boat_rtt,
     TRefCountPtr<FRDGPooledBuffer> submerged_triangles,
     UTextureRenderTarget2D* obstructionMap_rtt,
-    UTextureRenderTarget2D* h_rtt,
-    UTextureRenderTarget2D* v_rtt,
-    UTextureRenderTarget2D* hPrev_rtt,
-    UTextureRenderTarget2D* vPrev_rtt,
+    UTextureRenderTarget2D* hv_rtt,
+    UTextureRenderTarget2D* hv_prev_rtt,
     int preFFT) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
@@ -125,20 +123,14 @@ void ObstructionShader::BuildAndExecuteGraph(
 
 	FRDGTextureRef io_tex_ref = register_texture4_obs(graph_builder, obstructionMap_rtt, "InputOutputRenderTarget");
     auto uav = graph_builder.CreateUAV(io_tex_ref);
-    FRDGTextureRef io_tex_ref2 = register_texture4_obs(graph_builder, h_rtt, "InputOutputRenderTarget2");
+    FRDGTextureRef io_tex_ref2 = register_texture4_obs(graph_builder, hv_rtt, "InputOutputRenderTarget2");
     auto uav2 = graph_builder.CreateUAV(io_tex_ref2);
-    FRDGTextureRef io_tex_ref3 = register_texture4_obs(graph_builder, v_rtt, "InputOutputRenderTarget3");
+    FRDGTextureRef io_tex_ref3 = register_texture4_obs(graph_builder, hv_prev_rtt, "InputOutputRenderTarget3");
     auto uav3 = graph_builder.CreateUAV(io_tex_ref3);
-    FRDGTextureRef io_tex_ref4 = register_texture4_obs(graph_builder, hPrev_rtt, "InputOutputRenderTarget4");
-    auto uav4 = graph_builder.CreateUAV(io_tex_ref4);
-    FRDGTextureRef io_tex_ref5 = register_texture4_obs(graph_builder, vPrev_rtt, "InputOutputRenderTarget4");
-    auto uav5 = graph_builder.CreateUAV(io_tex_ref5);
 
     PassParameters->obstructionMap_rtt = uav;
-    PassParameters->h_rtt = uav2;
-    PassParameters->v_rtt = uav3;
-    PassParameters->hPrev_rtt = uav4;
-    PassParameters->vPrev_rtt = uav5;
+    PassParameters->hv_rtt = uav2;
+    PassParameters->hv_prev_rtt = uav3;
 
     TShaderMapRef<ObstructionShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 

@@ -15,8 +15,6 @@ public:
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 
-		SHADER_PARAMETER(int, N)
-		SHADER_PARAMETER(float, L)
 		SHADER_PARAMETER(float, t)
 
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, tilde_h0_k)
@@ -43,7 +41,6 @@ public:
 	void BuildAndExecuteGraph(
 			FRHICommandListImmediate &RHI_cmd_list,
 			float t,
-			float L,
 			UTextureRenderTarget2D *tilde_hkt_dy,
 			UTextureRenderTarget2D *tilde_hkt_dxz
 	);

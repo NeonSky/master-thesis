@@ -68,27 +68,20 @@ CustomUAV create_UAV2( // TODO: this and register texture defined in fourier com
 
 void eWaveShader::BuildAndExecuteGraph(
     FRHICommandListImmediate& RHI_cmd_list,
-    float t,
-    float L,
-    UTextureRenderTarget2D* eWave_h,
-    UTextureRenderTarget2D* eWave_v) {
+    float dt,
+    UTextureRenderTarget2D* eWave_hv) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
 
     FParameters* PassParameters;
     PassParameters = graph_builder.AllocParameters<eWaveShader::FParameters>();
 
-    PassParameters->N = NN;
-    PassParameters->L = L;
-    PassParameters->t = t;
+    PassParameters->dt = dt;
 
-    FRDGTextureRef io_tex_ref_h = register_texture5(graph_builder, eWave_h, "eWave Height");
-    FRDGTextureRef io_tex_ref_v = register_texture5(graph_builder, eWave_v, "eWave Velocity Potential");
-    auto uav_h = graph_builder.CreateUAV(io_tex_ref_h);
-    auto uav_v = graph_builder.CreateUAV(io_tex_ref_v);
+    FRDGTextureRef io_tex_ref_hv = register_texture5(graph_builder, eWave_hv, "eWave height and velocity potential");
+    auto uav_hv = graph_builder.CreateUAV(io_tex_ref_hv);
 
-    PassParameters->eWave_h = uav_h;
-    PassParameters->eWave_v = uav_v;
+    PassParameters->eWave_hv = uav_hv;
 
     TShaderMapRef<eWaveShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 

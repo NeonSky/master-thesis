@@ -6,10 +6,8 @@ Texture2D<float4> BoatTexture;
 StructuredBuffer<SubmergedTriangle> SubmergedTrianglesBuffer;
 
 RWTexture2D<float4> obstructionMap_rtt;
-RWTexture2D<float4> h_rtt;
-RWTexture2D<float4> v_rtt;
-RWTexture2D<float4> hPrev_rtt;
-RWTexture2D<float4> vPrev_rtt;
+RWTexture2D<float4> hv_rtt;
+RWTexture2D<float4> hv_prev_rtt;
 int preFFT; 
 
 
@@ -110,15 +108,20 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 			}
 		}
 
-		hPrev_rtt[id.xy] = h_rtt[id.xy];
-		vPrev_rtt[id.xy] = v_rtt[id.xy];
+		hv_prev_rtt[id.xy] = hv_rtt[id.xy];
+		// hPrev_rtt[id.xy] = h_rtt[id.xy];
+		// vPrev_rtt[id.xy] = v_rtt[id.xy];
 
 		return;
 
 	}
 
-	float h = hPrev_rtt[sampleCoordinates.xy].r;
-	float v = vPrev_rtt[sampleCoordinates.xy].r;
+	// float h = hPrev_rtt[sampleCoordinates.xy].r;
+	// float v = vPrev_rtt[sampleCoordinates.xy].r;
+
+	float2 hv = hv_prev_rtt[sampleCoordinates.xy].rg;
+	float h = hv.x;
+	float v = hv.y;
 
 	// ----------------------------------------------------------------------------------
 	// Step 1, Apply obstruction:
@@ -168,6 +171,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 		v = 0.0;
 	}
 
-	h_rtt[id.xy] = float4(h, 0.0, 0.0, 1.0);
-	v_rtt[id.xy] = float4(v, 0.0, pos.x * M_TO_CM, pos.y * M_TO_CM);
+	// h_rtt[id.xy] = float4(h, 0.0, 0.0, 1.0);
+	// v_rtt[id.xy] = float4(v, 0.0, pos.x * M_TO_CM, pos.y * M_TO_CM);
+	hv_rtt[id.xy] = float4(h, v, pos.x * M_TO_CM, pos.y * M_TO_CM);
 }

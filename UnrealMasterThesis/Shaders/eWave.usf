@@ -1,24 +1,41 @@
 #include "/Engine/Public/Platform.ush"
+#include "Common.ush"
 
-static const float PI = 3.1415926535897933;
-static const float gravity = 9.82;
+float dt; // Delta time (in seconds)
 
-int N;   // Resolution
-float L; // Side length of patch in meters
-float t; // Time (in seconds)
-
-RWTexture2D<float4> eWave_h;
-RWTexture2D<float4> eWave_v;
+RWTexture2D<float4> eWave_hv;
 
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 
-	// TODO: rewrite logic... we should not need so many If/Else
+	// Based on chapter 2.4 of "handbook of real-time Fast Fourier Transforms" (1995) by the Smiths
+	// TODO: get rid of ternary operators if possible.
+	uint x2 = id.x > 0 ? N - id.x : 0;
+	uint y2 = id.y > 0 ? N - id.y : 0;
 
-	//eWave_hPrev[id.xy] = eWave_h[id.xy];
-	//eWave_vPrev[id.xy] = eWave_v[id.xy];
-	float4 hPrev = eWave_h[id.xy];
-	float4 vPrev = eWave_v[id.xy];
+	float2 C  = eWave_hv[id.xy].rg;
+	float2 C2 = eWave_hv[uint2(x2, y2)].rg;
+
+	Complex RPk = newComplex(0.5 * (C.r + C2.r), 0.0);
+	Complex IMk = newComplex(0.5 * (C.g - C2.g), 0.0);
+	Complex hPrev = add(
+		RPk,
+		mul(
+			newComplex(0.0, 1.0),
+			IMk
+		)
+	);
+
+	Complex IPk = newComplex(0.5 * (C.g + C2.g), 0.0);
+	Complex RMk = newComplex(0.5 * (C.r - C2.r), 0.0);
+	Complex vPrev = sub(
+		IPk,
+		mul(
+			newComplex(0.0, 1.0),
+			RMk
+		)
+	);
+	//////////////////////////
 
 	float dkx = 2 * PI / L;
 	float dky = dkx;
@@ -40,21 +57,32 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	}
 
 	float m_k = sqrt(kx*kx + ky*ky);
-	float w = sqrt(gravity*m_k);
+	float w = sqrt(GRAVITY*m_k);
 
-	float coswk = cos(w*t);
-	float sinwk = sin(w*t);
+	float coswk = cos(w*dt);
+	float sinwk = sin(w*dt);
 
-	if (m_k != 0)
-	{
-		float hRe = coswk*hPrev.r + (m_k / w)*sinwk*vPrev.r; // eq 19
-		float hIm = coswk*hPrev.g + (m_k / w)*sinwk*vPrev.g; // eq 19
+	if (m_k != 0) {
 
-		float vRe = coswk*vPrev.r - (gravity / w)*sinwk*hPrev.r; // eq 20	
-		float vIm = coswk*vPrev.g - (gravity / w)*sinwk*hPrev.g; // eq 20
+		Complex h = newComplex(
+			coswk*hPrev.re + (m_k / w)*sinwk*vPrev.re, // eq 19
+			coswk*hPrev.im + (m_k / w)*sinwk*vPrev.im  // eq 19
+		);
+
+		Complex v = newComplex(
+			coswk*vPrev.re - (GRAVITY / w)*sinwk*hPrev.re, // eq 20	
+			coswk*vPrev.im - (GRAVITY / w)*sinwk*hPrev.im  // eq 20
+		);
+
+		Complex hv = add(
+			h,
+			mul(
+				newComplex(0.0, 1.0),
+				v
+			)
+		);
 		
-		eWave_h[id.xy] = float4(hRe, hIm, 0.0, 1.0);
-		eWave_v[id.xy] = float4(vRe, vIm, 0.0, 1.0);
+		eWave_hv[id.xy] = float4(hv.re, hv.im, 0.0, 1.0);
 	}
 	
 }

@@ -171,7 +171,6 @@ void FourierComponentsShader::Buildh0Textures(int N, float L, std::function<floa
 void FourierComponentsShader::BuildAndExecuteGraph(
   FRHICommandListImmediate &RHI_cmd_list,
   float t,
-  float L,
   UTextureRenderTarget2D* tilde_hkt_dy,
   UTextureRenderTarget2D* tilde_hkt_dxz) {
 
@@ -180,8 +179,6 @@ void FourierComponentsShader::BuildAndExecuteGraph(
 	FParameters* PassParameters;
 	PassParameters = graph_builder.AllocParameters<FourierComponentsShader::FParameters>();
 
-	PassParameters->N = m_N;
-	PassParameters->L = L;
 	PassParameters->t = t;
 
   PassParameters->tilde_h0_k = register_texture(graph_builder, this->tilde_h0_k->GetTexture2D(), "tilde_h0_k");

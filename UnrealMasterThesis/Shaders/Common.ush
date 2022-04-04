@@ -39,6 +39,13 @@ Complex add(Complex c1, Complex c2) {
   return c;
 }
 
+Complex sub(Complex c1, Complex c2) {
+  Complex c;
+  c.re = c1.re - c2.re;
+  c.im = c1.im - c2.im;
+  return c;
+}
+
 Complex conj(Complex c) {
   c.im = -c.im;
   return c;

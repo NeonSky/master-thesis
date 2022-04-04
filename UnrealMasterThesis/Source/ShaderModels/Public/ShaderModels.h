@@ -22,16 +22,13 @@ public:
 
 	void ComputeFourierComponents(
 		float t,
-		float L,
 		UTextureRenderTarget2D* tilde_hkt_dy,
 		UTextureRenderTarget2D* tilde_hkt_dxz
 	);
 
 	void ComputeeWave(
-		float t,
-		float L,
-		UTextureRenderTarget2D* eWave_h,
-		UTextureRenderTarget2D* eWave_v
+		float dt,
+		UTextureRenderTarget2D* eWave_hv
 	);
 
 	void Clear(UTextureRenderTarget2D* result);
@@ -45,10 +42,8 @@ public:
 		UTextureRenderTarget2D* boat_rtt,
 		TRefCountPtr<FRDGPooledBuffer> submerged_triangles,
 		UTextureRenderTarget2D* obstructionMap_rtt,
-		UTextureRenderTarget2D* h_rtt,
-		UTextureRenderTarget2D* v_rtt,
-		UTextureRenderTarget2D* hPrev_rtt,
-		UTextureRenderTarget2D* vPrev_rtt,
+		UTextureRenderTarget2D* hv_rtt,
+		UTextureRenderTarget2D* hv_prev_rtt,
 		int preFFT);
 
 	void SampleElevationPoints(
