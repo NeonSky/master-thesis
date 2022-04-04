@@ -7,9 +7,10 @@ float scale;
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void eWaveCompute(uint3 id : SV_DispatchThreadID) {
     float sign = -(2 * fmod(id.x + id.y, 2) - 1); // sign equals -1 if (id.x + id.y) % 2 == 1, otherwise 1
-    float g = input_output_rtt[id.xy].g * scale;
 
-    input_output_rtt[id.xy] = float4(g * sign, 0.0, 0.0, 1.0);
-    copy_rtt[id.xy] = float4(g * sign, 0.0, 0.0, 1.0);
+    float2 rg = input_output_rtt[id.xy].rg * scale * sign;
+
+    input_output_rtt[id.xy] = float4(rg.g, rg.r, 0.0, 1.0);
+    copy_rtt[id.xy] = float4(rg.g, rg.r, 0.0, 1.0);
 
 }
