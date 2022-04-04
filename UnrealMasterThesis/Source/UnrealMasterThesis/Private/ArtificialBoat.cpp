@@ -21,12 +21,17 @@ void AArtificialBoat::BeginPlay() {
     Super::BeginPlay();
 
     m_shader_models_module.ResetGPUBoat(boat_rtt);
-
+    while (!m_readback_queue.empty()) m_readback_queue.pop(); // This is silly but it seems to help for consistent data collection. Making sure the Q is really empty.
     for (int i = 0; i < artificial_frame_delay+1; i++) {
         m_readback_queue.push(readback_bank[i]);
     }
     m_requested_elevations_on_frame = 0;
     m_cur_frame = 0;
+
+    for (auto b : readback_bank) {
+        m_shader_models_module.Clear(b); // Clearing readback bank RTTs, for consistent data collection
+    }
+    
 }
 
 void AArtificialBoat::UpdateReadbackQueue() {

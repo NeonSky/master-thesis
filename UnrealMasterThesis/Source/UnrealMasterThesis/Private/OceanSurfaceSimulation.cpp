@@ -67,11 +67,13 @@ void AOceanSurfaceSimulation::BeginPlay() {
 			m_shader_models_module.Clear(ewave_rtts.eWaveH);
 			m_shader_models_module.Clear(ewave_rtts.eWaveV_prev);
 			m_shader_models_module.Clear(ewave_rtts.eWaveH_prev);
+			m_shader_models_module.Clear(boat->GetBoatRTT());
 		}
 	}
 	m_shader_models_module.Clear(spectrum_x_rtt);
 	m_shader_models_module.Clear(spectrum_y_rtt);
 	m_shader_models_module.Clear(spectrum_z_rtt);
+	m_shader_models_module.Clear(eWave_addition_rtt);
 
 
 	input_pawn->on_fixed_update.AddUObject<AOceanSurfaceSimulation>(this, &AOceanSurfaceSimulation::update);
