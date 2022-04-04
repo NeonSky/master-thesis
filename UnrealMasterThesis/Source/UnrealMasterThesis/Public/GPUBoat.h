@@ -19,6 +19,7 @@ public:
     virtual UTextureRenderTarget2D* GetBoatRTT() override;
     virtual FeWaveRTTs GeteWaveRTTs() override;
 	virtual FVector2D WorldPosition() override;
+	virtual FVector WorldPosition3D() override;
 
 protected:
 

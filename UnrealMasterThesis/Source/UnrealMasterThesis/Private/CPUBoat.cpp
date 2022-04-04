@@ -516,3 +516,7 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r, std::function<void(TRefCountPtr<
 FVector2D ACPUBoat::WorldPosition() {
   return FVector2D(m_rigidbody.position.X, m_rigidbody.position.Y);
 }
+
+FVector ACPUBoat::WorldPosition3D() {
+    return m_rigidbody.position;
+}
