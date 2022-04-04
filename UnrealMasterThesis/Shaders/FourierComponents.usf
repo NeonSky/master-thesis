@@ -41,9 +41,8 @@ float t; // Time (in seconds)
 Texture2D<float4> tilde_h0_k;
 Texture2D<float4> tilde_h0_neg_k;
 
-RWTexture2D<float4> tilde_hkt_dx;
 RWTexture2D<float4> tilde_hkt_dy;
-RWTexture2D<float4> tilde_hkt_dz;
+RWTexture2D<float4> tilde_hkt_dxz;
 
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
@@ -93,9 +92,7 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     hkt_dy
   );
 
-  // I don't think the imaginary parts need to be passed actually. They should all be zero.
-  tilde_hkt_dx[id.xy] = float4(hkt_dx.re, hkt_dx.im, 0.0, 1.0);
-  tilde_hkt_dy[id.xy] = float4(hkt_dy.re, hkt_dy.im, 0.0, 1.0);
-  tilde_hkt_dz[id.xy] = float4(hkt_dz.re, hkt_dz.im, 0.0, 1.0);
+  tilde_hkt_dy[id.xy]  = float4(hkt_dy.re, hkt_dy.im, 0.0, 1.0);
+  tilde_hkt_dxz[id.xy] = float4(hkt_dx.re + hkt_dz.re, hkt_dx.im + hkt_dz.im, 0.0, 1.0);
 
 }

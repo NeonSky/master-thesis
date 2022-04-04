@@ -33,16 +33,12 @@ void AOceanSurfaceSimulation::BeginPlay() {
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, FString::Printf(TEXT("this->butterfly_rtt->SizeY != this->N, where N = %i"), this->N));
 	}
 
-	if (this->spectrum_x_rtt->SizeX != this->spectrum_x_rtt->SizeY || this->spectrum_x_rtt->SizeY != this->N) {
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("Wrong dimensions for spectrum_x_rtt"));
-	}
-
 	if (this->spectrum_y_rtt->SizeX != this->spectrum_y_rtt->SizeY || this->spectrum_y_rtt->SizeY != this->N) {
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("Wrong dimensions for spectrum_y_rtt"));
 	}
 
-	if (this->spectrum_z_rtt->SizeX != this->spectrum_z_rtt->SizeY || this->spectrum_z_rtt->SizeY != this->N) {
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("Wrong dimensions for spectrum_z_rtt"));
+	if (this->spectrum_xz_rtt->SizeX != this->spectrum_xz_rtt->SizeY || this->spectrum_xz_rtt->SizeY != this->N) {
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("Wrong dimensions for spectrum_xz_rtt"));
 	}
 
 	create_mesh();
@@ -107,13 +103,10 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
 
 	// Update non-interactive ocean.
-	m_shader_models_module.ComputeFourierComponents(realtimeSeconds, L, this->spectrum_x_rtt, this->spectrum_y_rtt, this->spectrum_z_rtt);
+	m_shader_models_module.ComputeFourierComponents(realtimeSeconds, L, this->spectrum_y_rtt, this->spectrum_xz_rtt);
 
-	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_x_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
-	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_z_rtt);
-
-	// this->update_mesh(0.02f);
+	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_xz_rtt);
 }
 
 TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points) {

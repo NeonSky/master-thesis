@@ -56,13 +56,10 @@ private:
 	UTextureRenderTarget2D* butterfly_rtt;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* spectrum_x_rtt;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UTextureRenderTarget2D* spectrum_y_rtt;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UTextureRenderTarget2D* spectrum_z_rtt;
+	UTextureRenderTarget2D* spectrum_xz_rtt;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TEnumAsByte<WaveSpectrumType> wave_spectrum;
