@@ -82,6 +82,11 @@ void ShaderModelsModule::FFT_Forward(UTextureRenderTarget2D* butterfly, UTexture
 	ENQUEUE_RENDER_COMMAND(shader)(
 		[shader, butterfly_param, output_param, shader2](FRHICommandListImmediate& RHI_cmd_list) {
 
+		shader2->BuildAndExecuteGraph(
+			RHI_cmd_list,
+			output_param
+		);
+
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
 			butterfly_param,
