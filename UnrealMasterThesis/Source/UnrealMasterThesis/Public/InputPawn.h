@@ -28,7 +28,7 @@ public:
 
     FOnFixedUpdate on_fixed_update;
 	TArray<InputState> inputSequence;
-	bool playBackInputSequence = true;
+	bool playBackInputSequence = false;
 
 	InputState getInputState();
 

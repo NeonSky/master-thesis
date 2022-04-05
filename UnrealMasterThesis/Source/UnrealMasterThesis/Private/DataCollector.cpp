@@ -24,6 +24,7 @@ void UDataCollector::BeginPlay()
 {
 	Super::BeginPlay();
 	// readInputJSON(inputPawn->inputSequence); // TODO, this is currently called in oceansurfaceSimulations beginplay instead. inputPawn is nullptr here. 
+	framesToCollect = 600; // data_collection_settings.secondsToRecord * 60; // TODO: assuming 60 FPS, but then the fixed dt should be 0.01667 instead of 0.02
 }
 
 
@@ -33,36 +34,33 @@ void UDataCollector::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	frameNumber++;
 	if (frameNumber >= framesToCollect) {
-		if (shouldCollectInputStates) {
+		if (data_collection_settings.shouldCollectInputStates) {
 			saveInputToFile();
 		}
-		if (shouldCollectBoatData) {
+		if (data_collection_settings.shouldCollectBoatData) {
 			saveBoatDataToFile();
 		}
-		shouldCollectBoatData = false;
-		shouldCollecteWaveTextures = false;
-		shouldCollectInputStates = false;
+		data_collection_settings.shouldCollectBoatData = false;
+		data_collection_settings.shouldCollecteWaveTextures = false;
+		data_collection_settings.shouldCollectInputStates = false;
 		inputPawn->playBackInputSequence = false;
 	}
-	if (shouldCollectInputStates) {
+	if (data_collection_settings.shouldCollectInputStates) {
 		inputStates.Add(inputPawn->getInputState());
 	}
 	
-	if (shouldCollecteWaveTextures) {
+	if (data_collection_settings.shouldCollecteWaveTextures) {
 		TArray<float> h_rtt_r_channel_data;
 		shaderModule->ComputeSerialization(eWave_h_rtt, serialization_rtt, h_rtt_r_channel_data);
 		saveeWaveDataToFile(h_rtt_r_channel_data); // TODO save v texture
 	}
 
-	if (shouldCollectBoatData) {
+	if (data_collection_settings.shouldCollectBoatData) {
+		// Currently only supports ONE boat
 		for (auto boat : boats) {
 			if (boat) {
 				FVector boatPos = boat->WorldPosition3D();
 				boatPositions.Add(boat->WorldPosition3D());
-				// boatOrientations.Add(boat->getOrientation()); // TODO
-			}
-			else {
-				// boatPositions.Add(FVector(0.0f, 0.0f, 0.0f));
 			}
 		}
 	}
@@ -88,7 +86,7 @@ void UDataCollector::saveeWaveDataToFile(TArray<float>& data) {
 }
 
 void UDataCollector::saveInputToFile() {
-	FString fname = *FString(TEXT("SavedInputData/TestData.json"));
+	FString fname = *FString(TEXT("SavedInputData/") + data_collection_settings.folderName + TEXT("/") + data_collection_settings.fileName + TEXT(".json"));
 	FString AbsoluteFilePath = FPaths::ProjectDir() + fname;
 	TSharedRef<FJsonObject> JsonRootObject = MakeShareable(new FJsonObject);
 	TArray<TSharedPtr<FJsonValue>> states;
@@ -114,7 +112,7 @@ void UDataCollector::saveInputToFile() {
 }
 static int ii = 0;
 void UDataCollector::saveBoatDataToFile() {
-	FString fname = *FString(TEXT("SavedBoatData/ART_FIX_ATTEMPT/ART1_OWS/TestData_ART_Boat_3_") + FString::FromInt(ii++) + TEXT(".json"));
+	FString fname = *FString(TEXT("SavedBoatData/") + data_collection_settings.folderName + TEXT("/") + data_collection_settings.fileName + FString::FromInt(ii++) + TEXT(".json"));
 	FString AbsoluteFilePath = FPaths::ProjectDir() + fname;
 	TSharedRef<FJsonObject> JsonRootObject = MakeShareable(new FJsonObject);
 	TArray<TSharedPtr<FJsonValue>> boatStates;
@@ -123,7 +121,6 @@ void UDataCollector::saveBoatDataToFile() {
 		JsonObject->SetNumberField("position_x", pos.X);
 		JsonObject->SetNumberField("position_y", pos.Y);
 		JsonObject->SetNumberField("position_z", pos.Z);
-		// JsonObject->SetNumberField("orientation_x", state.horizontal); // TODO
 
 		FString OutputString;
 		TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
@@ -131,7 +128,7 @@ void UDataCollector::saveBoatDataToFile() {
 
 		boatStates.Add(MakeShareable(new FJsonValueString(OutputString)));
 	}
-	JsonRootObject->SetArrayField("boatOrientations", boatStates);
+	JsonRootObject->SetArrayField("boatPositions", boatStates);
 
 	FString OutputString;
 	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
@@ -141,7 +138,7 @@ void UDataCollector::saveBoatDataToFile() {
 }
 
 void UDataCollector::readInputJSON(TArray<InputState>& inputSequence) {
-	FString fname = *FString(TEXT("SavedInputData/TestData.json"));
+	FString fname = *FString(TEXT("SavedInputData/") + data_collection_settings.folderName + TEXT("/") + data_collection_settings.fileName + TEXT(".json"));
 	FString AbsoluteFilePath = FPaths::ProjectDir() + fname;
 
 	FString inputData;
@@ -172,5 +169,6 @@ void UDataCollector::readInputJSON(TArray<InputState>& inputSequence) {
 	}
 	else {
 		UE_LOG(LogTemp, Error, TEXT("Failed to deserialize JSON input array object"));
+		inputPawn->playBackInputSequence = data_collection_settings.shouldPlayBackInputSequence = false;
 	}
 }
