@@ -13,12 +13,9 @@ public:
 
 		BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 
-		SHADER_PARAMETER(int, N)
-		SHADER_PARAMETER(float, L)
-		SHADER_PARAMETER(float, t)
+		SHADER_PARAMETER(float, dt)
 
-		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, eWave_h)
-		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, eWave_v)
+		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, eWave_hv)
 
 		END_SHADER_PARAMETER_STRUCT()
 
@@ -35,10 +32,8 @@ public:
 
 	void BuildAndExecuteGraph(
 		FRHICommandListImmediate& RHI_cmd_list,
-		float t,
-		float L,
-		UTextureRenderTarget2D* eWave_h,
-		UTextureRenderTarget2D* eWave_v
+		float dt,
+		UTextureRenderTarget2D* eWave_hv
 	);
 private:
 };

@@ -171,30 +171,24 @@ void FourierComponentsShader::Buildh0Textures(int N, float L, std::function<floa
 void FourierComponentsShader::BuildAndExecuteGraph(
   FRHICommandListImmediate &RHI_cmd_list,
   float t,
-  float L,
-  UTextureRenderTarget2D* tilde_hkt_dx,
   UTextureRenderTarget2D* tilde_hkt_dy,
-  UTextureRenderTarget2D* tilde_hkt_dz) {
+  UTextureRenderTarget2D* tilde_hkt_dxz) {
 
 	FRDGBuilder graph_builder(RHI_cmd_list);
 
 	FParameters* PassParameters;
 	PassParameters = graph_builder.AllocParameters<FourierComponentsShader::FParameters>();
 
-	PassParameters->N = m_N;
-	PassParameters->L = L;
 	PassParameters->t = t;
 
   PassParameters->tilde_h0_k = register_texture(graph_builder, this->tilde_h0_k->GetTexture2D(), "tilde_h0_k");
   PassParameters->tilde_h0_neg_k = register_texture(graph_builder, this->tilde_h0_neg_k->GetTexture2D(), "tilde_h0_neg_k");
 
-  CustomUAV uav1 = create_UAV(graph_builder, tilde_hkt_dx, TEXT("Compute_Something_Texture1"));
-  CustomUAV uav2 = create_UAV(graph_builder, tilde_hkt_dy, TEXT("Compute_Something_Texture2"));
-  CustomUAV uav3 = create_UAV(graph_builder, tilde_hkt_dz, TEXT("Compute_Something_Texture3"));
+  CustomUAV uav1 = create_UAV(graph_builder, tilde_hkt_dy, TEXT("Compute_Something_Texture1"));
+  CustomUAV uav2 = create_UAV(graph_builder, tilde_hkt_dxz, TEXT("Compute_Something_Texture2"));
 
-  PassParameters->tilde_hkt_dx = uav1.uav_ref;
-  PassParameters->tilde_hkt_dy = uav2.uav_ref;
-  PassParameters->tilde_hkt_dz = uav3.uav_ref;
+  PassParameters->tilde_hkt_dy = uav1.uav_ref;
+  PassParameters->tilde_hkt_dxz = uav2.uav_ref;
 
 	TShaderMapRef<FourierComponentsShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
@@ -212,26 +206,17 @@ void FourierComponentsShader::BuildAndExecuteGraph(
 	TRefCountPtr<IPooledRenderTarget> PooledComputeTarget2;
 	graph_builder.QueueTextureExtraction(uav2.ref, &PooledComputeTarget2);
 
-	TRefCountPtr<IPooledRenderTarget> PooledComputeTarget3;
-	graph_builder.QueueTextureExtraction(uav3.ref, &PooledComputeTarget3);
-
 	graph_builder.Execute();
 
 	RHI_cmd_list.CopyToResolveTarget(
     PooledComputeTarget1.GetReference()->GetRenderTargetItem().TargetableTexture,
-    tilde_hkt_dx->GetRenderTargetResource()->TextureRHI,
-    FResolveParams()
-  );
-
-	RHI_cmd_list.CopyToResolveTarget(
-    PooledComputeTarget2.GetReference()->GetRenderTargetItem().TargetableTexture,
     tilde_hkt_dy->GetRenderTargetResource()->TextureRHI,
     FResolveParams()
   );
 
 	RHI_cmd_list.CopyToResolveTarget(
-    PooledComputeTarget3.GetReference()->GetRenderTargetItem().TargetableTexture,
-    tilde_hkt_dz->GetRenderTargetResource()->TextureRHI,
+    PooledComputeTarget2.GetReference()->GetRenderTargetItem().TargetableTexture,
+    tilde_hkt_dxz->GetRenderTargetResource()->TextureRHI,
     FResolveParams()
   );
 

@@ -14,16 +14,10 @@ struct FeWaveRTTs {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
-    UTextureRenderTarget2D* eWaveV;
+    UTextureRenderTarget2D* eWaveHV;
 
 	UPROPERTY(EditAnywhere)
-    UTextureRenderTarget2D* eWaveH;
-
-	UPROPERTY(EditAnywhere)
-    UTextureRenderTarget2D* eWaveV_prev;
-
-	UPROPERTY(EditAnywhere)
-    UTextureRenderTarget2D* eWaveH_prev;
+    UTextureRenderTarget2D* eWaveHV_prev;
 };
 
 // See: https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/GameplayArchitecture/Interfaces/

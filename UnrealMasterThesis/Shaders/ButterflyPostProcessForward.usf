@@ -4,10 +4,9 @@ RWTexture2D<float4> InputOutputTexture;
 
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
-    float r = InputOutputTexture[id.xy].r;
-    float g = InputOutputTexture[id.xy].g;
+    float2 rg = InputOutputTexture[id.xy].rg;
 
     // Since our Butterfly shader performs IFFT, swap real and imaginary part here (after) and before calling FFT_Forward
-    InputOutputTexture[id.xy] = float4(g, r, 0.0, 1.0);
+    InputOutputTexture[id.xy] = float4(rg.y, rg.x, 0.0, 1.0);
 
 }

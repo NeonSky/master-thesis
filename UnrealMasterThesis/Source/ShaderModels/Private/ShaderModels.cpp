@@ -19,9 +19,6 @@
 #include "ShaderCore.h" 
 #include "Engine/TextureRenderTarget2D.h"
 
-struct Test {
-	TRefCountPtr<FRDGPooledBuffer> buffer;
-};
 
 void ShaderModelsModule::StartupModule() {
 	UE_LOG(LogTemp, Warning, TEXT("ShaderModelsModule::StartupModule()"));
@@ -84,6 +81,12 @@ void ShaderModelsModule::FFT_Forward(UTextureRenderTarget2D* butterfly, UTexture
 
 	ENQUEUE_RENDER_COMMAND(shader)(
 		[shader, butterfly_param, output_param, shader2](FRHICommandListImmediate& RHI_cmd_list) {
+
+		shader2->BuildAndExecuteGraph(
+			RHI_cmd_list,
+			output_param
+		);
+
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
 			butterfly_param,
@@ -109,49 +112,39 @@ void ShaderModelsModule::Buildh0Textures(int N, float L, std::function<float (FV
 
 void ShaderModelsModule::ComputeFourierComponents(
 	float t,
-	float L,
-	UTextureRenderTarget2D* tilde_hkt_dx,
 	UTextureRenderTarget2D* tilde_hkt_dy,
-	UTextureRenderTarget2D* tilde_hkt_dz) {
+	UTextureRenderTarget2D* tilde_hkt_dxz) {
 
  	TShaderMapRef<FourierComponentsShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
-	UTextureRenderTarget2D* tilde_hkt_dx_param = tilde_hkt_dx;
 	UTextureRenderTarget2D* tilde_hkt_dy_param = tilde_hkt_dy;
-	UTextureRenderTarget2D* tilde_hkt_dz_param = tilde_hkt_dz;
+	UTextureRenderTarget2D* tilde_hkt_dxz_param = tilde_hkt_dxz;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, t, L, tilde_hkt_dx_param, tilde_hkt_dy_param, tilde_hkt_dz_param](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, t, tilde_hkt_dy_param, tilde_hkt_dxz_param](FRHICommandListImmediate& RHI_cmd_list) {
 			shader->BuildAndExecuteGraph(
 				RHI_cmd_list,
 				t,
-				L,
-				tilde_hkt_dx_param,
 				tilde_hkt_dy_param,
-				tilde_hkt_dz_param
+				tilde_hkt_dxz_param
 			);
 		}); 
 }
 
 void ShaderModelsModule::ComputeeWave(
-	float t, 
-	float L, 
-	UTextureRenderTarget2D* eWave_h, 
-	UTextureRenderTarget2D* eWave_v) {
+	float dt, 
+	UTextureRenderTarget2D* eWave_hv) {
 
 	TShaderMapRef<eWaveShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
-	UTextureRenderTarget2D* eWave_h_param = eWave_h;
-	UTextureRenderTarget2D* eWave_v_param = eWave_v;
+	UTextureRenderTarget2D* eWave_hv_param = eWave_hv;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, t, L, eWave_h_param, eWave_v_param](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, dt, eWave_hv_param](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
-			t,
-			L,
-			eWave_h_param,
-			eWave_v_param
+			dt,
+			eWave_hv_param
 		);
 	});
 
@@ -200,22 +193,18 @@ void ShaderModelsModule::ComputeObstruction(
     UTextureRenderTarget2D* boat_rtt,
 	TRefCountPtr<FRDGPooledBuffer> submerged_triangles,
 	UTextureRenderTarget2D* obstructionMap_rtt,
-	UTextureRenderTarget2D* h_rtt,
-	UTextureRenderTarget2D* v_rtt,
-	UTextureRenderTarget2D* hPrev_rtt,
-	UTextureRenderTarget2D* vPrev_rtt,
+	UTextureRenderTarget2D* hv_rtt,
+	UTextureRenderTarget2D* hv_prev_rtt,
 	int preFFT) {
 
 	TShaderMapRef<ObstructionShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	UTextureRenderTarget2D* obstructionMap_rtt_param = obstructionMap_rtt;
-	UTextureRenderTarget2D* h_rtt_param = h_rtt;
-	UTextureRenderTarget2D* v_rtt_param = v_rtt;
-	UTextureRenderTarget2D* hPrev_rtt_param = hPrev_rtt;
-	UTextureRenderTarget2D* vPrev_rtt_param = vPrev_rtt;
+	UTextureRenderTarget2D* hv_rtt_param = hv_rtt;
+	UTextureRenderTarget2D* hv_prev_rtt_param = hv_prev_rtt;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, boat_rtt, submerged_triangles, obstructionMap_rtt_param, h_rtt_param, v_rtt_param, hPrev_rtt_param, vPrev_rtt_param, preFFT](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, boat_rtt, submerged_triangles, obstructionMap_rtt_param, hv_rtt_param, hv_prev_rtt_param, preFFT](FRHICommandListImmediate& RHI_cmd_list) {
 		// UE_LOG(LogTemp, Warning, TEXT("is valid?: %i"), submerged_triangles.IsValid()); // mostly 1 but sometimes 0
 			if (!submerged_triangles.IsValid()) {
 				UE_LOG(LogTemp, Warning, TEXT("Not valid3"));
@@ -226,10 +215,8 @@ void ShaderModelsModule::ComputeObstruction(
 				boat_rtt,
 				submerged_triangles,
 				obstructionMap_rtt_param,
-				h_rtt_param,
-				v_rtt_param,
-				hPrev_rtt_param,
-				vPrev_rtt_param,
+				hv_rtt_param,
+				hv_prev_rtt_param,
 				preFFT
 			);
 	});

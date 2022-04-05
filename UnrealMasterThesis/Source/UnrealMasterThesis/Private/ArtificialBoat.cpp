@@ -63,7 +63,7 @@ void AArtificialBoat::Update(UpdatePayload update_payload, std::function<void(TR
     if (IsHidden()) {
         SetActorHiddenInGame(false);
         shared_state.boat_rtts.Push(this->boat_rtt);
-        shared_state.ewave_rtts.Push(this->ewave_rtts.eWaveH);
+        shared_state.ewave_rtts.Push(this->ewave_rtts.eWaveHV);
     }
 
     UpdateReadbackQueue();

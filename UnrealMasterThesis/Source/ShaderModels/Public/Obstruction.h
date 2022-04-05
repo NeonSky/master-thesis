@@ -17,10 +17,8 @@ public:
 		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<GPUSumbergedTriangle>, SubmergedTrianglesBuffer)
 
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, obstructionMap_rtt)
-		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, h_rtt)
-		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, v_rtt)
-		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, hPrev_rtt)
-		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, vPrev_rtt)
+		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, hv_rtt)
+		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, hv_prev_rtt)
 		SHADER_PARAMETER(int, preFFT)
 
 	END_SHADER_PARAMETER_STRUCT()
@@ -42,10 +40,8 @@ public:
 		UTextureRenderTarget2D* boat_rtt,
 		TRefCountPtr<FRDGPooledBuffer> submerged_triangles,
 		UTextureRenderTarget2D* obstructionMap_rtt,
-		UTextureRenderTarget2D* h_rtt,
-		UTextureRenderTarget2D* v_rtt,
-		UTextureRenderTarget2D* hPrev_rtt,
-		UTextureRenderTarget2D* vPrev_rtt,
+		UTextureRenderTarget2D* hv_rtt,
+		UTextureRenderTarget2D* hv_prev_rtt,
 		int preFFT
 	);
 private:

@@ -9,10 +9,11 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     float sign = -(2 * fmod(id.x + id.y, 2) - 1); // sign equals -1 if (id.x + id.y) % 2 == 1, otherwise 1
 
-    float r = InputOutputTexture[id.xy].r;
-    float g = InputOutputTexture[id.xy].g;
+    float2 rg = InputOutputTexture[id.xy].rg;
+    float r = rg.x;
+    float g = rg.y;
 
     // We do not divide by N^2 here since we would then have to later multiply by N^2 anyway.
     // See the report for further details.
-    InputOutputTexture[id.xy] = float4(r * sign, g, 0.0, 1.0);
+    InputOutputTexture[id.xy] = float4(r * sign, g * sign, 0.0, 1.0);
 }

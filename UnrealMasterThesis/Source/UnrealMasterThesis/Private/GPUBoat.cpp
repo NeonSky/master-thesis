@@ -27,7 +27,7 @@ void AGPUBoat::Update(UpdatePayload update_payload, std::function<void(TRefCount
     if (IsHidden()) {
         SetActorHiddenInGame(false);
         shared_state.boat_rtts.Push(this->boat_rtt);
-        shared_state.ewave_rtts.Push(this->ewave_rtts.eWaveH);
+        shared_state.ewave_rtts.Push(this->ewave_rtts.eWaveHV);
     }
 
     FVector2D velocity_input = use_p2_inputs ? update_payload.velocity_input2 : update_payload.velocity_input;

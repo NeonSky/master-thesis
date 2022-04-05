@@ -15,16 +15,13 @@ public:
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 
-		SHADER_PARAMETER(int, N)
-		SHADER_PARAMETER(float, L)
 		SHADER_PARAMETER(float, t)
 
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, tilde_h0_k)
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, tilde_h0_neg_k)
 
-		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, tilde_hkt_dx)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, tilde_hkt_dy)
-		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, tilde_hkt_dz)
+		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, tilde_hkt_dxz)
 
 	END_SHADER_PARAMETER_STRUCT()
 
@@ -44,10 +41,8 @@ public:
 	void BuildAndExecuteGraph(
 			FRHICommandListImmediate &RHI_cmd_list,
 			float t,
-			float L,
-			UTextureRenderTarget2D *tilde_hkt_dx,
 			UTextureRenderTarget2D *tilde_hkt_dy,
-			UTextureRenderTarget2D *tilde_hkt_dz
+			UTextureRenderTarget2D *tilde_hkt_dxz
 	);
 
 private:
