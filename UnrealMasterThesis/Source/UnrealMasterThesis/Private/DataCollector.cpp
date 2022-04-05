@@ -62,7 +62,7 @@ void UDataCollector::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 				// boatOrientations.Add(boat->getOrientation()); // TODO
 			}
 			else {
-				boatPositions.Add(FVector(0.0f, 0.0f, 0.0f));
+				// boatPositions.Add(FVector(0.0f, 0.0f, 0.0f));
 			}
 		}
 	}
@@ -112,9 +112,9 @@ void UDataCollector::saveInputToFile() {
 
 	FFileHelper::SaveStringToFile(OutputString, *AbsoluteFilePath);
 }
-
+static int ii = 0;
 void UDataCollector::saveBoatDataToFile() {
-	FString fname = *FString(TEXT("SavedBoatData/TestData_Boat.json"));
+	FString fname = *FString(TEXT("SavedBoatData/ART_FIX_ATTEMPT/ART1_OWS/TestData_ART_Boat_3_") + FString::FromInt(ii++) + TEXT(".json"));
 	FString AbsoluteFilePath = FPaths::ProjectDir() + fname;
 	TSharedRef<FJsonObject> JsonRootObject = MakeShareable(new FJsonObject);
 	TArray<TSharedPtr<FJsonValue>> boatStates;
