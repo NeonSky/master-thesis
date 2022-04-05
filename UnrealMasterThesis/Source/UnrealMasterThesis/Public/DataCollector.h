@@ -8,6 +8,31 @@
 #include "IBoat.h"
 #include "DataCollector.generated.h"
 
+USTRUCT(BlueprintType)
+struct FDataCollectionSettings {
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere)
+	bool shouldCollectBoatData;
+
+	UPROPERTY(EditAnywhere)
+	bool shouldCollecteWaveTextures;
+
+	UPROPERTY(EditAnywhere)
+	bool shouldCollectInputStates;
+
+	UPROPERTY(EditAnywhere)
+	bool shouldPlayBackInputSequence;
+
+	UPROPERTY(EditAnywhere)
+	int secondsToRecord;
+
+	UPROPERTY(EditAnywhere)
+	FString fileName;
+
+	UPROPERTY(EditAnywhere)
+	FString folderName;
+};
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UNREALMASTERTHESIS_API UDataCollector : public USceneComponent
 {
@@ -23,6 +48,7 @@ public:
 	class ShaderModelsModule* shaderModule;
 	TArray<TScriptInterface<IBoatInterface>> boats;
 	TArray<FVector> boatPositions;
+	FDataCollectionSettings data_collection_settings;
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -35,13 +61,8 @@ public:
 	void saveBoatDataToFile();
 	void readInputJSON(TArray<InputState>& inputSequence);
 
-
 private:
-
 	TArray<InputState> inputStates;
 	int frameNumber = 0;
-	int framesToCollect = 60 * 10; // TODO: expose these (+ should playback) to editor so we don't have to change any code
-	bool shouldCollectBoatData = true; 
-	bool shouldCollecteWaveTextures = false;
-	bool shouldCollectInputStates = false;
+	int framesToCollect;
 };
