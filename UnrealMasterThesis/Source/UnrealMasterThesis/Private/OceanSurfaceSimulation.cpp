@@ -2,7 +2,6 @@
 
 #include "OceanSurfaceSimulation.h"
 #include "Globals/StatelessHelpers.h"
-#include "DataCollector.h"
 
 #include "ImageUtils.h"
 #include "KismetProceduralMeshLibrary.h"
@@ -75,18 +74,20 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	m_shader_models_module.Clear(spectrum_z_rtt);
 	m_shader_models_module.Clear(eWave_addition_rtt);
 
+	FeWaveRTTs ewave_rtts = boats[0]->GeteWaveRTTs();
 
 	input_pawn->on_fixed_update.AddUObject<AOceanSurfaceSimulation>(this, &AOceanSurfaceSimulation::update);
 	data_collector->inputPawn = input_pawn;
 	data_collector->shaderModule = &m_shader_models_module;
-
-	FeWaveRTTs ewave_rtts = boats[0]->GeteWaveRTTs();
-
+	data_collector->data_collection_settings = data_collection_settings;
+	input_pawn->playBackInputSequence = data_collection_settings.shouldPlayBackInputSequence;
 	data_collector->eWave_h_rtt = ewave_rtts.eWaveH;
 	data_collector->eWave_v_rtt = ewave_rtts.eWaveV;
 	//data_collector->serialization_rtt = serialization_rtt;
-	for (auto boat : boats) { data_collector->boats.Add(boat); } // TODO: hmm
+	for (auto boat : boats) { data_collector->boats.Add(boat); }
 	data_collector->readInputJSON(input_pawn->inputSequence);
+
+	
 }
 
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {

@@ -5,6 +5,7 @@
 #include "ShaderModels.h"
 #include "WaveSpectrums.h"
 #include "IBoat.h"
+#include "DataCollector.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -91,6 +92,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), meta = (UIMin = "0", UIMax = "10000"))
 	int oceanSeed = 42;
 	float oceanTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	FDataCollectionSettings data_collection_settings;
 
 	int32 N; // Resolution in terms of vertices per horizontal unit axis.
 
