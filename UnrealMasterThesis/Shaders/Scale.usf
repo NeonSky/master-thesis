@@ -10,7 +10,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 
     float2 rg = input_output_rtt[id.xy].rg * scale * sign;
 
-    input_output_rtt[id.xy] = float4(rg.r, rg.g, 0.0, 1.0);
-    copy_rtt[id.xy] = float4(rg.r, rg.g, 0.0, 1.0);
+    input_output_rtt[id.xy].rg = rg;
+    copy_rtt[id.xy].rg = rg;
 
 }

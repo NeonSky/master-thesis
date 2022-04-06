@@ -7,6 +7,6 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     float2 rg = InputOutputTexture[id.xy].rg;
 
     // Since our Butterfly shader performs IFFT, swap real and imaginary part here (after) and before calling FFT_Forward
-    InputOutputTexture[id.xy] = float4(rg.y, rg.x, 0.0, 1.0);
+    InputOutputTexture[id.xy].rg = float2(rg.y, rg.x);
 
 }

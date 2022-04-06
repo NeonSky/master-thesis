@@ -59,17 +59,10 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 		pos.x = xp * cm_per_pixel / M_TO_CM;
 		pos.y = yp * cm_per_pixel / M_TO_CM;
 
-		// float2 sampleCoordinates = float2(id.x + boat_dx, id.y + boat_dy);
-
 		hv_rtt[uint2(0,0)].ba = pos;
 		hv_prev_rtt[uint2(0,0)].ba = float2(boat_dx, boat_dy);
 
 		return;
-	}
-
-	int2 sampleCoordinates = int2(id.x, id.y);
-	if (preFFT >= 1) {
-		sampleCoordinates = id.xy + int2(hv_prev_rtt[uint2(0,0)].ba);
 	}
 
 	if (preFFT == 3) {
@@ -88,6 +81,11 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	// 	// Offset when sampling from prev textures to move the simulation.
 	// 	sampleCoordinates = int2(id.x + boat_dx, id.y + boat_dy);
 	// }
+
+	int2 sampleCoordinates = int2(id.x, id.y);
+	if (preFFT >= 1) {
+		sampleCoordinates = id.xy + int2(hv_prev_rtt[uint2(0,0)].ba);
+	}
 	
 	if (preFFT == 2) {
 
@@ -105,7 +103,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 
 			SubmergedTriangle t = SubmergedTrianglesBuffer[i];
 			if (t.center_and_area.w <= 0.0) {
-				return;
+				continue;
 			}
 
 			float4 v1 = t.v1;
@@ -124,7 +122,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 			// TODO: ?
 			if(ptInTriangle(float4(sampleCoordinates.xy, 0.0, 1.0), v1, v2, v3)){
 				obstructionMap_rtt[sampleCoordinates.xy] = float4(0.0, 0.0, 0.0, 1.0);
-				// return;
+				return;
 			}
 
 		}
