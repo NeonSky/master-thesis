@@ -12,13 +12,12 @@ int preFFT;
 
 
 float T(float x_y){
-	float L_in_pixels = 256.0; // TODO: make these in parameters to the shader
 	float taper_size = 8.0;
 	if(x_y / taper_size < 1.0){
 		return x_y / taper_size;
 	}
-	else if(abs(x_y - L_in_pixels) / taper_size < 1.0){
-		return abs(x_y - L_in_pixels) / taper_size;
+	else if(abs(x_y - N) / taper_size < 1.0){
+		return abs(x_y - N) / taper_size;
 	}
 	else{
 		return 1.0;
@@ -39,55 +38,74 @@ bool ptInTriangle(float4 p, float4 p0, float4 p1, float4 p2){
     return s > epsilon && t > epsilon && (s + t) < ((2.0 * A * tsign) - epsilon);
 }
 
+// TODO: make more entry points instead of using the preFFT variable
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 
-	float cm_per_pixel = L * M_TO_CM / N;
+	if (preFFT == 4) {
+		const float cm_per_pixel = L * M_TO_CM / N;
 
-	float3 vel = BoatTexture[uint2(2,0)].rgb; // RGB of (2,0) stores velocity
-	float speedScale = pow(length(vel), 1.5) / 500.0;
+		float2 pos = BoatTexture[uint2(0,0)].rg; // RG of (0,0) stores horizontal position (see gravity in GPUBoat.usf)
+		int xp = (pos.x * M_TO_CM) / cm_per_pixel;
+		int yp = (pos.y * M_TO_CM) / cm_per_pixel;
 
-	float2 pos = BoatTexture[uint2(0,0)].rg; // RG of (0,0) stores horizontal position (see gravity in GPUBoat.usf)
-	int xp = (pos.x * M_TO_CM) / cm_per_pixel;
-	int yp = (pos.y * M_TO_CM) / cm_per_pixel;
+		float2 prev_pos = BoatTexture[uint2(0,1)].rg; // RG of (0,1) stores previous horizontal position
+		int prev_xp = (prev_pos.x * M_TO_CM) / cm_per_pixel;
+		int prev_yp = (prev_pos.y * M_TO_CM) / cm_per_pixel;
 
-	float2 prev_pos = BoatTexture[uint2(0,1)].rg; // RG of (0,1) stores previous horizontal position
-	int prev_xp = (prev_pos.x * M_TO_CM) / cm_per_pixel;
-	int prev_yp = (prev_pos.y * M_TO_CM) / cm_per_pixel;
+		int boat_dx = xp - prev_xp;
+		int boat_dy = yp - prev_yp;
 
-	int boat_dx = xp - prev_xp;
-	int boat_dy = yp - prev_yp;
+		pos.x = xp * cm_per_pixel / M_TO_CM;
+		pos.y = yp * cm_per_pixel / M_TO_CM;
 
-	pos.x = xp * cm_per_pixel / M_TO_CM;
-	pos.y = yp * cm_per_pixel / M_TO_CM;
-	
+		// float2 sampleCoordinates = float2(id.x + boat_dx, id.y + boat_dy);
+
+		hv_rtt[uint2(0,0)].ba = pos;
+		hv_prev_rtt[uint2(0,0)].ba = float2(boat_dx, boat_dy);
+
+		return;
+	}
+
+	int2 sampleCoordinates = int2(id.x, id.y);
+	if (preFFT >= 1) {
+		sampleCoordinates = id.xy + int2(hv_prev_rtt[uint2(0,0)].ba);
+	}
+
+	if (preFFT == 3) {
+		obstructionMap_rtt[id.xy] = float4(1.0, 0.0, 0.0, 1.0);
+		return;
+	}
+
 	// ----------------------------------------------------------------------------------
 	// Pre processing steps:
 	// 		sample the previous frames height and velocity potential fields from copies.
 	// 		compute the obstruction map from the submerged triangles.
 	// ----------------------------------------------------------------------------------
 	
-	int2 sampleCoordinates = int2(id.x, id.y);
-	if (preFFT >= 1) {
-		// Offset when sampling from prev textures to move the simulation.
-		sampleCoordinates = int2(id.x + boat_dx, id.y + boat_dy);
-	}
+	// int2 sampleCoordinates = int2(id.x, id.y);
+	// if (preFFT >= 1) {
+	// 	// Offset when sampling from prev textures to move the simulation.
+	// 	sampleCoordinates = int2(id.x + boat_dx, id.y + boat_dy);
+	// }
 	
 	if (preFFT == 2) {
+
+		float2 pos = hv_rtt[uint2(0,0)].ba;
+
 		// Compute the obstruction map
 		// it should be 0.0 where the boats submerged triangles are. Rest should be 1.0
 		float half_L_in_metres = 50.0f;
-		float oldMinX = pos.x - half_L_in_metres; // TODO: replace 0 with offset to move with the boat.
+		float oldMinX = pos.x - half_L_in_metres;
 		float oldMaxX = pos.x + half_L_in_metres;
 		float oldMinY = pos.y - half_L_in_metres;
 		float oldMaxY = pos.y + half_L_in_metres;
-		obstructionMap_rtt[sampleCoordinates.xy] = float4(1.0, 0.0, 0.0, 1.0);
 
 		for (int i = 0; i < N_TRIANGLES; i++) {
 
 			SubmergedTriangle t = SubmergedTrianglesBuffer[i];
 			if (t.center_and_area.w <= 0.0) {
-				continue;
+				return;
 			}
 
 			float4 v1 = t.v1;
@@ -102,13 +120,14 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 			v3.x = remap(v3.x, oldMinX, oldMaxX, 0, N);
 			v3.y = remap(v3.y, oldMinY, oldMaxY, 0, N); // we can ignore z
 			
+			// obstructionMap_rtt[uint2(id.z, id.z)] = float4(0.0, 0.0, 0.0, 1.0);
 			// TODO: ?
 			if(ptInTriangle(float4(sampleCoordinates.xy, 0.0, 1.0), v1, v2, v3)){
 				obstructionMap_rtt[sampleCoordinates.xy] = float4(0.0, 0.0, 0.0, 1.0);
+				// return;
 			}
-		}
 
-		hv_prev_rtt[id.xy] = hv_rtt[id.xy];
+		}
 
 		return;
 
@@ -146,6 +165,10 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	//		Note: this should only be done before FFT
 	// ----------------------------------------------------------------------------------
 	if (preFFT == 1) {
+
+		float3 vel = BoatTexture[uint2(2,0)].rgb; // RGB of (2,0) stores velocity
+		float speedScale = pow(length(vel), 1.5) / 500.0;
+
 		float scale = 5.0 * speedScale; // Needs to match material
 		float obsCompliment = 1.0 - obstructionMap_rtt[id.xy].r;
 		h += scale * obsCompliment;
@@ -165,6 +188,6 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 		h = 0.0;
 		v = 0.0;
 	}
-	 
-	hv_rtt[id.xy] = float4(h, v, pos.x * M_TO_CM, pos.y * M_TO_CM);
+
+	hv_rtt[id.xy].rg = float2(h, v);
 }

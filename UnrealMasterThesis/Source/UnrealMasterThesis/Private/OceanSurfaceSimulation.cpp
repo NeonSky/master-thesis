@@ -295,6 +295,19 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 
 				FeWaveRTTs ewave_rtts = boat->GeteWaveRTTs();
 
+				UTextureRenderTarget2D* src = ewave_rtts.eWaveHV;
+				UTextureRenderTarget2D* dst = ewave_rtts.eWaveHV_prev;
+				ENQUEUE_RENDER_COMMAND(void)(
+					[src, dst](FRHICommandListImmediate& RHI_cmd_list) {
+						RHI_cmd_list.CopyToResolveTarget(
+							src->GetRenderTargetResource()->GetRenderTargetTexture(),
+							dst->GetRenderTargetResource()->GetRenderTargetTexture(),
+							FResolveParams()
+						);
+					});
+
+				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 4);
+				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 3);
 				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 2);
 				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 1);
 				m_shader_models_module.FFT_Forward(this->butterfly_rtt, ewave_rtts.eWaveHV); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
