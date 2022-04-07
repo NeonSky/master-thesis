@@ -85,7 +85,7 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
   // output_texture
 	FRDGTextureDesc OutTextureDesc = FRDGTextureDesc::Create2D(
 		FIntPoint(N, 1),
-		PF_A32B32G32R32F,
+		PF_FloatRGBA,
 		FClearValueBinding(),
 		TexCreate_UAV,
 		1,
