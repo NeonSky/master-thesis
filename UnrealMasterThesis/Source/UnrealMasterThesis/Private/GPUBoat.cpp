@@ -45,6 +45,7 @@ void AGPUBoat::Update(UpdatePayload update_payload, std::function<void(TRefCount
         collision_mesh,
         elevation_rtt,
         shared_state.ewave_rtts,
+        ewave_rtts.obstruction,
         boat_rtt,
         other_boat_textures,
         readback_rtt,

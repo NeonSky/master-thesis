@@ -34,6 +34,7 @@ public:
 
 	void RenderTo(
 		FRHICommandListImmediate& RHI_cmd_list,
+        TRefCountPtr<FRDGPooledBuffer> submerged_position_buffer,
 		UTextureRenderTarget2D* output
 	);
 
@@ -45,16 +46,16 @@ public:
 		TResourceArray<FFilterVertex, VERTEXBUFFER_ALIGNMENT> vertices;
 		vertices.SetNumUninitialized(6);
 
-		vertices[0].Position = FVector4(-1, 1, 0, 1);
+		vertices[0].Position = FVector4(-0.5f, 0.5f, 0, 1);
 		vertices[0].UV = FVector2D(0, 0);
 
-		vertices[1].Position = FVector4(1, 1, 0, 1);
+		vertices[1].Position = FVector4(0.5f, 0.5f, 0, 1);
 		vertices[1].UV = FVector2D(1, 0);
 
-		vertices[2].Position = FVector4(-1, -1, 0, 1);
+		vertices[2].Position = FVector4(-0.5f, -0.5f, 0, 1);
 		vertices[2].UV = FVector2D(0, 1);
 
-		vertices[3].Position = FVector4(1, -1, 0, 1);
+		vertices[3].Position = FVector4(0.5f, -0.5f, 0, 1);
 		vertices[3].UV = FVector2D(1, 1);
 
 		FRHIResourceCreateInfo CreateInfo(&vertices);

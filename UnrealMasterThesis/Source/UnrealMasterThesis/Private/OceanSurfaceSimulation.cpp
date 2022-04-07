@@ -306,10 +306,10 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 						);
 					});
 
-				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 4);
-				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 3);
-				// m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 2);
-				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 1);
+				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, ewave_rtts.obstruction, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 4);
+				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, ewave_rtts.obstruction, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 3);
+				// m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, ewave_rtts.obstruction, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 2);
+				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, ewave_rtts.obstruction, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 1);
 				m_shader_models_module.FFT_Forward(this->butterfly_rtt, ewave_rtts.eWaveHV); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
 				UTextureRenderTarget2D* src = ewave_rtts.eWaveHV;
 				UTextureRenderTarget2D* dst = ewave_rtts.eWaveHV_prev;
@@ -327,12 +327,21 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 				m_shader_models_module.ComputeeWave(dt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev);
 				m_shader_models_module.FFT(this->butterfly_rtt, ewave_rtts.eWaveHV, 0);
 				m_shader_models_module.ComputeScale(ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, ewave_scale);
-				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 0);
+				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, ewave_rtts.obstruction, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 0);
 			}
 		}
 	}
 	// TODO: remove
-	else {
-		m_shader_models_module.ProjectObstruction(this->eWave_addition_rtt);
-	}
+	// else {
+	// 	for (int i = 0; i < boats.Num(); i++) {
+	// 		auto boat = boats[i];
+	// 		if (boat) {
+
+	// 			FeWaveRTTs ewave_rtts = boat->GeteWaveRTTs();
+
+	// 			m_shader_models_module.Clear(ewave_rtts.obstruction);
+	// 			m_shader_models_module.ProjectObstruction(boat_collision_mesh, ewave_rtts.obstruction);
+	// 		}
+	// 	}
+	// }
 }

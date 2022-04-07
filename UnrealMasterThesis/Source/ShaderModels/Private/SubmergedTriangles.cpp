@@ -41,7 +41,8 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
         UTextureRenderTarget2D* boat_texture,
         TArray<UTextureRenderTarget2D*> other_boat_textures,
         TArray<UTextureRenderTarget2D*> wake_textures,
-        TRefCountPtr<FRDGPooledBuffer>* output_buffer) {
+        TRefCountPtr<FRDGPooledBuffer>* output_buffer,
+        TRefCountPtr<FRDGPooledBuffer>* submerged_position_buffer) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
 
@@ -94,6 +95,20 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
 
     PassParameters->OutputBuffer = uav_ref;
 
+    TArray<GPUSumbergedTriangle> initial_data2;
+    initial_data2.SetNum(3*N);
+    FRDGBufferRef rdg_buffer_ref2 = CreateStructuredBuffer(
+        graph_builder,
+        TEXT("SubmergedPositionBuffer"),
+        sizeof(GPUSumbergedTriangle),
+        3 * N, // each triangle has 3 vertices
+        initial_data2.GetData(),
+        sizeof(FVector4) * 3 * N,
+        ERDGInitialDataFlags::None
+    );
+    FRDGBufferUAVRef uav_ref2 = graph_builder.CreateUAV(rdg_buffer_ref2, PF_R32_UINT);
+    PassParameters->SubmergedPositionBuffer = uav_ref2;
+
     // Call compute shader
     TShaderMapRef<SubmergedTrianglesShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
     FComputeShaderUtils::AddPass(
@@ -103,10 +118,8 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
         PassParameters,
         FIntVector(N/2, 1, 1));
 
-    // TRefCountPtr<FRDGPooledBuffer> PooledComputeTarget;
     graph_builder.QueueBufferExtraction(rdg_buffer_ref, output_buffer);
+    graph_builder.QueueBufferExtraction(rdg_buffer_ref, submerged_position_buffer);
 
     graph_builder.Execute();
-
-    // *output_buffer = PooledComputeTarget;
 }

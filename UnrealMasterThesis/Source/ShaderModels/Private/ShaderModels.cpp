@@ -225,14 +225,15 @@ void ShaderModelsModule::ComputeSerialization(UTextureRenderTarget2D* input_rtt,
 	}
 }
 
-void ShaderModelsModule::ProjectObstruction(UTextureRenderTarget2D* obstruction_rtt) {
+void ShaderModelsModule::ProjectObstruction(TRefCountPtr<FRDGPooledBuffer> submerged_position_buffer, UTextureRenderTarget2D* obstruction_rtt) {
 
 	TShaderMapRef<HorizontalProjectionFragShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	ENQUEUE_RENDER_COMMAND(void)(
-		[shader, obstruction_rtt](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, submerged_position_buffer, obstruction_rtt](FRHICommandListImmediate& RHI_cmd_list) {
 			shader->RenderTo(
 				RHI_cmd_list,
+				submerged_position_buffer,
 				obstruction_rtt
 			);
 	});
@@ -254,7 +255,6 @@ void ShaderModelsModule::ComputeObstruction(
 
 	ENQUEUE_RENDER_COMMAND(shader)(
 		[shader, boat_rtt, submerged_triangles, obstructionMap_rtt_param, hv_rtt_param, hv_prev_rtt_param, preFFT](FRHICommandListImmediate& RHI_cmd_list) {
-		// UE_LOG(LogTemp, Warning, TEXT("is valid?: %i"), submerged_triangles.IsValid()); // mostly 1 but sometimes 0
 			if (!submerged_triangles.IsValid()) {
 				UE_LOG(LogTemp, Warning, TEXT("Not valid3"));
 				return;
@@ -317,6 +317,7 @@ void ShaderModelsModule::UpdateGPUBoat(
 	AStaticMeshActor* collision_mesh,
 	UTextureRenderTarget2D* elevation_texture,
 	TArray<UTextureRenderTarget2D*> wake_textures,
+	UTextureRenderTarget2D* obstruction_texture,
 	UTextureRenderTarget2D* boat_texture,
 	TArray<UTextureRenderTarget2D*> other_boat_textures,
 	UTextureRenderTarget2D* readback_texture,
@@ -327,9 +328,10 @@ void ShaderModelsModule::UpdateGPUBoat(
 	{
 		TShaderMapRef<SubmergedTrianglesShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 		ENQUEUE_RENDER_COMMAND(shader)(
-			[callback, shader, speed_input, velocity_input, collision_mesh, elevation_texture, wake_textures, boat_texture, other_boat_textures, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
+			[this, callback, shader, speed_input, velocity_input, collision_mesh, elevation_texture, wake_textures, obstruction_texture, boat_texture, other_boat_textures, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
 
 				TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer;
+				TRefCountPtr<FRDGPooledBuffer> submerged_position_buffer;
 				shader->BuildAndExecuteGraph(
 					RHI_cmd_list,
 					collision_mesh,
@@ -337,17 +339,25 @@ void ShaderModelsModule::UpdateGPUBoat(
 					boat_texture,
 					other_boat_textures,
 					wake_textures,
-					&submerged_triangles_buffer
+					&submerged_triangles_buffer,
+					&submerged_position_buffer
 				);
 
 				if (!submerged_triangles_buffer.IsValid()) {
 					UE_LOG(LogTemp, Error, TEXT("Submerged triangles buffer is not valid. This should never happen."));
 					return;
 				}
+				if (!submerged_position_buffer.IsValid()) {
+					UE_LOG(LogTemp, Error, TEXT("Submerged position buffer is not valid. This should never happen."));
+					return;
+				}
 
 				TShaderMapRef<GPUBoatShader> shader2(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 				ENQUEUE_RENDER_COMMAND(shader2)(
-					[callback, shader2, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, boat_texture, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) { // works
+					[this, callback, shader2, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, submerged_position_buffer, obstruction_texture, boat_texture, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) { // works
+
+					Clear(obstruction_texture);
+					ProjectObstruction(submerged_position_buffer, obstruction_texture);
 
 					shader2->BuildAndExecuteGraph(
 						RHI_cmd_list,

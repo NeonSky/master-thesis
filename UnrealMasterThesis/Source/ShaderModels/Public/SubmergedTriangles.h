@@ -36,6 +36,7 @@ public:
 		SHADER_PARAMETER_RDG_TEXTURE_ARRAY(Texture2D<FVector4>, WakeTextures, [2])
 
 		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<GPUSumbergedTriangle>, OutputBuffer)
+		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<FVector4>, SubmergedPositionBuffer)
 
 	END_SHADER_PARAMETER_STRUCT()
 
@@ -56,6 +57,7 @@ public:
         UTextureRenderTarget2D* boat_texture,
         TArray<UTextureRenderTarget2D*> other_boat_textures,
         TArray<UTextureRenderTarget2D*> wake_textures,
-        TRefCountPtr<FRDGPooledBuffer>* output_buffer);
+        TRefCountPtr<FRDGPooledBuffer>* output_buffer,
+		TRefCountPtr<FRDGPooledBuffer>* submerged_position_buffer);
 
 };

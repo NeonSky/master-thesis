@@ -10,5 +10,6 @@ void MainVertShader(float4 InPosition : ATTRIBUTE0, float2 InUV : ATTRIBUTE1, ou
 /* Fragment Shader */
 
 void MainFragShader(in float2 uv : TEXCOORD0, out float4 OutColor : SV_Target0) {
-	OutColor = float4(uv.x, uv.y, 0.0, 1.0);
+	// OutColor = float4(uv.x, uv.y, 0.0, 1.0);
+	OutColor = float4(1.0, 0.0, 0.0, 1.0);
 }

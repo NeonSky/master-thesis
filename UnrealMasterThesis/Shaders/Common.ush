@@ -136,9 +136,9 @@ void update_rigidbody(inout Rigidbody rigidbody) {
 struct SubmergedTriangle {
 	float4 normal_and_height;
 	float4 center_and_area;
-	float4 v1; // w-comp unused
-	float4 v2; // w-comp unused
-	float4 v3; // w-comp unused
+	float4 v1;
+	float4 v2;
+	float4 v3;
 };
 
 float sample_ambient_elevation(Texture2D<float4> elevation_texture, float2 ws_coord) {

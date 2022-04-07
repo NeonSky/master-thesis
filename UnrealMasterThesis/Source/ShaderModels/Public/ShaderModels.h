@@ -41,7 +41,7 @@ public:
 
 	void ComputeSerialization(UTextureRenderTarget2D* input_rtt, UTextureRenderTarget2D* serialize_rtt, TArray<float>& out_param);
 
-	void ProjectObstruction(UTextureRenderTarget2D* obstruction_rtt);
+	void ProjectObstruction(TRefCountPtr<FRDGPooledBuffer> submerged_position_buffer, UTextureRenderTarget2D* obstruction_rtt);
 
 	void ComputeObstruction(
 		UTextureRenderTarget2D* boat_rtt,
@@ -66,6 +66,7 @@ public:
 		AStaticMeshActor* collision_mesh,
 		UTextureRenderTarget2D* elevation_texture,
 		TArray<UTextureRenderTarget2D*> wake_textures,
+		UTextureRenderTarget2D* obstruction_texture,
 		UTextureRenderTarget2D* boat_texture,
 		TArray<UTextureRenderTarget2D*> other_boat_textures,
 		UTextureRenderTarget2D* readback_texture,

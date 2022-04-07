@@ -87,6 +87,7 @@ void AArtificialBoat::Update(UpdatePayload update_payload, std::function<void(TR
         collision_mesh,
         m_readback_queue.front(),
         shared_state.ewave_rtts,
+        ewave_rtts.obstruction,
         boat_rtt,
         other_boat_textures,
         readback_rtt,

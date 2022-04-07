@@ -7,6 +7,7 @@ TGlobalResource<ScreenQuad> GScreenQuad;
 
 void HorizontalProjectionFragShader::RenderTo(
     FRHICommandListImmediate& RHICmdList,
+    TRefCountPtr<FRDGPooledBuffer> submerged_position_buffer,
     UTextureRenderTarget2D* output) {
 
 	FRHIRenderPassInfo RenderPassInfo(output->GetRenderTargetResource()->GetRenderTargetTexture(), ERenderTargetActions::Clear_Store);
@@ -16,7 +17,7 @@ void HorizontalProjectionFragShader::RenderTo(
 	TShaderMapRef<HorizontalProjectionVertShader> VertShader(ShaderMap);
 	TShaderMapRef<HorizontalProjectionFragShader> FragShader(ShaderMap);
 		
-	// Set the graphic pipeline state.
+	// Pipeline state
 	FGraphicsPipelineStateInitializer GraphicsPSOInit;
 	RHICmdList.ApplyCachedRenderTargets(GraphicsPSOInit);
 	GraphicsPSOInit.BlendState = TStaticBlendState<>::GetRHI();
@@ -27,9 +28,14 @@ void HorizontalProjectionFragShader::RenderTo(
 	GraphicsPSOInit.BoundShaderState.PixelShaderRHI = FragShader.GetPixelShader();
 	GraphicsPSOInit.PrimitiveType = PT_TriangleStrip;
 	SetGraphicsPipelineState(RHICmdList, GraphicsPSOInit);
-	
-	// Draw
-	RHICmdList.SetStreamSource(0, GScreenQuad.VertexBufferRHI, 0);
+
+    // Set vertex buffer
+    // FStaticMeshLODResources& mesh_res = collision_mesh->GetStaticMeshComponent()->GetStaticMesh()->RenderData->LODResources[0];
+	// RHICmdList.SetStreamSource(0, mesh_res.StaticMeshVertexBuffer.FTexcoordVertexBuffer.VertexBufferRHI, 0);
+
+	// RHICmdList.SetStreamSource(0, submerged_triangles.GetVertexBufferRHI(), 0);
+    RHICmdList.SetStreamSource(0, GScreenQuad.VertexBufferRHI, 0);
+
 	RHICmdList.DrawPrimitive(0, 2, 1);
 
 	RHICmdList.EndRenderPass();

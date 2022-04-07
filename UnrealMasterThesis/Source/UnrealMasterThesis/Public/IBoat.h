@@ -14,6 +14,9 @@ struct FeWaveRTTs {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
+    UTextureRenderTarget2D* obstruction;
+
+	UPROPERTY(EditAnywhere)
     UTextureRenderTarget2D* eWaveHV;
 
 	UPROPERTY(EditAnywhere)
