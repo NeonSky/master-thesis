@@ -41,6 +41,8 @@ public:
 
 	void ComputeSerialization(UTextureRenderTarget2D* input_rtt, UTextureRenderTarget2D* serialize_rtt, TArray<float>& out_param);
 
+	void ProjectObstruction(UTextureRenderTarget2D* obstruction_rtt);
+
 	void ComputeObstruction(
 		UTextureRenderTarget2D* boat_rtt,
 		TRefCountPtr<FRDGPooledBuffer> submerged_triangles,

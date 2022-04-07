@@ -6,6 +6,7 @@
 #include "ButterflyPostProcess.h"
 #include "ButterflyPostProcessForward.h"
 #include "eWave.h"
+#include "HorizontalProjection.h"
 #include "Clear.h"
 #include "Scale.h"
 #include "Serialize.h"
@@ -222,6 +223,19 @@ void ShaderModelsModule::ComputeSerialization(UTextureRenderTarget2D* input_rtt,
 		float color = RECOVER_F32(color16);
 		out_param.Add(color);
 	}
+}
+
+void ShaderModelsModule::ProjectObstruction(UTextureRenderTarget2D* obstruction_rtt) {
+
+	TShaderMapRef<HorizontalProjectionFragShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+
+	ENQUEUE_RENDER_COMMAND(void)(
+		[shader, obstruction_rtt](FRHICommandListImmediate& RHI_cmd_list) {
+			shader->RenderTo(
+				RHI_cmd_list,
+				obstruction_rtt
+			);
+	});
 }
 
 void ShaderModelsModule::ComputeObstruction(
