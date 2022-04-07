@@ -155,6 +155,9 @@ TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D>
 			wake_rtts.Add(boat->GeteWaveRTTs().eWaveH);
 			ws_boat_coords.Add(boat->WorldPosition());
 		}
+		else {
+			ws_boat_coords.Add(FVector2D(0.0, 0.0));
+		}
 	}
 
 	m_shader_models_module.SampleElevationPoints(
