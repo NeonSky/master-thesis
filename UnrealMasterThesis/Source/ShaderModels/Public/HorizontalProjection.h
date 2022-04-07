@@ -40,23 +40,41 @@ public:
 
 };
 
+struct MyVertex {
+	FVector4 Position;
+};
+
+class MyVertexDeclaration : public FRenderResource {
+public:
+
+	FVertexDeclarationRHIRef VertexDeclarationRHI;
+
+	virtual ~MyVertexDeclaration() {}
+
+	virtual void InitRHI() {
+		FVertexDeclarationElementList Elements;
+		uint32 Stride = sizeof(MyVertex);
+		Elements.Add(FVertexElement(0, STRUCT_OFFSET(MyVertex, Position), VET_Float4, 0, Stride));
+		VertexDeclarationRHI = PipelineStateCache::GetOrCreateVertexDeclaration(Elements);
+	}
+
+	virtual void ReleaseRHI() {
+		VertexDeclarationRHI.SafeRelease();
+	}
+};
+
 class ScreenQuad : public FVertexBuffer {
 public:
 	void InitRHI() {
-		TResourceArray<FFilterVertex, VERTEXBUFFER_ALIGNMENT> vertices;
+		TResourceArray<MyVertex, VERTEXBUFFER_ALIGNMENT> vertices;
 		vertices.SetNumUninitialized(6);
 
 		vertices[0].Position = FVector4(-0.5f, 0.5f, 0, 1);
-		vertices[0].UV = FVector2D(0, 0);
-
 		vertices[1].Position = FVector4(0.5f, 0.5f, 0, 1);
-		vertices[1].UV = FVector2D(1, 0);
-
 		vertices[2].Position = FVector4(-0.5f, -0.5f, 0, 1);
-		vertices[2].UV = FVector2D(0, 1);
-
-		vertices[3].Position = FVector4(0.5f, -0.5f, 0, 1);
-		vertices[3].UV = FVector2D(1, 1);
+		vertices[3].Position = FVector4(0.5f, 0.5f, 0, 1);
+		vertices[4].Position = FVector4(-0.5f, -0.5f, 0, 1);
+		vertices[5].Position = FVector4(0.5f, -0.5f, 0, 1);
 
 		FRHIResourceCreateInfo CreateInfo(&vertices);
 		VertexBufferRHI = RHICreateVertexBuffer(vertices.GetResourceDataSize(), BUF_Static, CreateInfo);

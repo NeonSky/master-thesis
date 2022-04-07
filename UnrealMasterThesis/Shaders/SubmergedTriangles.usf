@@ -208,26 +208,49 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     }
 
     // Currently, t is equal to second triangle we added.
-    if (t.center_and_area.w != 0.0) {
-        SubmergedPositionBuffer[6*id.x+3] = t.v1;
-        SubmergedPositionBuffer[6*id.x+4] = t.v2;
-        SubmergedPositionBuffer[6*id.x+5] = t.v3;
-    } else {
-        SubmergedPositionBuffer[6*id.x+3] = float4(0.0, 0.0, 0.0, 0.0);
-        SubmergedPositionBuffer[6*id.x+4] = float4(0.0, 0.0, 0.0, 0.0);
-        SubmergedPositionBuffer[6*id.x+5] = float4(0.0, 0.0, 0.0, 0.0);
-    }
+    // if (t.center_and_area.w != 0.0) {
+    //     SubmergedPositionBuffer[6*id.x+3] = t.v1;
+    //     SubmergedPositionBuffer[6*id.x+4] = t.v2;
+    //     SubmergedPositionBuffer[6*id.x+5] = t.v3;
+    // } else {
+    //     // SubmergedPositionBuffer[6*id.x+3] = float4(0.0, 0.0, 0.0, 0.0);
+    //     // SubmergedPositionBuffer[6*id.x+4] = float4(0.0, 0.0, 0.0, 0.0);
+    //     // SubmergedPositionBuffer[6*id.x+5] = float4(0.0, 0.0, 0.0, 0.0);
+    // }
+    // SubmergedPositionBuffer[6*id.x+3] = float4(1.0, 0.0, 0.0, 0.0);
+    // SubmergedPositionBuffer[6*id.x+4] = float4(0.0, 1.0, 0.0, 0.0);
+    // SubmergedPositionBuffer[6*id.x+5] = float4(1.0, 1.0, 0.0, 0.0);
 
     // Recover the first triangle.
     t = OutputBuffer[2*id.x];
-    if (t.center_and_area.w != 0.0) {
-        SubmergedPositionBuffer[6*id.x+0] = t.v1;
-        SubmergedPositionBuffer[6*id.x+1] = t.v2;
-        SubmergedPositionBuffer[6*id.x+2] = t.v3;
-    } else {
-        SubmergedPositionBuffer[6*id.x+0] = float4(0.0, 0.0, 0.0, 0.0);
-        SubmergedPositionBuffer[6*id.x+1] = float4(0.0, 0.0, 0.0, 0.0);
-        SubmergedPositionBuffer[6*id.x+2] = float4(0.0, 0.0, 0.0, 0.0);
-    }
+    // if (t.center_and_area.w != 0.0) {
+    //     SubmergedPositionBuffer[6*id.x+0] = t.v1;
+    //     SubmergedPositionBuffer[6*id.x+1] = t.v2;
+    //     SubmergedPositionBuffer[6*id.x+2] = t.v3;
+    // } else {
+    //     // SubmergedPositionBuffer[6*id.x+0] = float4(0.0, 0.0, 0.0, 0.0);
+    //     // SubmergedPositionBuffer[6*id.x+1] = float4(0.0, 0.0, 0.0, 0.0);
+    //     // SubmergedPositionBuffer[6*id.x+2] = float4(0.0, 0.0, 0.0, 0.0);
+    //     SubmergedPositionBuffer[6*id.x+0] = float4(0.0, 0.0, 0.0, 0.0);
+    //     SubmergedPositionBuffer[6*id.x+1] = float4(0.0, 0.0, 0.0, 0.0);
+    //     SubmergedPositionBuffer[6*id.x+2] = float4(0.0, 0.0, 0.0, 0.0);
+    // }
+    // SubmergedPositionBuffer[6*id.x+0] = float4(1.0, 0.0, 0.0, 0.0);
+    // SubmergedPositionBuffer[6*id.x+1] = float4(0.0, 1.0, 0.0, 0.0);
+    // SubmergedPositionBuffer[6*id.x+2] = float4(1.0, 1.0, 0.0, 0.0);
+    
+    SubmergedPositionBuffer[6*id.x+0] = float4(0.0, 1.0, 0.0, 1.0);
+    SubmergedPositionBuffer[6*id.x+1] = float4(1.0, 1.0, 0.0, 1.0);
+    SubmergedPositionBuffer[6*id.x+2] = float4(0.0, 0.0, 0.0, 1.0);
+    SubmergedPositionBuffer[6*id.x+3] = float4(0.0, 0.0, 0.0, 1.0);
+    SubmergedPositionBuffer[6*id.x+4] = float4(0.0, 0.0, 0.0, 1.0);
+    SubmergedPositionBuffer[6*id.x+5] = float4(0.0, 0.0, 0.0, 1.0);
+
+    // SubmergedPositionBuffer[6*id.x+0] = float4(1.0, 0.0, 0.0, 0.0);
+    // SubmergedPositionBuffer[6*id.x+1] = float4(0.0, 0.0, 1.0, 1.0);
+    // SubmergedPositionBuffer[6*id.x+2] = float4(0.0, 1.0, 0.0, 0.0);
+    // SubmergedPositionBuffer[6*id.x+3] = float4(0.0, 1.0, 0.0, 1.0);
+    // SubmergedPositionBuffer[6*id.x+4] = float4(0.0, 0.0, 0.0, 0.0);
+    // SubmergedPositionBuffer[6*id.x+5] = float4(0.0, 0.0, 0.0, 0.0);
 
 }
