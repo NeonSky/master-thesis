@@ -257,20 +257,22 @@ void ShaderModelsModule::SampleElevationPoints(
 	TArray<UTextureRenderTarget2D*> wake_rtts,
 	TArray<FVector2D> ws_boat_coords,
 	TArray<FVector2D> input_sample_coordinates,
-	TArray<float>* output) {
+	TArray<float>* output,
+	float time) {
 
  	TShaderMapRef<ElevationSamplerShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	FRenderCommandFence fence;
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, elevations, wake_rtts, ws_boat_coords, input_sample_coordinates, output](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, elevations, wake_rtts, ws_boat_coords, input_sample_coordinates, output, time](FRHICommandListImmediate& RHI_cmd_list) {
 			shader->BuildAndExecuteGraph(
 				RHI_cmd_list,
 				elevations,
 				wake_rtts,
 				ws_boat_coords,
 				input_sample_coordinates,
-				output
+				output,
+				time
 			);
 		}); 
 

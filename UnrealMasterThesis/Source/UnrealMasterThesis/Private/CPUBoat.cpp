@@ -13,7 +13,6 @@ ACPUBoat::ACPUBoat() {}
 
 void ACPUBoat::BeginPlay() {
 	Super::BeginPlay();
-
   m_rigidbody = Rigidbody(mass); // kg (wet weight, i.e. including fuel). Our boat should be similar to a cabin cruiser: https://www.godownsize.com/how-much-do-boats-weigh/
 
   m_requested_elevations_on_frame = 0;
@@ -187,6 +186,7 @@ void ACPUBoat::UpdateReadbackQueue() {
       FVector v_ws = transform.TransformPosition(v);
       sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
     }
+
     TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
 
     m_readback_queue.push(elevations);
@@ -351,7 +351,7 @@ void ACPUBoat::UpdateSubmergedTriangles() {
     }
 
   }
-
+  int test = 0;
 }
 
 void ACPUBoat::ApplyGravity() {
@@ -502,7 +502,6 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r, std::function<void(TRefCountPtr<
       TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer;
       graph_builder.QueueBufferExtraction(rdg_buffer_ref, &submerged_triangles_buffer);
       graph_builder.Execute();
-
       callback(submerged_triangles_buffer);
 
     });
