@@ -66,6 +66,9 @@ private:
 	UTextureRenderTarget2D* serialization_rtt;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UTextureRenderTarget2D* serialization_rtt;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TEnumAsByte<WaveSpectrumType> wave_spectrum;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -110,5 +113,7 @@ private:
 	void update(UpdatePayload update_payload);
 	void create_mesh();
 	void update_mesh(float dt);
+
+	float time = 0;
 
 };
