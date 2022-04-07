@@ -27,7 +27,7 @@ AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
 
 void AOceanSurfaceSimulation::BeginPlay() {
 	Super::BeginPlay();
-
+	time = 0;
 	if (oceanSeed == 0) {
 		oceanSeed = FMath::RandRange(1, 10000);
 	}
@@ -83,7 +83,7 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	input_pawn->playBackInputSequence = data_collection_settings.shouldPlayBackInputSequence;
 	data_collector->eWave_h_rtt = ewave_rtts.eWaveH;
 	data_collector->eWave_v_rtt = ewave_rtts.eWaveV;
-	//data_collector->serialization_rtt = serialization_rtt;
+	data_collector->serialization_rtt = serialization_rtt;
 	for (auto boat : boats) { data_collector->boats.Add(boat); }
 	data_collector->readInputJSON(input_pawn->inputSequence);
 
@@ -91,8 +91,9 @@ void AOceanSurfaceSimulation::BeginPlay() {
 }
 
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
-	const float dt = 0.02f;
-	oceanTime += dt;
+	const float fixed_dt = 0.02f;
+	oceanTime += fixed_dt;
+	time += fixed_dt;
 	this->m_submerged_triangles_buffers.SetNum(boats.Num());
 
 	int n_valid_boats = 0;
@@ -110,7 +111,7 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 		// Allow "None", i.e. nullptr, to be assigned for boats in the editor.
 		if (boat) {
 
-			auto callback = [n_valid_boats, i, this, dt](TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer) {
+			auto callback = [n_valid_boats, i, this, fixed_dt](TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer) {
 
 				if (!submerged_triangles_buffer.IsValid()) {
 					UE_LOG(LogTemp, Warning, TEXT("This shouldn't be possible"));
@@ -122,7 +123,7 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 
 				if (counter == n_valid_boats) {
 					counter = 0;
-					this->update_mesh(dt);
+					this->update_mesh(fixed_dt);
 				}
 			};
 
@@ -161,7 +162,8 @@ TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D>
 		wake_rtts,
 		ws_boat_coords,
 		sample_points,
-		&elevation_output
+		&elevation_output,
+		time
 	);
 
 	return elevation_output;

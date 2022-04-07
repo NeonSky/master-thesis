@@ -44,7 +44,8 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
 	TArray<UTextureRenderTarget2D*> wake_rtts,
 	TArray<FVector2D> ws_boat_coords,
 	TArray<FVector2D> input_sample_coordinates,
-    TArray<float>* output) {
+    TArray<float>* output,
+	float time) {
 
 	int N = input_sample_coordinates.Num();
 
@@ -53,6 +54,8 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
   // Setup input parameters
 	FParameters* PassParameters;
 	PassParameters = graph_builder.AllocParameters<ElevationSamplerShader::FParameters>();
+
+	PassParameters->time = time;
 
   // elevation_texture
 	PassParameters->elevation_texture = register_texture2(graph_builder, elevations, "input_elevations");
@@ -82,7 +85,7 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
   // output_texture
 	FRDGTextureDesc OutTextureDesc = FRDGTextureDesc::Create2D(
 		FIntPoint(N, 1),
-		PF_FloatRGBA,
+		PF_A32B32G32R32F,
 		FClearValueBinding(),
 		TexCreate_UAV,
 		1,
@@ -150,9 +153,9 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
 		uint32_t p4  = uint32_t(rdata[i].A.GetFloat());
 		uint32_t v = (p4 << 24 | p3 << 16 | p2 << 8 | p1);
 
+
 		float res;
 		memcpy(&res, &v, sizeof(float));
-
 		(*output)[i] = res;
 
     }

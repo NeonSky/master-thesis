@@ -31,6 +31,9 @@ struct FDataCollectionSettings {
 
 	UPROPERTY(EditAnywhere)
 	FString folderName;
+
+	UPROPERTY(EditAnywhere)
+	FString inputFileName;
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
