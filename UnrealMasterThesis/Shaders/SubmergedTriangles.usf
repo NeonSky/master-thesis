@@ -45,6 +45,31 @@ float3 homogenize(float4 v) {
 [numthreads(N_THREADS_X, 1, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
+    /* Debug what values affect what */
+    SubmergedPositionBuffer[0].r = 0.5; // affects red of the first triangle
+    SubmergedPositionBuffer[1].r = 1.0; // affects green of the first triangle
+
+    /*********************************/
+
+    // SubmergedPositionBuffer[0] = float4(0.0, 0.0, 0.0, 1.0);
+
+    // // This line breaks the first triangle
+    // SubmergedPositionBuffer[1] = float4(0.0, 0.0, 0.0, 1.0);
+    // // but not this
+    // SubmergedPositionBuffer[1] = float4(1.0, 1.0, 1.0, 1.0);
+
+    // SubmergedPositionBuffer[2] = float4(0.0, 0.0, 0.0, 1.0);
+    // SubmergedPositionBuffer[3] = float4(0.0, 0.0, 0.0, 1.0);
+    // SubmergedPositionBuffer[4] = float4(0.0, 0.0, 0.0, 1.0);
+    // SubmergedPositionBuffer[5] = float4(0.0, 0.0, 0.0, 1.0);
+    // SubmergedPositionBuffer[6] = float4(0.0, 0.0, 0.0, 1.0);
+    // SubmergedPositionBuffer[7] = float4(0.0, 0.0, 0.0, 1.0);
+    // SubmergedPositionBuffer[8] = float4(0.0, 0.0, 0.0, 1.0);
+    // SubmergedPositionBuffer[9] = float4(0.0, 0.0, 0.0, 1.0);
+    // SubmergedPositionBuffer[10] = float4(0.0, 0.0, 0.0, 1.0);
+    // SubmergedPositionBuffer[11] = float4(0.0, 0.0, 0.0, 1.0);
+    // SubmergedPositionBuffer[12] = float4(0.0, 0.0, 0.0, 1.0);
+
     // SubmergedPositionBuffer[0] = float4(0.0, 0.0, 0.0, 1.0);
     // SubmergedPositionBuffer[1] = float4(1.0, 1.0, 0.0, 1.0);
     // SubmergedPositionBuffer[2] = float4(0.0, 0.0, 0.0, 1.0);
