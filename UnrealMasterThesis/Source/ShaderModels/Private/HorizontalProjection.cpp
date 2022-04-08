@@ -7,7 +7,7 @@ TGlobalResource<MyVertexDeclaration> GMyVertexDeclaration;
 
 void HorizontalProjectionFragShader::RenderTo(
     FRHICommandListImmediate& RHICmdList,
-    TRefCountPtr<FRDGPooledBuffer> submerged_position_buffer,
+    FRHIVertexBuffer* submerged_position_buffer,
     UTextureRenderTarget2D* output) {
 
 	FRHIRenderPassInfo RenderPassInfo(output->GetRenderTargetResource()->GetRenderTargetTexture(), ERenderTargetActions::Clear_Store);
@@ -29,7 +29,7 @@ void HorizontalProjectionFragShader::RenderTo(
 	GraphicsPSOInit.PrimitiveType = PT_TriangleList;
 	SetGraphicsPipelineState(RHICmdList, GraphicsPSOInit);
 
-	RHICmdList.SetStreamSource(0, submerged_position_buffer->GetVertexBufferRHI(), 0);
+	RHICmdList.SetStreamSource(0, submerged_position_buffer, 0);
 	RHICmdList.DrawPrimitive(0, 3*140, 1);
 
 	RHICmdList.EndRenderPass();

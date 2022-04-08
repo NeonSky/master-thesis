@@ -34,7 +34,7 @@ public:
 
 	void RenderTo(
 		FRHICommandListImmediate& RHI_cmd_list,
-        TRefCountPtr<FRDGPooledBuffer> submerged_position_buffer,
+        FRHIVertexBuffer* submerged_position_buffer,
 		UTextureRenderTarget2D* output
 	);
 

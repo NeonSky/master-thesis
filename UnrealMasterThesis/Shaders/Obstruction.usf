@@ -24,20 +24,6 @@ float T(float x_y){
 	}
 }
 
-float remap(float x, float in_min, float in_max, float out_min, float out_max){
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-}
-
-bool ptInTriangle(float4 p, float4 p0, float4 p1, float4 p2){
-    float A = 1.0 / 2.0 * (-p1[1] * p2[0] + p0[1] * (-p1[0] + p2[0]) + p0[0] * (p1[1] - p2[1]) + p1[0] * p2[1]);
-    float tsign = (A < 0.0) ? -1.0 : 1.0;
-    float s = (p0[1] * p2[0] - p0[0] * p2[1] + (p2[1] - p0[1]) * p[0] + (p0[0] - p2[0]) * p[1]) * tsign;
-    float t = (p0[0] * p1[1] - p0[1] * p1[0] + (p0[1] - p1[1]) * p[0] + (p1[0] - p0[0]) * p[1]) * tsign;
-
-	float epsilon = 0.001; // Note: without + epsilon we get false positives from this test...
-    return s > epsilon && t > epsilon && (s + t) < ((2.0 * A * tsign) - epsilon);
-}
-
 // TODO: make more entry points instead of using the preFFT variable
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void eWaveCompute(uint3 id : SV_DispatchThreadID) {

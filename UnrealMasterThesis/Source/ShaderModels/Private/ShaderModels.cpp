@@ -226,7 +226,7 @@ void ShaderModelsModule::ComputeSerialization(UTextureRenderTarget2D* input_rtt,
 	}
 }
 
-void ShaderModelsModule::ProjectObstruction(TRefCountPtr<FRDGPooledBuffer> submerged_position_buffer, UTextureRenderTarget2D* obstruction_rtt) {
+void ShaderModelsModule::ProjectObstruction(FRHIVertexBuffer* submerged_position_buffer, UTextureRenderTarget2D* obstruction_rtt) {
 
 	TShaderMapRef<HorizontalProjectionFragShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
@@ -353,7 +353,7 @@ void ShaderModelsModule::UpdateGPUBoat(
 				ENQUEUE_RENDER_COMMAND(shader2)(
 					[this, callback, shader2, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, submerged_position_buffer, obstruction_texture, boat_texture, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
 
-					ProjectObstruction(submerged_position_buffer, obstruction_texture);
+					ProjectObstruction(submerged_position_buffer->GetVertexBufferRHI(), obstruction_texture);
 
 					shader2->BuildAndExecuteGraph(
 						RHI_cmd_list,
