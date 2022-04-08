@@ -95,15 +95,37 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
 
     PassParameters->OutputBuffer = uav_ref;
 
-    TArray<GPUSumbergedTriangle> initial_data2;
-    initial_data2.SetNum(3*N);
-    FRDGBufferRef rdg_buffer_ref2 = CreateStructuredBuffer(
+    TArray<FVector4> initial_data2 = {
+        FVector4(0.0, 1.0, 0.0, 1.0),
+        FVector4(1.0, 1.0, 0.0, 1.0),
+        FVector4(0.0, 0.0, 0.0, 1.0),
+        FVector4(1.0, 1.0, 0.0, 1.0),
+        FVector4(0.0, 0.0, 0.0, 1.0),
+        FVector4(1.0, 0.0, 0.0, 1.0)
+    };
+    // initial_data2.SetNum(3*N);
+    initial_data2.SetNum(6);
+    // FRDGBufferRef rdg_buffer_ref2 = CreateStructuredBuffer(
+    //     graph_builder,
+    //     TEXT("SubmergedPositionBuffer"),
+    //     sizeof(FVector4),
+    //     6, // each triangle has 3 vertices
+    //     initial_data2.GetData(),
+    //     sizeof(FVector4) * 6,
+    //     ERDGInitialDataFlags::None
+    // );
+    FRDGBufferDesc desc;
+    desc.BytesPerElement = sizeof(FVector4);
+    desc.NumElements     = 6;
+    desc.UnderlyingType  = FRDGBufferDesc::EUnderlyingType::VertexBuffer;
+    desc.Usage           = EBufferUsageFlags(BUF_UnorderedAccess | BUF_ShaderResource | BUF_ByteAddressBuffer);
+
+    FRDGBufferRef rdg_buffer_ref2 = CreateVertexBuffer(
         graph_builder,
         TEXT("SubmergedPositionBuffer"),
-        sizeof(GPUSumbergedTriangle),
-        3 * N, // each triangle has 3 vertices
+        desc,
         initial_data2.GetData(),
-        sizeof(FVector4) * 3 * N,
+        sizeof(FVector4) * 6,
         ERDGInitialDataFlags::None
     );
     FRDGBufferUAVRef uav_ref2 = graph_builder.CreateUAV(rdg_buffer_ref2, PF_R32_UINT);
@@ -119,7 +141,7 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
         FIntVector(N/2, 1, 1));
 
     graph_builder.QueueBufferExtraction(rdg_buffer_ref, output_buffer);
-    graph_builder.QueueBufferExtraction(rdg_buffer_ref, submerged_position_buffer);
+    graph_builder.QueueBufferExtraction(rdg_buffer_ref2, submerged_position_buffer);
 
     graph_builder.Execute();
 }

@@ -255,10 +255,6 @@ void ShaderModelsModule::ComputeObstruction(
 
 	ENQUEUE_RENDER_COMMAND(shader)(
 		[shader, boat_rtt, submerged_triangles, obstructionMap_rtt_param, hv_rtt_param, hv_prev_rtt_param, preFFT](FRHICommandListImmediate& RHI_cmd_list) {
-			if (!submerged_triangles.IsValid()) {
-				UE_LOG(LogTemp, Warning, TEXT("Not valid3"));
-				return;
-			}
 			shader->BuildAndExecuteGraph(
 				RHI_cmd_list,
 				boat_rtt,
@@ -356,7 +352,7 @@ void ShaderModelsModule::UpdateGPUBoat(
 				ENQUEUE_RENDER_COMMAND(shader2)(
 					[this, callback, shader2, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, submerged_position_buffer, obstruction_texture, boat_texture, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) { // works
 
-					Clear(obstruction_texture);
+					// Clear(obstruction_texture);
 					ProjectObstruction(submerged_position_buffer, obstruction_texture);
 
 					shader2->BuildAndExecuteGraph(

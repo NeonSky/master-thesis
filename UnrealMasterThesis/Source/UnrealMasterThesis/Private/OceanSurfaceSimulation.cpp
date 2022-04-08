@@ -57,6 +57,7 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	for (auto boat : boats) {
 		if (boat) {
 			FeWaveRTTs ewave_rtts = boat->GeteWaveRTTs();
+			m_shader_models_module.Clear(ewave_rtts.obstruction);
 			m_shader_models_module.Clear(ewave_rtts.eWaveHV);
 			m_shader_models_module.Clear(ewave_rtts.eWaveHV_prev);
 		}
@@ -274,6 +275,11 @@ void AOceanSurfaceSimulation::create_mesh() {
 	}
 }
 
+struct TestStruct {
+	// FVector4 Position; // 96
+	FVector Position; // 72... Oh, it's 3D
+};
+
 // void AOceanSurfaceSimulation::update_mesh(float dt) {
 void AOceanSurfaceSimulation::update_mesh(float dt) {
 
@@ -294,6 +300,7 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 				TRefCountPtr<FRDGPooledBuffer> submerged_triangles = m_submerged_triangles_buffers[i];
 
 				FeWaveRTTs ewave_rtts = boat->GeteWaveRTTs();
+				m_shader_models_module.Clear(ewave_rtts.obstruction); // TODO: remove
 
 				UTextureRenderTarget2D* src = ewave_rtts.eWaveHV;
 				UTextureRenderTarget2D* dst = ewave_rtts.eWaveHV_prev;

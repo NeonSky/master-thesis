@@ -16,6 +16,10 @@ struct GPUSumbergedTriangle {
 	FVector4 v2;
 };
 
+// struct MyVerte2x {
+// 	FVector4 Position;
+// };
+
 class SHADERMODELS_API SubmergedTrianglesShader : public FGlobalShader {
 public:
 
@@ -36,7 +40,7 @@ public:
 		SHADER_PARAMETER_RDG_TEXTURE_ARRAY(Texture2D<FVector4>, WakeTextures, [2])
 
 		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<GPUSumbergedTriangle>, OutputBuffer)
-		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<FVector4>, SubmergedPositionBuffer)
+		SHADER_PARAMETER_RDG_BUFFER_UAV(RWBuffer<FVector4>, SubmergedPositionBuffer)
 
 	END_SHADER_PARAMETER_STRUCT()
 
