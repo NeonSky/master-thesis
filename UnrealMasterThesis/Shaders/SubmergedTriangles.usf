@@ -42,61 +42,29 @@ float3 homogenize(float4 v) {
     return v.xyz / v.w;
 }
 
+void write_submerged_positions(int i, float4 v0, float4 v1, float4 v2) {
+
+    // Vertex 1
+    SubmergedPositionBuffer[i+0] = v0.x;
+    SubmergedPositionBuffer[i+1] = v0.y;
+    SubmergedPositionBuffer[i+2] = v0.z;
+    SubmergedPositionBuffer[i+3] = v0.w;
+
+    // Vertex 2
+    SubmergedPositionBuffer[i+4] = v1.x;
+    SubmergedPositionBuffer[i+5] = v1.y;
+    SubmergedPositionBuffer[i+6] = v1.z;
+    SubmergedPositionBuffer[i+7] = v1.w;
+
+    // Vertex 3
+    SubmergedPositionBuffer[i+8]  = v2.x;
+    SubmergedPositionBuffer[i+9]  = v2.y;
+    SubmergedPositionBuffer[i+10] = v2.z;
+    SubmergedPositionBuffer[i+11] = v2.w;
+}
+
 [numthreads(N_THREADS_X, 1, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
-
-    SubmergedPositionBuffer[4*0+0] = -0.5; // triangle 0, vertex 0, red
-    SubmergedPositionBuffer[4*0+1] = 1.0;  // triangle 0, vertex 0, green
-
-    SubmergedPositionBuffer[4*1+0] = -0.5; // triangle 0, vertex 1, red
-    SubmergedPositionBuffer[4*1+1] = 0.5; // triangle 0, vertex 1, green
-
-    SubmergedPositionBuffer[4*11+0] = 0.9; // triangle 3, vertex 2, red
-    SubmergedPositionBuffer[4*11+1] = -0.8;  // triangle 3, vertex 2, green
-
-    /* Debug what values affect what */
-    // SubmergedPositionBuffer[0].r = 0.5; // affects red of the first triangle
-    // SubmergedPositionBuffer[1].r = 1.0; // affects green of the first triangle
-
-    /*********************************/
-    // SubmergedPositionBuffer[0].r = -0.5; // red of triangle 0
-    // SubmergedPositionBuffer[1].r = 0.3; // green of triangle 0
-    /*********************************/
-    // SubmergedPositionBuffer[0].r = 0.5;
-    // SubmergedPositionBuffer[0].g = 1.0;
-
-    // SubmergedPositionBuffer[0] = float4(0.0, 0.0, 0.0, 1.0);
-
-    // // This line breaks the first triangle
-    // SubmergedPositionBuffer[1] = float4(0.0, 0.0, 0.0, 1.0);
-    // // but not this
-    // SubmergedPositionBuffer[1] = float4(1.0, 1.0, 1.0, 1.0);
-
-    // SubmergedPositionBuffer[2] = float4(0.0, 0.0, 0.0, 1.0);
-    // SubmergedPositionBuffer[3] = float4(0.0, 0.0, 0.0, 1.0);
-    // SubmergedPositionBuffer[4] = float4(0.0, 0.0, 0.0, 1.0);
-    // SubmergedPositionBuffer[5] = float4(0.0, 0.0, 0.0, 1.0);
-    // SubmergedPositionBuffer[6] = float4(0.0, 0.0, 0.0, 1.0);
-    // SubmergedPositionBuffer[7] = float4(0.0, 0.0, 0.0, 1.0);
-    // SubmergedPositionBuffer[8] = float4(0.0, 0.0, 0.0, 1.0);
-    // SubmergedPositionBuffer[9] = float4(0.0, 0.0, 0.0, 1.0);
-    // SubmergedPositionBuffer[10] = float4(0.0, 0.0, 0.0, 1.0);
-    // SubmergedPositionBuffer[11] = float4(0.0, 0.0, 0.0, 1.0);
-    // SubmergedPositionBuffer[12] = float4(0.0, 0.0, 0.0, 1.0);
-
-    // SubmergedPositionBuffer[0] = float4(0.0, 0.0, 0.0, 1.0);
-    // SubmergedPositionBuffer[1] = float4(1.0, 1.0, 0.0, 1.0);
-    // SubmergedPositionBuffer[2] = float4(0.0, 0.0, 0.0, 1.0);
-    // SubmergedPositionBuffer[3] = float4(1.0, 1.0, 0.0, 1.0);
-    // SubmergedPositionBuffer[4] = float4(0.0, 0.0, 0.0, 1.0);
-    // SubmergedPositionBuffer[5] = float4(1.0, 0.0, 0.0, 1.0);
-
-    // SubmergedPositionBuffer[0] = float4(-0.5, 0.5, 0.0, 1.0);
-    // SubmergedPositionBuffer[1] = float4(0.5, 0.5, 0.0, 1.0);
-    // SubmergedPositionBuffer[2] = float4(-0.5, -0.5, 0.0, 1.0);
-    // SubmergedPositionBuffer[3] = float4(0.5, 0.5, 0.0, 1.0);
-    // SubmergedPositionBuffer[4] = float4(-0.5, -0.5, 0.0, 1.0);
-    // SubmergedPositionBuffer[5] = float4(0.5, -0.5, 0.0, 1.0);
 
     float3 position    = BoatTexture[uint2(0,0)].rgb; // RGB of (0,0) stores position
     float4 orientation = BoatTexture[uint2(1,0)]; // RGBA of (1,0) stores orientation
@@ -261,43 +229,45 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
         OutputBuffer[2*id.x+1] = t;
     }
 
+    // // i = 0; // works
+
+    // // Vertex 1
+    // SubmergedPositionBuffer[i+0] = 1.0; // x
+    // SubmergedPositionBuffer[i+1] = 1.0; // y
+    // SubmergedPositionBuffer[i+2] = 0.0; // z
+    // SubmergedPositionBuffer[i+3] = 1.0; // w
+
+    // // Vertex 2
+    // SubmergedPositionBuffer[i+4] = 0.0; // x
+    // SubmergedPositionBuffer[i+5] = 0.0; // y
+    // SubmergedPositionBuffer[i+6] = 0.0; // z
+    // SubmergedPositionBuffer[i+7] = 1.0; // w
+
+    // // Vertex 3
+    // SubmergedPositionBuffer[i+8] = 1.0; // x
+    // SubmergedPositionBuffer[i+9] = 0.0; // y
+    // SubmergedPositionBuffer[i+10] = 0.0; // z
+    // SubmergedPositionBuffer[i+11] = 1.0; // w
+
+    int i = 4*3*(2*id.x+1); // 4 floats per vertex and 3 vertices per triangle
+
     // Currently, t is equal to second triangle we added.
-    // if (t.center_and_area.w != 0.0) {
-    //     SubmergedPositionBuffer[6*id.x+3] = t.v1;
-    //     SubmergedPositionBuffer[6*id.x+4] = t.v2;
-    //     SubmergedPositionBuffer[6*id.x+5] = t.v3;
-    // } else {
-    //     // SubmergedPositionBuffer[6*id.x+3] = float4(0.0, 0.0, 0.0, 0.0);
-    //     // SubmergedPositionBuffer[6*id.x+4] = float4(0.0, 0.0, 0.0, 0.0);
-    //     // SubmergedPositionBuffer[6*id.x+5] = float4(0.0, 0.0, 0.0, 0.0);
-    // }
-    // SubmergedPositionBuffer[6*id.x+3] = float4(1.0, 0.0, 0.0, 0.0);
-    // SubmergedPositionBuffer[6*id.x+4] = float4(0.0, 1.0, 0.0, 0.0);
-    // SubmergedPositionBuffer[6*id.x+5] = float4(1.0, 1.0, 0.0, 0.0);
+    if (t.center_and_area.w != 0.0) {
+        write_submerged_positions(i, t.v1, t.v2, t.v3);
+    } else {
+        float4 z = float4(0.0, 0.0, 0.0, 1.0);
+        write_submerged_positions(i, z, z, z);
+    }
+
+    i = 4*3*2*id.x;
 
     // Recover the first triangle.
     t = OutputBuffer[2*id.x];
-    // if (t.center_and_area.w != 0.0) {
-    //     SubmergedPositionBuffer[6*id.x+0] = t.v1;
-    //     SubmergedPositionBuffer[6*id.x+1] = t.v2;
-    //     SubmergedPositionBuffer[6*id.x+2] = t.v3;
-    // } else {
-    //     // SubmergedPositionBuffer[6*id.x+0] = float4(0.0, 0.0, 0.0, 0.0);
-    //     // SubmergedPositionBuffer[6*id.x+1] = float4(0.0, 0.0, 0.0, 0.0);
-    //     // SubmergedPositionBuffer[6*id.x+2] = float4(0.0, 0.0, 0.0, 0.0);
-    //     SubmergedPositionBuffer[6*id.x+0] = float4(0.0, 0.0, 0.0, 0.0);
-    //     SubmergedPositionBuffer[6*id.x+1] = float4(0.0, 0.0, 0.0, 0.0);
-    //     SubmergedPositionBuffer[6*id.x+2] = float4(0.0, 0.0, 0.0, 0.0);
-    // }
-    // SubmergedPositionBuffer[6*id.x+0] = float4(1.0, 0.0, 0.0, 0.0);
-    // SubmergedPositionBuffer[6*id.x+1] = float4(0.0, 1.0, 0.0, 0.0);
-    // SubmergedPositionBuffer[6*id.x+2] = float4(1.0, 1.0, 0.0, 0.0);
-
-    // SubmergedPositionBuffer[6*id.x+0] = float4(1.0, 0.0, 0.0, 0.0);
-    // SubmergedPositionBuffer[6*id.x+1] = float4(0.0, 0.0, 1.0, 1.0);
-    // SubmergedPositionBuffer[6*id.x+2] = float4(0.0, 1.0, 0.0, 0.0);
-    // SubmergedPositionBuffer[6*id.x+3] = float4(0.0, 1.0, 0.0, 1.0);
-    // SubmergedPositionBuffer[6*id.x+4] = float4(0.0, 0.0, 0.0, 0.0);
-    // SubmergedPositionBuffer[6*id.x+5] = float4(0.0, 0.0, 0.0, 0.0);
+    if (t.center_and_area.w != 0.0) {
+        write_submerged_positions(i, t.v1, t.v2, t.v3);
+    } else {
+        float4 z = float4(0.0, 0.0, 0.0, 1.0);
+        write_submerged_positions(i, z, z, z);
+    }
 
 }

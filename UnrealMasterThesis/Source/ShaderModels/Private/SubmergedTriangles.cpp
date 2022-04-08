@@ -95,23 +95,8 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
 
     PassParameters->OutputBuffer = uav_ref;
 
-    TArray<FVector4> initial_data2 = {
-        FVector4(0.0f, 0.5f, 0, 1),
-        FVector4(-1.0f, 0.0f, 0, 1),
-        FVector4(0.0f, 0.0f, 0, 1),
-
-        FVector4(1.0f, 1.0f, 0, 1),
-        FVector4(0.0f, 0.0f, 0, 1),
-        FVector4(1.0f, 0.0f, 0, 1),
-
-        FVector4(0.0f, 0.0f, 0, 1),
-        FVector4(-1.0f, -1.0f, 0, 1),
-        FVector4(0.0f, -1.0f, 0, 1),
-
-        FVector4(1.0f, 0.0f, 0, 1),
-        FVector4(0.0f, -1.0f, 0, 1),
-        FVector4(1.0f, -1.0f, 0, 1)
-    };
+    TArray<FVector4> initial_data2;
+    initial_data2.SetNum(3*N);
 
     FRDGBufferRef rdg_buffer_ref2 = CreateVertexBuffer(
         graph_builder,

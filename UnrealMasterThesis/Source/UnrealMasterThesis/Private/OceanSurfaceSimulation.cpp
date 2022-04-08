@@ -275,12 +275,6 @@ void AOceanSurfaceSimulation::create_mesh() {
 	}
 }
 
-struct TestStruct {
-	// FVector4 Position; // 96
-	FVector Position; // 72... Oh, it's 3D
-};
-
-// void AOceanSurfaceSimulation::update_mesh(float dt) {
 void AOceanSurfaceSimulation::update_mesh(float dt) {
 
 	// Update non-interactive ocean.
@@ -338,17 +332,4 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 			}
 		}
 	}
-	// TODO: remove
-	// else {
-	// 	for (int i = 0; i < boats.Num(); i++) {
-	// 		auto boat = boats[i];
-	// 		if (boat) {
-
-	// 			FeWaveRTTs ewave_rtts = boat->GeteWaveRTTs();
-
-	// 			m_shader_models_module.Clear(ewave_rtts.obstruction);
-	// 			m_shader_models_module.ProjectObstruction(boat_collision_mesh, ewave_rtts.obstruction);
-	// 		}
-	// 	}
-	// }
 }
