@@ -10,6 +10,8 @@ void HorizontalProjectionFragShader::RenderTo(
     FRHIVertexBuffer* submerged_position_buffer,
     UTextureRenderTarget2D* output) {
 
+	RHICmdList.Transition(FRHITransitionInfo(output->GetRenderTargetResource()->GetRenderTargetTexture(), ERHIAccess::Unknown, ERHIAccess::Present));
+
 	FRHIRenderPassInfo RenderPassInfo(output->GetRenderTargetResource()->GetRenderTargetTexture(), ERenderTargetActions::Clear_Store);
 	RHICmdList.BeginRenderPass(RenderPassInfo, TEXT("OutputToRenderTarget"));
 
