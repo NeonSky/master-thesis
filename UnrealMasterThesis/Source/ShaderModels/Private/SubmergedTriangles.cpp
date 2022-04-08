@@ -96,15 +96,24 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
     PassParameters->OutputBuffer = uav_ref;
 
     TArray<FVector4> initial_data2 = {
-        FVector4(0.0, 1.0, 0.0, 1.0),
-        FVector4(1.0, 1.0, 0.0, 1.0),
-        FVector4(0.0, 0.0, 0.0, 1.0),
-        FVector4(1.0, 1.0, 0.0, 1.0),
-        FVector4(0.0, 0.0, 0.0, 1.0),
-        FVector4(1.0, 0.0, 0.0, 1.0)
+        FVector4(0.0f, 1.0f, 0, 1),
+        FVector4(-1.0f, 0.0f, 0, 1),
+        FVector4(0.0f, 0.0f, 0, 1),
+
+        FVector4(1.0f, 1.0f, 0, 1),
+        FVector4(0.0f, 0.0f, 0, 1),
+        FVector4(1.0f, 0.0f, 0, 1),
+
+        FVector4(0.0f, 0.0f, 0, 1),
+        FVector4(-1.0f, -1.0f, 0, 1),
+        FVector4(0.0f, -1.0f, 0, 1),
+
+        FVector4(1.0f, 0.0f, 0, 1),
+        FVector4(0.0f, -1.0f, 0, 1),
+        FVector4(1.0f, -1.0f, 0, 1)
     };
     // initial_data2.SetNum(3*N);
-    initial_data2.SetNum(6);
+    initial_data2.SetNum(4*3);
     // FRDGBufferRef rdg_buffer_ref2 = CreateStructuredBuffer(
     //     graph_builder,
     //     TEXT("SubmergedPositionBuffer"),
@@ -116,16 +125,16 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
     // );
     FRDGBufferDesc desc;
     desc.BytesPerElement = sizeof(FVector4);
-    desc.NumElements     = 6;
+    desc.NumElements     = initial_data2.Num();
     desc.UnderlyingType  = FRDGBufferDesc::EUnderlyingType::VertexBuffer;
-    desc.Usage           = EBufferUsageFlags(BUF_UnorderedAccess | BUF_ShaderResource | BUF_ByteAddressBuffer);
+    desc.Usage           = EBufferUsageFlags(BUF_UnorderedAccess | BUF_ShaderResource);
 
     FRDGBufferRef rdg_buffer_ref2 = CreateVertexBuffer(
         graph_builder,
         TEXT("SubmergedPositionBuffer"),
         desc,
         initial_data2.GetData(),
-        sizeof(FVector4) * 6,
+        sizeof(FVector4) * initial_data2.Num(),
         ERDGInitialDataFlags::None
     );
     FRDGBufferUAVRef uav_ref2 = graph_builder.CreateUAV(rdg_buffer_ref2, PF_R32_UINT);

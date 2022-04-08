@@ -31,38 +31,6 @@ void HorizontalProjectionFragShader::RenderTo(
 	GraphicsPSOInit.PrimitiveType = PT_TriangleList;
 	SetGraphicsPipelineState(RHICmdList, GraphicsPSOInit);
 
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("READBACK 1"));
-	// 	FVector* data = (FVector4*) GScreenQuad.VertexBufferRHI->GetVertexData();
-	// 	TArray<FVector4> readback_data;
-	// 	FMemory::Memcpy(readback_data.GetData(), data, sizeof(FVector4) * 6);
-
-	// 	for (auto& v : readback_data) {
-	// 		UE_LOG(LogTemp, Warning, TEXT("v: (%f, %f, %f, %f)"), v);
-	// 	}
-	// }
-
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("READBACK 2"));
-	// 	FVector* data = (FVector4*) submerged_position_buffer->GetVertexBufferRHI()->GetVertexData();
-	// 	TArray<FVector4> readback_data;
-	// 	FMemory::Memcpy(readback_data.GetData(), data, sizeof(FVector4) * 6);
-
-	// 	for (auto& v : readback_data) {
-	// 		UE_LOG(LogTemp, Warning, TEXT("v: (%f, %f, %f, %f)"), v.X, v.Y, v.Z, v.W);
-	// 	}
-	// }
-
-    // Set vertex buffer
-    // FStaticMeshLODResources& mesh_res = collision_mesh->GetStaticMeshComponent()->GetStaticMesh()->RenderData->LODResources[0];
-	// RHICmdList.SetStreamSource(0, mesh_res.StaticMeshVertexBuffer.FTexcoordVertexBuffer.VertexBufferRHI, 0);
-	if (submerged_position_buffer->GetStructuredBufferRHI() == nullptr)  {
-		UE_LOG(LogTemp, Warning, TEXT("Submerged positions structured buffer is nullptr"));
-	}
-	if (submerged_position_buffer->GetIndexBufferRHI() == nullptr)  {
-		UE_LOG(LogTemp, Warning, TEXT("Submerged positions index buffer is nullptr"));
-	}
-
 	if (submerged_position_buffer->GetVertexBufferRHI() == nullptr) {
 		UE_LOG(LogTemp, Warning, TEXT("Submerged positions is nullptr"));
 	} else {
@@ -80,7 +48,7 @@ void HorizontalProjectionFragShader::RenderTo(
     // RHICmdList.SetStreamSource(0, GScreenQuad.VertexBufferRHI, 0);
 
 	// RHICmdList.DrawPrimitive(0, 1, 1); // TODO: replace
-	RHICmdList.DrawPrimitive(0, 2, 1); // TODO: replace
+	RHICmdList.DrawPrimitive(0, 4, 1); // TODO: replace
 	// RHICmdList.DrawPrimitive(0, 140, 1);
 
 	RHICmdList.EndRenderPass();
