@@ -16,10 +16,6 @@ struct GPUSumbergedTriangle {
 	FVector4 v2;
 };
 
-// struct MyVerte2x {
-// 	FVector4 Position;
-// };
-
 class SHADERMODELS_API SubmergedTrianglesShader : public FGlobalShader {
 public:
 

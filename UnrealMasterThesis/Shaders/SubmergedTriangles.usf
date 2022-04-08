@@ -15,7 +15,6 @@ Texture2D<float4> WakeTextures_0;
 Texture2D<float4> WakeTextures_1;
 
 RWStructuredBuffer<SubmergedTriangle> OutputBuffer;
-// RWStructuredBuffer<float4> SubmergedPositionBuffer;
 RWBuffer<float> SubmergedPositionBuffer;
 
 struct SortItem {

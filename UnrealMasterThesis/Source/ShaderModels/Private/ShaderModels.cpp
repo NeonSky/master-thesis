@@ -351,7 +351,7 @@ void ShaderModelsModule::UpdateGPUBoat(
 
 				TShaderMapRef<GPUBoatShader> shader2(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 				ENQUEUE_RENDER_COMMAND(shader2)(
-					[this, callback, shader2, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, submerged_position_buffer, obstruction_texture, boat_texture, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) { // works
+					[this, callback, shader2, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, submerged_position_buffer, obstruction_texture, boat_texture, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
 
 					ProjectObstruction(submerged_position_buffer, obstruction_texture);
 

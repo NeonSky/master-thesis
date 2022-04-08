@@ -40,6 +40,7 @@ public:
 
 };
 
+// A struct is needed. Simply using FVector4 does not work.
 struct MyVertex {
 	FVector4 Position;
 };
@@ -60,23 +61,5 @@ public:
 
 	virtual void ReleaseRHI() {
 		VertexDeclarationRHI.SafeRelease();
-	}
-};
-
-class ScreenQuad : public FVertexBuffer {
-public:
-	void InitRHI() {
-		TResourceArray<MyVertex, VERTEXBUFFER_ALIGNMENT> vertices;
-		vertices.SetNumUninitialized(6);
-
-		vertices[0].Position = FVector4(-0.5f, 0.5f, 0, 1);
-		vertices[1].Position = FVector4(0.5f, 0.5f, 0, 1);
-		vertices[2].Position = FVector4(-0.5f, -0.5f, 0, 1);
-		vertices[3].Position = FVector4(0.5f, 0.5f, 0, 1);
-		vertices[4].Position = FVector4(-0.5f, -0.5f, 0, 1);
-		vertices[5].Position = FVector4(0.5f, -0.5f, 0, 1);
-
-		FRHIResourceCreateInfo CreateInfo(&vertices);
-		VertexBufferRHI = RHICreateVertexBuffer(vertices.GetResourceDataSize(), BUF_Static, CreateInfo);
 	}
 };

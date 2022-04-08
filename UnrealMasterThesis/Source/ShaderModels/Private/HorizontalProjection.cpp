@@ -5,8 +5,6 @@ IMPLEMENT_GLOBAL_SHADER(HorizontalProjectionFragShader, "/Project/UnrealMasterTh
 
 TGlobalResource<MyVertexDeclaration> GMyVertexDeclaration;
 
-TGlobalResource<ScreenQuad> GScreenQuad;
-
 void HorizontalProjectionFragShader::RenderTo(
     FRHICommandListImmediate& RHICmdList,
     TRefCountPtr<FRDGPooledBuffer> submerged_position_buffer,

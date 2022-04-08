@@ -83,7 +83,6 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 			)
 		);
 		
-		// eWave_hv[id.xy] = float4(hv.re, hv.im, 0.0, 1.0);
 		eWave_hv[id.xy].rg = float2(hv.re, hv.im);
 	}
 	
