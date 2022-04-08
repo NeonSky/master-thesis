@@ -112,16 +112,11 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
         FVector4(0.0f, -1.0f, 0, 1),
         FVector4(1.0f, -1.0f, 0, 1)
     };
-    FRDGBufferDesc desc;
-    desc.BytesPerElement = sizeof(FVector4);
-    desc.NumElements     = initial_data2.Num();
-    desc.UnderlyingType  = FRDGBufferDesc::EUnderlyingType::VertexBuffer;
-    desc.Usage           = EBufferUsageFlags(BUF_UnorderedAccess | BUF_ShaderResource | BUF_Dynamic | BUF_VertexBuffer);
 
     FRDGBufferRef rdg_buffer_ref2 = CreateVertexBuffer(
         graph_builder,
         TEXT("SubmergedPositionBuffer"),
-        desc,
+        FRDGBufferDesc::CreateBufferDesc(sizeof(FVector4), initial_data2.Num()),
         initial_data2.GetData(),
         sizeof(FVector4) * initial_data2.Num(),
         ERDGInitialDataFlags::None

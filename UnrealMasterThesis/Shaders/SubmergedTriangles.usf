@@ -16,7 +16,7 @@ Texture2D<float4> WakeTextures_1;
 
 RWStructuredBuffer<SubmergedTriangle> OutputBuffer;
 // RWStructuredBuffer<float4> SubmergedPositionBuffer;
-RWBuffer<float4> SubmergedPositionBuffer;
+RWBuffer<float> SubmergedPositionBuffer;
 
 struct SortItem {
     float h;
@@ -45,11 +45,25 @@ float3 homogenize(float4 v) {
 [numthreads(N_THREADS_X, 1, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
+    SubmergedPositionBuffer[4*0+0] = -0.5; // triangle 0, vertex 0, red
+    SubmergedPositionBuffer[4*0+1] = 1.0;  // triangle 0, vertex 0, green
+
+    SubmergedPositionBuffer[4*1+0] = -0.5; // triangle 0, vertex 1, red
+    SubmergedPositionBuffer[4*1+1] = 0.5; // triangle 0, vertex 1, green
+
+    SubmergedPositionBuffer[4*11+0] = 0.9; // triangle 3, vertex 2, red
+    SubmergedPositionBuffer[4*11+1] = -0.8;  // triangle 3, vertex 2, green
+
     /* Debug what values affect what */
-    SubmergedPositionBuffer[0].r = 0.5; // affects red of the first triangle
-    SubmergedPositionBuffer[1].r = 1.0; // affects green of the first triangle
+    // SubmergedPositionBuffer[0].r = 0.5; // affects red of the first triangle
+    // SubmergedPositionBuffer[1].r = 1.0; // affects green of the first triangle
 
     /*********************************/
+    // SubmergedPositionBuffer[0].r = -0.5; // red of triangle 0
+    // SubmergedPositionBuffer[1].r = 0.3; // green of triangle 0
+    /*********************************/
+    // SubmergedPositionBuffer[0].r = 0.5;
+    // SubmergedPositionBuffer[0].g = 1.0;
 
     // SubmergedPositionBuffer[0] = float4(0.0, 0.0, 0.0, 1.0);
 
