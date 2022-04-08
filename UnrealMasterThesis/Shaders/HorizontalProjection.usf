@@ -3,7 +3,8 @@
 /* Vertex Shader */
 
 void MainVertShader(float4 InPosition : ATTRIBUTE0, out float4 OutPosition : SV_POSITION) {
-	OutPosition = InPosition;
+	// OutPosition = InPosition;
+	OutPosition = float4(InPosition.x / 25.6, InPosition.y / 25.6, 0.0, InPosition.w);
 }
 
 /* Fragment Shader */

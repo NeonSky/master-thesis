@@ -229,31 +229,12 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
         OutputBuffer[2*id.x+1] = t;
     }
 
-    // // i = 0; // works
-
-    // // Vertex 1
-    // SubmergedPositionBuffer[i+0] = 1.0; // x
-    // SubmergedPositionBuffer[i+1] = 1.0; // y
-    // SubmergedPositionBuffer[i+2] = 0.0; // z
-    // SubmergedPositionBuffer[i+3] = 1.0; // w
-
-    // // Vertex 2
-    // SubmergedPositionBuffer[i+4] = 0.0; // x
-    // SubmergedPositionBuffer[i+5] = 0.0; // y
-    // SubmergedPositionBuffer[i+6] = 0.0; // z
-    // SubmergedPositionBuffer[i+7] = 1.0; // w
-
-    // // Vertex 3
-    // SubmergedPositionBuffer[i+8] = 1.0; // x
-    // SubmergedPositionBuffer[i+9] = 0.0; // y
-    // SubmergedPositionBuffer[i+10] = 0.0; // z
-    // SubmergedPositionBuffer[i+11] = 1.0; // w
-
+    float4 boat_center = float4(position.x, position.y, position.z, 0.0);
     int i = 4*3*(2*id.x+1); // 4 floats per vertex and 3 vertices per triangle
 
     // Currently, t is equal to second triangle we added.
     if (t.center_and_area.w != 0.0) {
-        write_submerged_positions(i, t.v1, t.v2, t.v3);
+        write_submerged_positions(i, t.v1 - boat_center, t.v2 - boat_center, t.v3 - boat_center);
     } else {
         float4 z = float4(0.0, 0.0, 0.0, 1.0);
         write_submerged_positions(i, z, z, z);
@@ -264,7 +245,7 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     // Recover the first triangle.
     t = OutputBuffer[2*id.x];
     if (t.center_and_area.w != 0.0) {
-        write_submerged_positions(i, t.v1, t.v2, t.v3);
+        write_submerged_positions(i, t.v1 - boat_center, t.v2 - boat_center, t.v3 - boat_center);
     } else {
         float4 z = float4(0.0, 0.0, 0.0, 1.0);
         write_submerged_positions(i, z, z, z);
