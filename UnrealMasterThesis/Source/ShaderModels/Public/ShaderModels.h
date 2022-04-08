@@ -32,7 +32,7 @@ public:
 		UTextureRenderTarget2D* eWave_hv_copy
 	);
 
-	void Clear(UTextureRenderTarget2D* result);
+	void Clear(UTextureRenderTarget2D* result, FVector4 clear_value);
 
 	void ComputeScale(
 		UTextureRenderTarget2D* input_output_rtt, 

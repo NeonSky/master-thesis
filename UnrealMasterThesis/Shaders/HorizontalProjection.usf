@@ -4,11 +4,11 @@
 
 void MainVertShader(float4 InPosition : ATTRIBUTE0, out float4 OutPosition : SV_POSITION) {
 	// OutPosition = InPosition;
-	OutPosition = float4(InPosition.x / 25.6, InPosition.y / 25.6, 0.0, InPosition.w);
+	OutPosition = float4(InPosition.x / 100.0, InPosition.y / 100.0, 0.0, InPosition.w);
 }
 
 /* Fragment Shader */
 
 void MainFragShader(out float4 OutColor : SV_Target0) {
-	OutColor = float4(1.0, 0.0, 0.0, 1.0);
+	OutColor = float4(0.0, 0.0, 0.0, 1.0);
 }

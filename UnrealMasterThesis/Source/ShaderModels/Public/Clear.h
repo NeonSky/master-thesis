@@ -14,6 +14,8 @@ public:
 		BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, result)
 
+		SHADER_PARAMETER(FVector4, clear_value)
+
 	END_SHADER_PARAMETER_STRUCT()
 
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters) {
@@ -29,6 +31,7 @@ public:
 
 	void BuildAndExecuteGraph(
 		FRHICommandListImmediate& RHI_cmd_list,
+		FVector4 clear_value,
 		UTextureRenderTarget2D* result
 	);
 };

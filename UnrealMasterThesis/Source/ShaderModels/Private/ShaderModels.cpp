@@ -157,16 +157,17 @@ void ShaderModelsModule::ComputeeWave(
 	});
 }
 
-void ShaderModelsModule::Clear(UTextureRenderTarget2D* result) {
+void ShaderModelsModule::Clear(UTextureRenderTarget2D* result, FVector4 clear_value) {
 
 	TShaderMapRef<ClearShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	UTextureRenderTarget2D* result_param = result;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, result_param](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, clear_value, result_param](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
+			clear_value,
 			result_param
 		);
 	});
@@ -352,7 +353,6 @@ void ShaderModelsModule::UpdateGPUBoat(
 				ENQUEUE_RENDER_COMMAND(shader2)(
 					[this, callback, shader2, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, submerged_position_buffer, obstruction_texture, boat_texture, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) { // works
 
-					Clear(obstruction_texture);
 					ProjectObstruction(submerged_position_buffer, obstruction_texture);
 
 					shader2->BuildAndExecuteGraph(
