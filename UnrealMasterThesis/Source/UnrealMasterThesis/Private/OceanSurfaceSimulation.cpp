@@ -60,22 +60,19 @@ void AOceanSurfaceSimulation::BeginPlay() {
 			FeWaveRTTs ewave_rtts = boat->GeteWaveRTTs();
 			m_shader_models_module.Clear(ewave_rtts.eWaveHV);
 			m_shader_models_module.Clear(ewave_rtts.eWaveHV_prev);
+			m_shader_models_module.Clear(boat->GetBoatRTT());
 		}
 	}
-	m_shader_models_module.Clear(spectrum_x_rtt);
+	m_shader_models_module.Clear(spectrum_xz_rtt);
 	m_shader_models_module.Clear(spectrum_y_rtt);
-	m_shader_models_module.Clear(spectrum_z_rtt);
 	m_shader_models_module.Clear(eWave_addition_rtt);
-
-	FeWaveRTTs ewave_rtts = boats[0]->GeteWaveRTTs();
 
 	input_pawn->on_fixed_update.AddUObject<AOceanSurfaceSimulation>(this, &AOceanSurfaceSimulation::update);
 	data_collector->inputPawn = input_pawn;
 	data_collector->shaderModule = &m_shader_models_module;
 	data_collector->data_collection_settings = data_collection_settings;
 	input_pawn->playBackInputSequence = data_collection_settings.shouldPlayBackInputSequence;
-	data_collector->eWave_h_rtt = ewave_rtts.eWaveH;
-	data_collector->eWave_v_rtt = ewave_rtts.eWaveV;
+	data_collector->eWave_h_rtt = boats[0]->GeteWaveRTTs().eWaveHV; // TODO, currently only supports one boat, on index 0
 	data_collector->serialization_rtt = serialization_rtt;
 	for (auto boat : boats) { data_collector->boats.Add(boat); }
 	data_collector->readInputJSON(input_pawn->inputSequence);
@@ -127,10 +124,10 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
 
 	// Update non-interactive ocean.
-	m_shader_models_module.ComputeFourierComponents(realtimeSeconds, this->spectrum_y_rtt, this->spectrum_xz_rtt);
+	/*m_shader_models_module.ComputeFourierComponents(oceanTime, this->spectrum_y_rtt, this->spectrum_xz_rtt);
 
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
-	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_xz_rtt);
+	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_xz_rtt);*/
 }
 
 TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points) {
@@ -310,7 +307,9 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 2);
 				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 1);
 				m_shader_models_module.FFT_Forward(this->butterfly_rtt, ewave_rtts.eWaveHV); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
-				m_shader_models_module.ComputeeWave(dt, ewave_rtts.eWaveHV);
+				
+				//m_shader_models_module.ComputeeWave(dt, ewave_rtts.eWaveHV);
+
 				m_shader_models_module.FFT(this->butterfly_rtt, ewave_rtts.eWaveHV, 0);
 				m_shader_models_module.ComputeScale(ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, ewave_scale);
 				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 0);

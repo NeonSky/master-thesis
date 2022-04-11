@@ -21,6 +21,9 @@
 #include "Engine/TextureRenderTarget2D.h"
 
 
+#include "GenericPlatform/GenericPlatformProcess.h"
+
+
 void ShaderModelsModule::StartupModule() {
 	UE_LOG(LogTemp, Warning, TEXT("ShaderModelsModule::StartupModule()"));
 
@@ -148,7 +151,6 @@ void ShaderModelsModule::ComputeeWave(
 			eWave_hv_param
 		);
 	});
-
 }
 
 void ShaderModelsModule::Clear(UTextureRenderTarget2D* result) {
