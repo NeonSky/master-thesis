@@ -112,8 +112,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 		&& (sampleCoordinates.y >= 0 && sampleCoordinates.y <= 255)){
 		h = h;
 		v = v;	
-	}
-	else{
+	} else {
 		h = 0.0;
 		v = 0.0;
 	}

@@ -40,7 +40,8 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
         UTextureRenderTarget2D* elevation_texture,
         UTextureRenderTarget2D* boat_texture,
         TArray<UTextureRenderTarget2D*> other_boat_textures,
-        TArray<UTextureRenderTarget2D*> wake_textures,
+        UTextureRenderTarget2D* wake_texture,
+        TArray<UTextureRenderTarget2D*> other_wake_textures,
         TRefCountPtr<FRDGPooledBuffer>* output_buffer,
         TRefCountPtr<FRDGPooledBuffer>* submerged_position_buffer) {
 
@@ -54,6 +55,7 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
 
     PassParameters->ElevationTexture = register_texture4(graph_builder, elevation_texture, "ElevationRenderTarget");
     PassParameters->BoatTexture      = register_texture4(graph_builder, boat_texture, "BoatRenderTarget");
+    PassParameters->WakeTexture      = register_texture4(graph_builder, wake_texture, "WakeRenderTarget");
 
 	// See comment in ElevationSampler.usf
 	if (other_boat_textures.Num() > 0) {
@@ -63,14 +65,12 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
         PassParameters->OtherBoatTextures[0] = register_texture4(graph_builder, boat_texture, "BoatRenderTarget2");
     }
 
-    PassParameters->WakeTextures[0] = register_texture4(graph_builder, wake_textures[0], "WakeRenderTarget");
-
 	// See comment in ElevationSampler.usf
-	if (wake_textures.Num() > 1) {
-		PassParameters->WakeTextures[1] = register_texture4(graph_builder, wake_textures[1], "WakeRenderTarget2");
+	if (other_wake_textures.Num() > 0) {
+		PassParameters->OtherWakeTextures[0] = register_texture4(graph_builder, other_wake_textures[0], "WakeRenderTarget2");
 	} else {
 		// Assign arbitrary valid texture to prevent crash. It will not be used anyway.
-		PassParameters->WakeTextures[1] = register_texture4(graph_builder, wake_textures[0], "WakeRenderTarget2");
+		PassParameters->OtherWakeTextures[0] = register_texture4(graph_builder, wake_texture, "WakeRenderTarget2");
 	}
 
     FStaticMeshLODResources& mesh_res = collision_mesh->GetStaticMeshComponent()->GetStaticMesh()->RenderData->LODResources[0];

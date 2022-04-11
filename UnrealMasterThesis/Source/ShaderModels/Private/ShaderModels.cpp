@@ -313,7 +313,8 @@ void ShaderModelsModule::UpdateGPUBoat(
     FVector2D velocity_input,
 	AStaticMeshActor* collision_mesh,
 	UTextureRenderTarget2D* elevation_texture,
-	TArray<UTextureRenderTarget2D*> wake_textures,
+	UTextureRenderTarget2D* wake_texture,
+	TArray<UTextureRenderTarget2D*> other_wake_textures,
 	UTextureRenderTarget2D* obstruction_texture,
 	UTextureRenderTarget2D* boat_texture,
 	TArray<UTextureRenderTarget2D*> other_boat_textures,
@@ -325,7 +326,7 @@ void ShaderModelsModule::UpdateGPUBoat(
 	{
 		TShaderMapRef<SubmergedTrianglesShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 		ENQUEUE_RENDER_COMMAND(shader)(
-			[this, callback, shader, speed_input, velocity_input, collision_mesh, elevation_texture, wake_textures, obstruction_texture, boat_texture, other_boat_textures, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
+			[this, callback, shader, speed_input, velocity_input, collision_mesh, elevation_texture, wake_texture, other_wake_textures, obstruction_texture, boat_texture, other_boat_textures, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
 
 				TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer;
 				TRefCountPtr<FRDGPooledBuffer> submerged_position_buffer;
@@ -335,7 +336,8 @@ void ShaderModelsModule::UpdateGPUBoat(
 					elevation_texture,
 					boat_texture,
 					other_boat_textures,
-					wake_textures,
+					wake_texture,
+					other_wake_textures,
 					&submerged_triangles_buffer,
 					&submerged_position_buffer
 				);

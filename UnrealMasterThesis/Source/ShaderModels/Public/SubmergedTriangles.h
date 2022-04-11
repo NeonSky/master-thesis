@@ -33,7 +33,9 @@ public:
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, BoatTexture)
 
 		SHADER_PARAMETER_RDG_TEXTURE_ARRAY(Texture2D<FVector4>, OtherBoatTextures, [1])
-		SHADER_PARAMETER_RDG_TEXTURE_ARRAY(Texture2D<FVector4>, WakeTextures, [2])
+
+		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, WakeTexture)
+		SHADER_PARAMETER_RDG_TEXTURE_ARRAY(Texture2D<FVector4>, OtherWakeTextures, [1])
 
 		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<GPUSumbergedTriangle>, OutputBuffer)
 		SHADER_PARAMETER_RDG_BUFFER_UAV(RWBuffer<FVector4>, SubmergedPositionBuffer)
@@ -56,7 +58,8 @@ public:
         UTextureRenderTarget2D* elevation_texture,
         UTextureRenderTarget2D* boat_texture,
         TArray<UTextureRenderTarget2D*> other_boat_textures,
-        TArray<UTextureRenderTarget2D*> wake_textures,
+        UTextureRenderTarget2D* wake_texture,
+        TArray<UTextureRenderTarget2D*> other_wake_textures,
         TRefCountPtr<FRDGPooledBuffer>* output_buffer,
 		TRefCountPtr<FRDGPooledBuffer>* submerged_position_buffer);
 

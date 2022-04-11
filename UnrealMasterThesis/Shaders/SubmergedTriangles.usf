@@ -8,11 +8,11 @@ Buffer<uint> IndexBuffer;
 Buffer<float> PositionBuffer;
 Texture2D<float4> ElevationTexture;
 Texture2D<float4> BoatTexture;
+Texture2D<float4> WakeTexture;
 
 // See ElevationSampler.usf
 Texture2D<float4> OtherBoatTextures_0;
-Texture2D<float4> WakeTextures_0;
-Texture2D<float4> WakeTextures_1;
+Texture2D<float4> OtherWakeTextures_0;
 
 RWStructuredBuffer<SubmergedTriangle> OutputBuffer;
 RWBuffer<float> SubmergedPositionBuffer;
@@ -98,9 +98,9 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     float3 normal = normalize(cross(v2 - v0, v1 - v0));
 
     Texture2D<float4> wake_textures[BOAT_COUNT];
-    wake_textures[0] = WakeTextures_0;
+    wake_textures[0] = WakeTexture;
     #if BOAT_COUNT > 1
-        wake_textures[1] = WakeTextures_1;
+        wake_textures[1] = OtherWakeTextures_0;
     #endif
 
     float2 ws_boat_coords[BOAT_COUNT];
@@ -230,8 +230,9 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
         OutputBuffer[2*id.x+1] = t;
     }
 
-    float3 prev_position = BoatTexture[uint2(0,1)].rgb; // RGB of (0,1) stores previous position
-    float4 boat_center = float4(prev_position.x, prev_position.y, prev_position.z, 0.0);
+    float3 velocity = BoatTexture[uint2(2,0)].rgb;
+    float3 p = position + velocity * DELTA_T;
+    float4 boat_center = float4(p.x, p.y, p.z, 0.0);
 
     int i = 4*3*(2*id.x+1); // 4 floats per vertex and 3 vertices per triangle
 

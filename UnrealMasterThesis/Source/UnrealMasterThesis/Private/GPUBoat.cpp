@@ -39,12 +39,20 @@ void AGPUBoat::Update(UpdatePayload update_payload, std::function<void(TRefCount
         }
     }
 
+    TArray<UTextureRenderTarget2D*> other_wake_textures;
+    for (auto& rtt : shared_state.ewave_rtts) {
+        if (rtt != ewave_rtts.eWaveHV) {
+            other_wake_textures.Push(rtt);
+        }
+    }
+
     m_shader_models_module.UpdateGPUBoat(
         update_payload.speed_input,
         velocity_input,
         collision_mesh,
         elevation_rtt,
-        shared_state.ewave_rtts,
+        ewave_rtts.eWaveHV,
+        other_wake_textures,
         ewave_rtts.obstruction,
         boat_rtt,
         other_boat_textures,
