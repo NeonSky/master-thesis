@@ -454,7 +454,7 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r, std::function<void(TRefCountPtr<
   {
     ENQUEUE_RENDER_COMMAND(void)([this, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) {
       TResourceArray<MyVertex, VERTEXBUFFER_ALIGNMENT> vertices;
-      vertices.SetNum(3*3*140); // not sure why this buffer needs to be larger, but it does.
+      vertices.SetNum(3*140); // 3 vertices per triangle (of which there are at most 140)
 
       FVector4 boat_center = FVector4(m_rigidbody.position, 1.0);
       for (int i = 0; i < vertices.Num(); i++) {
