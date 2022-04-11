@@ -244,6 +244,7 @@ float sample_wake_elevation(Texture2D<float4> eWave_H, float2 ws_coord, float2 w
     float elevation = 5.0 * eWave_H.SampleLevel(Sampler, coord, 0).r;
 
     return elevation;
+    // return 0.012345;
 }
 
 float sample_elevation(
