@@ -3,7 +3,11 @@
 /* Vertex Shader */
 
 void MainVertShader(float4 InPosition : ATTRIBUTE0, out float4 OutPosition : SV_POSITION) {
-	OutPosition = float4(InPosition.x / 100.0, InPosition.y / 100.0, 0.0, InPosition.w);
+	// We divide by 50 because
+	//   pos - 50 should map to pos 1
+	//   pos + 50 should map to neg 1
+	// That is, the borders simulation area [-50,50]^2 should map to the border of the image [-1,1]^2.
+	OutPosition = float4(InPosition.x / 50.0, InPosition.y / 50.0, 0.0, InPosition.w);
 }
 
 /* Fragment Shader */
