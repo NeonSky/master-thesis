@@ -1,8 +1,10 @@
 #include "/Engine/Public/Platform.ush"
 
-RWTexture2D<float4> result;
+RWTexture2D<float4> src;
+RWTexture2D<float4> dst;
 
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void eWaveCompute(uint3 id : SV_DispatchThreadID) {
-    result[id.xy] = float4(0.012345, 0.0, 0.0, 1.0);
+  
+  dst[id.xy] = src[id.xy];
 }

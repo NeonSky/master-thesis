@@ -28,10 +28,15 @@ public:
 
 	void ComputeeWave(
 		float dt,
-		UTextureRenderTarget2D* eWave_hv
+		UTextureRenderTarget2D* eWave_hv,
+		UTextureRenderTarget2D* eWave_hv_copy
 	);
 
 	void Clear(UTextureRenderTarget2D* result);
+
+	void SetConst(UTextureRenderTarget2D* result);
+
+	void Copy(UTextureRenderTarget2D* src, UTextureRenderTarget2D* dst);
 
 	void ComputeScale(
 		UTextureRenderTarget2D* input_output_rtt, 

@@ -124,10 +124,10 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
 
 	// Update non-interactive ocean.
-	/*m_shader_models_module.ComputeFourierComponents(oceanTime, this->spectrum_y_rtt, this->spectrum_xz_rtt);
+	m_shader_models_module.ComputeFourierComponents(oceanTime, this->spectrum_y_rtt, this->spectrum_xz_rtt);
 
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
-	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_xz_rtt);*/
+	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_xz_rtt);
 }
 
 TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points) {
@@ -309,6 +309,9 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 				m_shader_models_module.FFT_Forward(this->butterfly_rtt, ewave_rtts.eWaveHV); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
 				
 				//m_shader_models_module.ComputeeWave(dt, ewave_rtts.eWaveHV);
+				// m_shader_models_module.SetConst(ewave_rtts.eWaveHV);
+				m_shader_models_module.Copy(ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev); // TODO: is this safe to use now?
+				m_shader_models_module.ComputeeWave(dt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev);
 
 				m_shader_models_module.FFT(this->butterfly_rtt, ewave_rtts.eWaveHV, 0);
 				m_shader_models_module.ComputeScale(ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, ewave_scale);

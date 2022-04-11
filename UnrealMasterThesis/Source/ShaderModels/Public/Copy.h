@@ -5,22 +5,19 @@
 #include "ShaderParameterStruct.h"
 #include "Modules/ModuleManager.h"
 
-class SHADERMODELS_API eWaveShader : public FGlobalShader {
+class SHADERMODELS_API CopyShader : public FGlobalShader {
 public:
 
-	DECLARE_GLOBAL_SHADER(eWaveShader)
-	SHADER_USE_PARAMETER_STRUCT(eWaveShader, FGlobalShader)
+	DECLARE_GLOBAL_SHADER(CopyShader)
+	SHADER_USE_PARAMETER_STRUCT(CopyShader, FGlobalShader)
 
 		BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
+		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, src)
+		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, dst)
 
-		SHADER_PARAMETER(float, dt)
+	END_SHADER_PARAMETER_STRUCT()
 
-		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, eWave_hv)
-		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, eWave_hv_copy)
-
-		END_SHADER_PARAMETER_STRUCT()
-
-		static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters) {
+	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters) {
 		return IsFeatureLevelSupported(Parameters.Platform, ERHIFeatureLevel::SM5);
 	}
 
@@ -33,9 +30,7 @@ public:
 
 	void BuildAndExecuteGraph(
 		FRHICommandListImmediate& RHI_cmd_list,
-		float dt,
-		UTextureRenderTarget2D* eWave_hv,
-		UTextureRenderTarget2D* eWave_hv_copy
+		UTextureRenderTarget2D* src,
+		UTextureRenderTarget2D* dst
 	);
-private:
 };

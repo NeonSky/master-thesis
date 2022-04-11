@@ -173,6 +173,6 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 		hTEST = h;
 	}
 	 
-	//hv_rtt[id.xy] = float4(h, v, pos.x * M_TO_CM, pos.y * M_TO_CM);
-	hv_rtt[id.xy] = float4(hTEST, v, pos.x * M_TO_CM, pos.y * M_TO_CM);
+	hv_rtt[id.xy] = float4(h, v, pos.x * M_TO_CM, pos.y * M_TO_CM);
+	//hv_rtt[id.xy] = float4(hTEST, v, pos.x * M_TO_CM, pos.y * M_TO_CM);
 }

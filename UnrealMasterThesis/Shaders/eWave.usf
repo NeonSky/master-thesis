@@ -4,6 +4,7 @@
 float dt; // Delta time (in seconds)
 
 RWTexture2D<float4> eWave_hv;
+RWTexture2D<float4> eWave_hv_copy;
 
 [numthreads(N_THREADS_X, N_THREADS_Y, 1)]
 void eWaveCompute(uint3 id : SV_DispatchThreadID) {
@@ -13,8 +14,8 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 	uint x2 = id.x > 0 ? N - id.x : 0;
 	uint y2 = id.y > 0 ? N - id.y : 0;
 
-	float2 C  = eWave_hv[id.xy].rg;
-	float2 C2 = eWave_hv[uint2(x2, y2)].rg;
+	float2 C  = eWave_hv_copy[id.xy].rg;
+	float2 C2 = eWave_hv_copy[uint2(x2, y2)].rg;
 
 	Complex RPk = newComplex(0.5 * (C.r + C2.r), 0.0);
 	Complex IMk = newComplex(0.5 * (C.g - C2.g), 0.0);

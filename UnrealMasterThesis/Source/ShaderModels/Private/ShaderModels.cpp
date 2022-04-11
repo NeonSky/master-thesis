@@ -7,6 +7,8 @@
 #include "ButterflyPostProcessForward.h"
 #include "eWave.h"
 #include "Clear.h"
+#include "Const.h"
+#include "Copy.h"
 #include "Scale.h"
 #include "Serialize.h"
 #include "Obstruction.h"
@@ -137,18 +139,21 @@ void ShaderModelsModule::ComputeFourierComponents(
 
 void ShaderModelsModule::ComputeeWave(
 	float dt, 
-	UTextureRenderTarget2D* eWave_hv) {
+	UTextureRenderTarget2D* eWave_hv,
+	UTextureRenderTarget2D* eWave_hv_copy) {
 
 	TShaderMapRef<eWaveShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
 	UTextureRenderTarget2D* eWave_hv_param = eWave_hv;
+	UTextureRenderTarget2D* eWave_hv_copy_param = eWave_hv_copy;
 
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, dt, eWave_hv_param](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, dt, eWave_hv_param, eWave_hv_copy_param](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
 			dt,
-			eWave_hv_param
+			eWave_hv_param,
+			eWave_hv_copy_param
 		);
 	});
 }
@@ -164,6 +169,40 @@ void ShaderModelsModule::Clear(UTextureRenderTarget2D* result) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
 			result_param
+		);
+	});
+
+}
+
+void ShaderModelsModule::SetConst(UTextureRenderTarget2D* result) {
+
+	TShaderMapRef<ConstShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+
+	UTextureRenderTarget2D* result_param = result;
+
+	ENQUEUE_RENDER_COMMAND(shader)(
+		[shader, result_param](FRHICommandListImmediate& RHI_cmd_list) {
+		shader->BuildAndExecuteGraph(
+			RHI_cmd_list,
+			result_param
+		);
+	});
+
+}
+
+void ShaderModelsModule::Copy(UTextureRenderTarget2D* src, UTextureRenderTarget2D* dst) {
+
+	TShaderMapRef<CopyShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+
+	UTextureRenderTarget2D* src_param = src;
+	UTextureRenderTarget2D* dst_param = dst;
+
+	ENQUEUE_RENDER_COMMAND(shader)(
+		[shader, src_param, dst_param](FRHICommandListImmediate& RHI_cmd_list) {
+		shader->BuildAndExecuteGraph(
+			RHI_cmd_list,
+			src_param,
+			dst_param
 		);
 	});
 
