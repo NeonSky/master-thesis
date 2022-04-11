@@ -68,15 +68,14 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     float3 position    = BoatTexture[uint2(0,0)].rgb; // RGB of (0,0) stores position
     float4 orientation = BoatTexture[uint2(1,0)]; // RGBA of (1,0) stores orientation
 
-    float4x4 transform_matrix = {
-        1.0, 0.0, 0.0, position.x,// * M_TO_CM,
-        0.0, 1.0, 0.0, position.y,// * M_TO_CM,
-        0.0, 0.0, 1.0, position.z,// * M_TO_CM,
+    float4x4 translation_matrix = {
+        1.0, 0.0, 0.0, position.x,
+        0.0, 1.0, 0.0, position.y,
+        0.0, 0.0, 1.0, position.z,
         0.0, 0.0, 0.0, 1.0,
     };
     float4x4 rotation_matrix = quat_to_mat(orientation);
-    float4x4 model_matrix = mul(transform_matrix, mul(rotation_matrix, transpose(ModelMatrix)));
-    float4x4 test = mul(transform_matrix, rotation_matrix);
+    float4x4 model_matrix = mul(translation_matrix, rotation_matrix);
 
     uint i0 = 3*IndexBuffer[3*id.x+0];
     uint i1 = 3*IndexBuffer[3*id.x+1];
@@ -92,20 +91,23 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     v1 = homogenize(mul(transpose(ModelMatrix), float4(v1, 1.0))) / M_TO_CM;
     v2 = homogenize(mul(transpose(ModelMatrix), float4(v2, 1.0))) / M_TO_CM;
 
-    v0 = homogenize(mul(test, float4(v0, 1.0)));
-    v1 = homogenize(mul(test, float4(v1, 1.0)));
-    v2 = homogenize(mul(test, float4(v2, 1.0)));
+    v0 = homogenize(mul(model_matrix, float4(v0, 1.0)));
+    v1 = homogenize(mul(model_matrix, float4(v1, 1.0)));
+    v2 = homogenize(mul(model_matrix, float4(v2, 1.0)));
 
     float3 normal = normalize(cross(v2 - v0, v1 - v0));
 
-    // TODO: change index 1
     Texture2D<float4> wake_textures[BOAT_COUNT];
     wake_textures[0] = WakeTextures_0;
-    wake_textures[1] = WakeTextures_1;
+    #if BOAT_COUNT > 1
+        wake_textures[1] = WakeTextures_1;
+    #endif
 
     float2 ws_boat_coords[BOAT_COUNT];
     ws_boat_coords[0] = position.xy;
-    ws_boat_coords[1] = OtherBoatTextures_0[uint2(0,0)].rg;
+    #if BOAT_COUNT > 1
+        ws_boat_coords[1] = OtherBoatTextures_0[uint2(0,0)].rg;
+    #endif
 
     float e0 = sample_elevation(ElevationTexture, wake_textures, v0.xy, ws_boat_coords);
     float e1 = sample_elevation(ElevationTexture, wake_textures, v1.xy, ws_boat_coords);
@@ -228,7 +230,9 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
         OutputBuffer[2*id.x+1] = t;
     }
 
-    float4 boat_center = float4(position.x, position.y, position.z, 0.0);
+    float3 prev_position = BoatTexture[uint2(0,1)].rgb; // RGB of (0,1) stores previous position
+    float4 boat_center = float4(prev_position.x, prev_position.y, prev_position.z, 0.0);
+
     int i = 4*3*(2*id.x+1); // 4 floats per vertex and 3 vertices per triangle
 
     // Currently, t is equal to second triangle we added.

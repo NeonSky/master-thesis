@@ -1,13 +1,24 @@
 #include "/Engine/Public/Platform.ush"
 
+#include "Common.ush"
+
 /* Vertex Shader */
 
 void MainVertShader(float4 InPosition : ATTRIBUTE0, out float4 OutPosition : SV_POSITION) {
+
+	// The standard rasterizer is a bit too strict, so we loosen it a bit.
+	float tolerance = 0.05;
+
 	// We divide by 50 because
 	//   pos - 50 should map to pos 1
 	//   pos + 50 should map to neg 1
-	// That is, the borders simulation area [-50,50]^2 should map to the border of the image [-1,1]^2.
-	OutPosition = float4(InPosition.x / 50.0, InPosition.y / 50.0, 0.0, InPosition.w);
+	// That is, the border simulation area [-50,50]^2
+	// should map to the border of the render viewport [-1,1]^2.
+	//
+	// Moreover, we negate the y-axis to get the perspective from above the boat.
+	// Otherwise, the perspective would be from below the boat, which would cause the rotation to be wrong.
+	OutPosition = float4(InPosition.x / (L * (0.5-tolerance)), -InPosition.y / (L * (0.5-tolerance)), 0.0, InPosition.w);
+
 }
 
 /* Fragment Shader */

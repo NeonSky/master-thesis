@@ -25,9 +25,17 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     Texture2D<float4> wake_textures[BOAT_COUNT];
     wake_textures[0] = wake_textures_0;
-    wake_textures[1] = wake_textures_1;
+    #if BOAT_COUNT > 1
+        wake_textures[1] = wake_textures_1;
+    #endif
 
-    float elevation = sample_elevation(elevation_texture, wake_textures, ws_coord, ws_boat_coords);
+    float2 _ws_boat_coords[BOAT_COUNT];
+    _ws_boat_coords[0] = ws_boat_coords[0];
+    #if BOAT_COUNT > 1
+        _ws_boat_coords[1] = ws_boat_coords[1];
+    #endif
+
+    float elevation = sample_elevation(elevation_texture, wake_textures, ws_coord, _ws_boat_coords);
 
     store_f32(output_texture, uint2(id.x,0), elevation);
     
