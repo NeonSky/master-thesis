@@ -40,12 +40,13 @@ void UDataCollector::update(UpdatePayload update_payload) {
 		data_collection_settings.shouldCollectBoatData = false;
 		data_collection_settings.shouldCollecteWaveTextures = false;
 		data_collection_settings.shouldCollectInputStates = false;
-		inputPawn->playBackInputSequence = false;
+		
+		// inputPawn->playBackInputSequence = false; // TODO: stop the input playback
 	}
 	frameNumber++;
 
 	if (data_collection_settings.shouldCollectInputStates) {
-		inputStates.Add(inputPawn->getInputState());
+		inputStates.Add(update_payload);
 	}
 	
 	if (data_collection_settings.shouldCollecteWaveTextures) {
@@ -91,9 +92,9 @@ void UDataCollector::saveInputToFile() {
 	TArray<TSharedPtr<FJsonValue>> states;
 	for (const auto& state : inputStates) {
 		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-		JsonObject->SetNumberField("speed", state.speed);
-		JsonObject->SetNumberField("horizontal", state.horizontal);
-		JsonObject->SetNumberField("vertical", state.vertical);
+		JsonObject->SetNumberField("speed", state.speed_input);
+		JsonObject->SetNumberField("horizontal", state.velocity_input.X);
+		JsonObject->SetNumberField("vertical", state.velocity_input.Y);
 
 		FString OutputString;
 		TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
@@ -136,7 +137,7 @@ void UDataCollector::saveBoatDataToFile() {
 	FFileHelper::SaveStringToFile(OutputString, *AbsoluteFilePath);
 }
 
-void UDataCollector::readInputJSON(TArray<InputState>& inputSequence) {
+void UDataCollector::readInputJSON(TArray<UpdatePayload>& inputSequence) {
 	FString fname = *FString(TEXT("SavedInputData/") + data_collection_settings.inputFileName + TEXT(".json"));
 	FString AbsoluteFilePath = FPaths::ProjectDir() + fname;
 
@@ -158,16 +159,16 @@ void UDataCollector::readInputJSON(TArray<InputState>& inputSequence) {
 					UE_LOG(LogTemp, Error, TEXT("Failed to deserialize JSON input object"));
 				}
 		
-				InputState state;
-				state.speed = JsonObjParsed->GetNumberField("speed");
-				state.horizontal = JsonObjParsed->GetNumberField("horizontal");
-				state.vertical = JsonObjParsed->GetNumberField("vertical");
+				UpdatePayload state;
+				state.speed_input = JsonObjParsed->GetNumberField("speed");
+				state.velocity_input.X = JsonObjParsed->GetNumberField("horizontal");
+				state.velocity_input.Y = JsonObjParsed->GetNumberField("vertical");
 				inputSequence.Add(state);
 			}
 		}
 	}
 	else {
 		UE_LOG(LogTemp, Error, TEXT("Failed to deserialize JSON input array object"));
-		inputPawn->playBackInputSequence = data_collection_settings.shouldPlayBackInputSequence = false;
+		// inputPawn->playBackInputSequence = data_collection_settings.shouldPlayBackInputSequence = false; // TODO: fix
 	}
 }

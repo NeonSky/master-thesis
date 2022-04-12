@@ -18,9 +18,3 @@ inline float RECOVER_F32(FFloat16Color c) {
 
     return res;
 }
-
-struct InputState {
-    float speed;
-    float horizontal;
-    float vertical;
-};

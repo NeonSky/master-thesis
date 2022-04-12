@@ -44,7 +44,6 @@ class UNREALMASTERTHESIS_API UDataCollector : public USceneComponent
 public:	
 	// Sets default values for this component's properties
 	UDataCollector();
-	class AInputPawn* inputPawn;
 	UTextureRenderTarget2D* eWave_h_rtt;
 	UTextureRenderTarget2D* eWave_v_rtt;
 	UTextureRenderTarget2D* serialization_rtt;
@@ -61,10 +60,10 @@ public:
 	void saveeWaveDataToFile(TArray<float>& data);
 	void saveInputToFile();
 	void saveBoatDataToFile();
-	void readInputJSON(TArray<InputState>& inputSequence);
+	void readInputJSON(TArray<struct UpdatePayload>& inputSequence);
 
 private:
-	TArray<InputState> inputStates;
+	TArray<UpdatePayload> inputStates;
 	int frameNumber = 0;
 	int framesToCollect;
 };

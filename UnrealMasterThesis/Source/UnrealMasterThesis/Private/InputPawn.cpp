@@ -12,17 +12,16 @@ void AInputPawn::BeginPlay() {
 
     m_velocity_input = FVector2D(0.0f);
     m_speed_input = slow_speed;
-    currentState.speed = slow_speed;
 }
 
 void AInputPawn::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
-    if (playBackInputSequence && frame < inputSequence.Num()) {
-        InputState& state = inputSequence[frame++]; // TODO
-        m_speed_input = state.speed;
-        m_velocity_input.X = state.horizontal;
-        m_velocity_input.Y = state.vertical;
+    if (playBackInputSequence && frame < preRecordedInputSequence.Num()) {
+        auto& state = preRecordedInputSequence[frame++]; // TODO
+        m_speed_input = state.speed_input;
+        m_velocity_input.X = state.velocity_input.X;
+        m_velocity_input.Y = state.velocity_input.Y;
     }
 
     UpdatePayload payload;
@@ -49,33 +48,24 @@ void AInputPawn::SetupPlayerInputComponent(class UInputComponent* inputComponent
   inputComponent->BindAxis("VerticalAxis2", this, &AInputPawn::VerticalAxis2);
 }
 
-InputState AInputPawn::getInputState() {
-    return currentState;
-}
-
 void AInputPawn::UseSlowSpeed()   { 
     m_speed_input = slow_speed; 
-    currentState.speed = slow_speed;
 }
 
 void AInputPawn::UseNormalSpeed() { 
     m_speed_input = normal_speed; 
-    currentState.speed = normal_speed;
 }
 
 void AInputPawn::UseFastSpeed() { 
     m_speed_input = fast_speed;  
-    currentState.speed = fast_speed;
 }
 
 void AInputPawn::HorizontalAxis(float input) {
   m_velocity_input.X = input;
-  currentState.horizontal = input;
 }
 
 void AInputPawn::VerticalAxis(float input) {
   m_velocity_input.Y = input;
-  currentState.vertical = input;
 }
 
 void AInputPawn::HorizontalAxis2(float input) {
