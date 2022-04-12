@@ -86,7 +86,7 @@ void UDataCollector::saveeWaveDataToFile(TArray<float>& data) {
 }
 
 void UDataCollector::saveInputToFile() {
-	FString fname = *FString(TEXT("SavedInputData/") + data_collection_settings.fileName + TEXT(".json"));
+	FString fname = *FString(TEXT("SavedInputData/") + data_collection_settings.inputFileName + TEXT(".json"));
 	FString AbsoluteFilePath = FPaths::ProjectDir() + fname;
 	TSharedRef<FJsonObject> JsonRootObject = MakeShareable(new FJsonObject);
 	TArray<TSharedPtr<FJsonValue>> states;
