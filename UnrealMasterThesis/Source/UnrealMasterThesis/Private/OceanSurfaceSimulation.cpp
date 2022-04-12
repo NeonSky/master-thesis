@@ -122,12 +122,6 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 	}
 
 	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
-
-	// Update non-interactive ocean.
-	m_shader_models_module.ComputeFourierComponents(oceanTime, this->spectrum_y_rtt, this->spectrum_xz_rtt);
-
-	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
-	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_xz_rtt);
 }
 
 TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points) {
@@ -291,6 +285,12 @@ void AOceanSurfaceSimulation::create_mesh() {
 
 // void AOceanSurfaceSimulation::update_mesh(float dt) {
 void AOceanSurfaceSimulation::update_mesh(float dt) {
+
+	// Update non-interactive ocean.
+	m_shader_models_module.ComputeFourierComponents(oceanTime, this->spectrum_y_rtt, this->spectrum_xz_rtt);
+
+	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
+	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_xz_rtt);
 
 	if (should_update_wakes) {
 		// Update interactive wake simulation on top of the non-interactive ocean
