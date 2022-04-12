@@ -81,6 +81,9 @@ void AOceanSurfaceSimulation::BeginPlay() {
 }
 
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
+
+	data_collector->update(update_payload);
+
 	const float fixed_dt = 0.02f;
 	oceanTime += fixed_dt;
 	time += fixed_dt;

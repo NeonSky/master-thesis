@@ -28,12 +28,9 @@ void UDataCollector::BeginPlay()
 }
 
 
-// Called every frame
-void UDataCollector::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	frameNumber++;
-	if (frameNumber >= framesToCollect) {
+void UDataCollector::update(UpdatePayload update_payload) {
+	if (frameNumber == framesToCollect) {
+		UE_LOG(LogTemp, Warning, TEXT("Recording finished."));
 		if (data_collection_settings.shouldCollectInputStates) {
 			saveInputToFile();
 		}
@@ -45,6 +42,8 @@ void UDataCollector::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		data_collection_settings.shouldCollectInputStates = false;
 		inputPawn->playBackInputSequence = false;
 	}
+	frameNumber++;
+
 	if (data_collection_settings.shouldCollectInputStates) {
 		inputStates.Add(inputPawn->getInputState());
 	}
