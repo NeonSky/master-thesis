@@ -68,22 +68,19 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	m_shader_models_module.Clear(eWave_addition_rtt);
 
 	input_pawn->on_fixed_update.AddUObject<AOceanSurfaceSimulation>(this, &AOceanSurfaceSimulation::update);
-	data_collector->inputPawn = input_pawn;
+	// data_collector->inputPawn = input_pawn;
 	data_collector->shaderModule = &m_shader_models_module;
 	data_collector->data_collection_settings = data_collection_settings;
 	input_pawn->playBackInputSequence = data_collection_settings.shouldPlayBackInputSequence;
 	data_collector->eWave_h_rtt = boats[0]->GeteWaveRTTs().eWaveHV; // TODO, currently only supports one boat, on index 0
 	data_collector->serialization_rtt = serialization_rtt;
 	for (auto boat : boats) { data_collector->boats.Add(boat); }
-	data_collector->readInputJSON(input_pawn->inputSequence);
+	data_collector->readInputJSON(input_pawn->preRecordedInputSequence);
 
 	
 }
 
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
-
-	data_collector->update(update_payload);
-
 	const float fixed_dt = 0.02f;
 	oceanTime += fixed_dt;
 	time += fixed_dt;
@@ -123,8 +120,7 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 			boat->Update(update_payload, callback);
 		}
 	}
-
-	float realtimeSeconds = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+	data_collector->update(update_payload);
 }
 
 TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points) {

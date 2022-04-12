@@ -255,7 +255,7 @@ float sample_elevation(
 
     float elevation = sample_ambient_elevation(elevation_texture, ws_coord);
 
-    for (int i = 0; i < BOAT_COUNT; i++) {
+    for (int i = 0; i < 1; i++) {
         elevation += sample_wake_elevation(wake_textures[i], ws_coord, ws_boat_coords[i]);
     }
 
