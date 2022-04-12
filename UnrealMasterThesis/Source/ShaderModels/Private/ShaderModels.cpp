@@ -143,16 +143,13 @@ void ShaderModelsModule::ComputeeWave(
 
 	TShaderMapRef<eWaveShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
-	UTextureRenderTarget2D* eWave_hv_param = eWave_hv;
-	UTextureRenderTarget2D* eWave_hv_copy_param = eWave_hv_copy;
-
 	ENQUEUE_RENDER_COMMAND(shader)(
-		[shader, dt, eWave_hv_param, eWave_hv_copy_param](FRHICommandListImmediate& RHI_cmd_list) {
+		[shader, dt, eWave_hv, eWave_hv_copy](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(
 			RHI_cmd_list,
 			dt,
-			eWave_hv_param,
-			eWave_hv_copy_param
+			eWave_hv,
+			eWave_hv_copy
 		);
 	});
 }
