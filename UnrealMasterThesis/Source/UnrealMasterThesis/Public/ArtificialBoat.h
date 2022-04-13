@@ -20,7 +20,6 @@ public:
 	virtual void Update(UpdatePayload update_payload, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) override;
     virtual UTextureRenderTarget2D* GetBoatRTT() override;
     virtual FeWaveRTTs GeteWaveRTTs() override;
-	virtual FVector2D WorldPosition() override;
 	virtual FVector WorldPosition3D() override;
 
 protected:

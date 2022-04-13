@@ -61,10 +61,6 @@ FeWaveRTTs AGPUBoat::GeteWaveRTTs() {
     return ewave_rtts;
 }
 
-FVector2D AGPUBoat::WorldPosition() {
-  return FVector2D(camera_target->GetActorLocation().X, camera_target->GetActorLocation().Y) / METERS_TO_UNREAL_UNITS;
-}
-
 FVector AGPUBoat::WorldPosition3D() {
     return camera_target->GetActorLocation() / METERS_TO_UNREAL_UNITS;
 }

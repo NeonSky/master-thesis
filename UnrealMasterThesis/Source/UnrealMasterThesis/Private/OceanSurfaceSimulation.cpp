@@ -67,13 +67,15 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	m_shader_models_module.Clear(eWave_addition_rtt);
 
 	input_pawn->on_fixed_update.AddUObject<AOceanSurfaceSimulation>(this, &AOceanSurfaceSimulation::update);
+	input_pawn->playBackInputSequence = data_collection_settings.shouldPlayBackInputSequence;
 	data_collector->shaderModule = &m_shader_models_module;
 	data_collector->data_collection_settings = data_collection_settings;
-	input_pawn->playBackInputSequence = data_collection_settings.shouldPlayBackInputSequence;
-	data_collector->eWave_h_rtt = boats[0]->GeteWaveRTTs().eWaveHV; // TODO, currently only supports one boat, on index 0
+	data_collector->eWave_hv_rtt = boats[0]->GeteWaveRTTs().eWaveHV; // TODO, currently only supports one boat, on index 0
 	data_collector->serialization_rtt = serialization_rtt;
 	for (auto boat : boats) { data_collector->boats.Add(boat); }
-	data_collector->readInputJSON(input_pawn->preRecordedInputSequence);
+	if (data_collection_settings.shouldPlayBackInputSequence) {
+		data_collector->readInputJSON(input_pawn->preRecordedInputSequence);
+	}
 }
 
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
@@ -128,7 +130,8 @@ TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D>
 	for (auto boat : boats) {
 		if (boat) {
 			wake_rtts.Add(boat->GeteWaveRTTs().eWaveHV);
-			ws_boat_coords.Add(boat->WorldPosition());
+			FVector boatPos = boat->WorldPosition3D();
+			ws_boat_coords.Add(FVector2D(boatPos.X, boatPos.Y));
 		}
 		else {
 			ws_boat_coords.Add(FVector2D(0.0, 0.0));
