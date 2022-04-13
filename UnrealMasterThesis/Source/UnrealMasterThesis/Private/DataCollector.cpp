@@ -89,8 +89,10 @@ void UDataCollector::saveInputToFile() {
 	for (const auto& state : inputStates) {
 		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
 		JsonObject->SetNumberField("speed", state.speed_input);
-		JsonObject->SetNumberField("horizontal", state.velocity_input.X);
-		JsonObject->SetNumberField("vertical", state.velocity_input.Y);
+		JsonObject->SetNumberField("horizontal_1", state.velocity_input.X);
+		JsonObject->SetNumberField("vertical_1", state.velocity_input.Y);
+		JsonObject->SetNumberField("horizontal_2", state.velocity_input2.X);
+		JsonObject->SetNumberField("vertical_2", state.velocity_input2.Y);
 
 		FString OutputString;
 		TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
@@ -157,8 +159,10 @@ void UDataCollector::readInputJSON(TArray<UpdatePayload>& inputSequence) {
 		
 				UpdatePayload state;
 				state.speed_input = JsonObjParsed->GetNumberField("speed");
-				state.velocity_input.X = JsonObjParsed->GetNumberField("horizontal");
-				state.velocity_input.Y = JsonObjParsed->GetNumberField("vertical");
+				state.velocity_input.X = JsonObjParsed->GetNumberField("horizontal_1");
+				state.velocity_input.Y = JsonObjParsed->GetNumberField("vertical_1");
+				state.velocity_input2.X = JsonObjParsed->GetNumberField("horizontal_1");
+				state.velocity_input2.Y = JsonObjParsed->GetNumberField("vertical_2");
 				inputSequence.Add(state);
 			}
 		}
