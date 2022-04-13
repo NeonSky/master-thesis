@@ -21,9 +21,6 @@ public:
 
 		SHADER_PARAMETER_ARRAY(FVector2D, ws_boat_coords, [2])
 
-		// TODO: Remove
-		SHADER_PARAMETER(float, time)
-
 	END_SHADER_PARAMETER_STRUCT()
 
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters) {
@@ -42,7 +39,6 @@ public:
 		TArray<UTextureRenderTarget2D*> wake_rtts,
 		TArray<FVector2D> ws_boat_coords,
 		TArray<FVector2D> input_sample_coordinates,
-		TArray<float>* output,
-		float time
+		TArray<float>* output
 	);
 };

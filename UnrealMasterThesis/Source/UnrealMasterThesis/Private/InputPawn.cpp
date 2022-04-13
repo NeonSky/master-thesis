@@ -48,17 +48,9 @@ void AInputPawn::SetupPlayerInputComponent(class UInputComponent* inputComponent
   inputComponent->BindAxis("VerticalAxis2", this, &AInputPawn::VerticalAxis2);
 }
 
-void AInputPawn::UseSlowSpeed()   { 
-    m_speed_input = slow_speed; 
-}
-
-void AInputPawn::UseNormalSpeed() { 
-    m_speed_input = normal_speed; 
-}
-
-void AInputPawn::UseFastSpeed() { 
-    m_speed_input = fast_speed;  
-}
+void AInputPawn::UseSlowSpeed()   { m_speed_input = slow_speed; }
+void AInputPawn::UseNormalSpeed() { m_speed_input = normal_speed; }
+void AInputPawn::UseFastSpeed()   { m_speed_input = fast_speed; }
 
 void AInputPawn::HorizontalAxis(float input) {
   m_velocity_input.X = input;

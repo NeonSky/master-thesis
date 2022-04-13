@@ -18,8 +18,6 @@ RWTexture2D<float4> output_texture;
 
 float2 ws_boat_coords[2];
 
-float time;
-
 [numthreads(N_THREADS_X, 1, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
@@ -32,4 +30,5 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     float elevation = sample_elevation(elevation_texture, wake_textures, ws_coord, ws_boat_coords);
 
     store_f32(output_texture, uint2(id.x,0), elevation);
+    
 }
