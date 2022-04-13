@@ -76,8 +76,6 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	data_collector->serialization_rtt = serialization_rtt;
 	for (auto boat : boats) { data_collector->boats.Add(boat); }
 	data_collector->readInputJSON(input_pawn->preRecordedInputSequence);
-
-	
 }
 
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {

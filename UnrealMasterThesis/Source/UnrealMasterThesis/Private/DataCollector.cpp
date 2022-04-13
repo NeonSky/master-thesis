@@ -15,7 +15,7 @@ UDataCollector::UDataCollector()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false; // does not update independently. The update method is called by OceanSurfaceSimulation after each ocean update
 }
 
 
@@ -23,13 +23,11 @@ UDataCollector::UDataCollector()
 void UDataCollector::BeginPlay()
 {
 	Super::BeginPlay();
-	// readInputJSON(inputPawn->inputSequence); // TODO, this is currently called in oceansurfaceSimulations beginplay instead. inputPawn is nullptr here. 
-	framesToCollect = 600; // data_collection_settings.secondsToRecord * 60; // TODO: assuming 60 FPS, but then the fixed dt should be 0.01667 instead of 0.02
 }
 
 
 void UDataCollector::update(UpdatePayload update_payload) {
-	if (frameNumber == framesToCollect) {
+	if (frameNumber == data_collection_settings.framesToRecord) {
 		UE_LOG(LogTemp, Warning, TEXT("Recording finished."));
 		if (data_collection_settings.shouldCollectInputStates) {
 			saveInputToFile();

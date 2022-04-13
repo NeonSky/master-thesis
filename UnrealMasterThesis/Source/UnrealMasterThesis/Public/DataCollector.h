@@ -24,7 +24,7 @@ struct FDataCollectionSettings {
 	bool shouldPlayBackInputSequence;
 
 	UPROPERTY(EditAnywhere)
-	int secondsToRecord;
+	int framesToRecord;
 
 	UPROPERTY(EditAnywhere)
 	FString fileName;
@@ -65,5 +65,4 @@ public:
 private:
 	TArray<UpdatePayload> inputStates;
 	int frameNumber = 0;
-	int framesToCollect;
 };
