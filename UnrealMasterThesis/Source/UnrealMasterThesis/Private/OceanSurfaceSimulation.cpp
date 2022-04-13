@@ -68,7 +68,6 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	m_shader_models_module.Clear(eWave_addition_rtt);
 
 	input_pawn->on_fixed_update.AddUObject<AOceanSurfaceSimulation>(this, &AOceanSurfaceSimulation::update);
-	// data_collector->inputPawn = input_pawn;
 	data_collector->shaderModule = &m_shader_models_module;
 	data_collector->data_collection_settings = data_collection_settings;
 	input_pawn->playBackInputSequence = data_collection_settings.shouldPlayBackInputSequence;
@@ -304,12 +303,21 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 2);
 				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 1);
 				m_shader_models_module.FFT_Forward(this->butterfly_rtt, ewave_rtts.eWaveHV); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
+				//m_shader_models_module.Copy(ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev); // TODO: Don't use the copy shader to fix racecondition
+				UTextureRenderTarget2D* src = ewave_rtts.eWaveHV;
+				UTextureRenderTarget2D* dst = ewave_rtts.eWaveHV_prev;
+				{
+					ENQUEUE_RENDER_COMMAND(void)(
+						[src, dst](FRHICommandListImmediate& RHI_cmd_list) {
+						RHI_cmd_list.CopyToResolveTarget(
+							src->GetRenderTargetResource()->GetRenderTargetTexture(),
+							dst->GetRenderTargetResource()->GetRenderTargetTexture(),
+							FResolveParams()
+						);
+					});
+				}
 				
-				//m_shader_models_module.ComputeeWave(dt, ewave_rtts.eWaveHV);
-				// m_shader_models_module.SetConst(ewave_rtts.eWaveHV);
-				m_shader_models_module.Copy(ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev); // TODO: is this safe to use now?
 				m_shader_models_module.ComputeeWave(dt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev);
-
 				m_shader_models_module.FFT(this->butterfly_rtt, ewave_rtts.eWaveHV, 0);
 				m_shader_models_module.ComputeScale(ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, ewave_scale);
 				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 0);
