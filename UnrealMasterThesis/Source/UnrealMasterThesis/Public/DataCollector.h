@@ -48,7 +48,7 @@ public:
 	UTextureRenderTarget2D* serialization_rtt;
 	class ShaderModelsModule* shaderModule;
 	TArray<TScriptInterface<IBoatInterface>> boats;
-	TArray<FVector> boatPositions;
+	TArray<TArray<FVector>> boatPositions;
 	FDataCollectionSettings data_collection_settings;
 protected:
 	// Called when the game starts
