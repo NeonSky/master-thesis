@@ -28,7 +28,7 @@ void AArtificialBoat::BeginPlay() {
     m_cur_frame = 0;
 
     for (auto b : readback_bank) {
-        m_shader_models_module.Clear(b); // Clearing readback bank RTTs, for consistent data collection
+        m_shader_models_module.Clear(b, FVector4(0.0, 0.0, 0.0, 1.0)); // Clearing readback bank RTTs, for consistent data collection
     }
     
 }

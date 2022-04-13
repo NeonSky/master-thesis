@@ -62,9 +62,8 @@ void AOceanSurfaceSimulation::BeginPlay() {
 			m_shader_models_module.Clear(ewave_rtts.eWaveHV_prev, FVector4(0.0, 0.0, 0.0, 1.0));
 		}
 	}
-	m_shader_models_module.Clear(spectrum_xz_rtt);
-	m_shader_models_module.Clear(spectrum_y_rtt);
-	m_shader_models_module.Clear(eWave_addition_rtt);
+	m_shader_models_module.Clear(spectrum_xz_rtt, FVector4(0.0, 0.0, 0.0, 1.0));
+	m_shader_models_module.Clear(spectrum_y_rtt, FVector4(0.0, 0.0, 0.0, 1.0));
 
 	input_pawn->on_fixed_update.AddUObject<AOceanSurfaceSimulation>(this, &AOceanSurfaceSimulation::update);
 	input_pawn->playBackInputSequence = data_collection_settings.shouldPlayBackInputSequence;
