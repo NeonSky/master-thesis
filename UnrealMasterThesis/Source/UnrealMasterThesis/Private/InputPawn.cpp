@@ -18,7 +18,7 @@ void AInputPawn::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
     if (playBackInputSequence && frame < preRecordedInputSequence.Num()) {
-        auto& state = preRecordedInputSequence[frame++]; // TODO
+        auto& state = preRecordedInputSequence[frame++];
         m_speed_input = state.speed_input;
         m_velocity_input.X = state.velocity_input.X;
         m_velocity_input.Y = state.velocity_input.Y;

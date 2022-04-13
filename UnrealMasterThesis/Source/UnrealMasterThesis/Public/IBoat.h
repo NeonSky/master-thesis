@@ -33,6 +33,5 @@ public:
     virtual void Update(UpdatePayload update_payload, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) = 0;
     virtual UTextureRenderTarget2D* GetBoatRTT() = 0;
     virtual FeWaveRTTs GeteWaveRTTs() = 0;
-	virtual FVector2D WorldPosition() = 0;
     virtual FVector WorldPosition3D() = 0;
 };

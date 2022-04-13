@@ -38,8 +38,6 @@ void UDataCollector::update(UpdatePayload update_payload) {
 		data_collection_settings.shouldCollectBoatData = false;
 		data_collection_settings.shouldCollecteWaveTextures = false;
 		data_collection_settings.shouldCollectInputStates = false;
-		
-		// inputPawn->playBackInputSequence = false; // TODO: stop the input playback
 	}
 	frameNumber++;
 
@@ -48,9 +46,9 @@ void UDataCollector::update(UpdatePayload update_payload) {
 	}
 	
 	if (data_collection_settings.shouldCollecteWaveTextures) {
-		TArray<float> h_rtt_r_channel_data;
-		shaderModule->ComputeSerialization(eWave_h_rtt, serialization_rtt, h_rtt_r_channel_data);
-		saveeWaveDataToFile(h_rtt_r_channel_data); // TODO save v texture
+		TArray<float> hv_rtt_r_channel_data;
+		shaderModule->ComputeSerialization(eWave_hv_rtt, serialization_rtt, hv_rtt_r_channel_data);
+		saveeWaveDataToFile(hv_rtt_r_channel_data); // TODO save v texture
 	}
 
 	if (data_collection_settings.shouldCollectBoatData) {
@@ -167,6 +165,5 @@ void UDataCollector::readInputJSON(TArray<UpdatePayload>& inputSequence) {
 	}
 	else {
 		UE_LOG(LogTemp, Error, TEXT("Failed to deserialize JSON input array object"));
-		// inputPawn->playBackInputSequence = data_collection_settings.shouldPlayBackInputSequence = false; // TODO: fix
 	}
 }
