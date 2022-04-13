@@ -454,21 +454,22 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r, std::function<void(TRefCountPtr<
   {
     ENQUEUE_RENDER_COMMAND(void)([this, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) {
       TResourceArray<MyVertex, VERTEXBUFFER_ALIGNMENT> vertices;
-      vertices.SetNum(3*140); // 3 vertices per triangle (of which there are at most 140)
+      vertices.SetNum(3*3*140); // 3 vertices per triangle (of which there are at most 140), however for some reason the buffer itself needs to be larger (times 3 works)
 
       FVector4 boat_center = FVector4(m_rigidbody.position, 1.0);
-      for (int i = 0; i < vertices.Num(); i++) {
-        int j = i/3;
+      for (int i = 0; i < vertices.Num(); i += 3) {
 
+        int j = i/3;
         if (j < submerged_triangles.Num()) {
-          vertices[3*j+0].Position = FVector4(submerged_triangles[j].v_L - m_rigidbody.position, 1.0);
-          vertices[3*j+1].Position = FVector4(submerged_triangles[j].v_M - m_rigidbody.position, 1.0);
-          vertices[3*j+2].Position = FVector4(submerged_triangles[j].v_H - m_rigidbody.position, 1.0);
+          vertices[i+0].Position = FVector4(submerged_triangles[j].v_L - m_rigidbody.position, 1.0);
+          vertices[i+1].Position = FVector4(submerged_triangles[j].v_M - m_rigidbody.position, 1.0);
+          vertices[i+2].Position = FVector4(submerged_triangles[j].v_H - m_rigidbody.position, 1.0);
         } else {
-          vertices[3*j+0].Position = FVector4(0.0, 0.0, 0.0, 1.0);
-          vertices[3*j+1].Position = FVector4(0.0, 0.0, 0.0, 1.0);
-          vertices[3*j+2].Position = FVector4(0.0, 0.0, 0.0, 1.0);
+          vertices[i+0].Position = FVector4(0.0, 0.0, 0.0, 1.0);
+          vertices[i+1].Position = FVector4(0.0, 0.0, 0.0, 1.0);
+          vertices[i+2].Position = FVector4(0.0, 0.0, 0.0, 1.0);
         }
+
       }
 
       FRHIResourceCreateInfo CreateInfo(&vertices);
@@ -476,6 +477,7 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r, std::function<void(TRefCountPtr<
 
       m_shader_models_module.ProjectObstruction(submerged_position_buffer, ewave_rtts.obstruction);
     });
+
   }
 
   /* Update m_submerged_triangles_buffer */
