@@ -40,8 +40,10 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
         UTextureRenderTarget2D* elevation_texture,
         UTextureRenderTarget2D* boat_texture,
         TArray<UTextureRenderTarget2D*> other_boat_textures,
-        TArray<UTextureRenderTarget2D*> wake_textures,
-        TRefCountPtr<FRDGPooledBuffer>* output_buffer) {
+        UTextureRenderTarget2D* wake_texture,
+        TArray<UTextureRenderTarget2D*> other_wake_textures,
+        TRefCountPtr<FRDGPooledBuffer>* output_buffer,
+        TRefCountPtr<FRDGPooledBuffer>* submerged_position_buffer) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
 
@@ -53,6 +55,7 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
 
     PassParameters->ElevationTexture = register_texture4(graph_builder, elevation_texture, "ElevationRenderTarget");
     PassParameters->BoatTexture      = register_texture4(graph_builder, boat_texture, "BoatRenderTarget");
+    PassParameters->WakeTexture      = register_texture4(graph_builder, wake_texture, "WakeRenderTarget");
 
 	// See comment in ElevationSampler.usf
 	if (other_boat_textures.Num() > 0) {
@@ -62,14 +65,12 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
         PassParameters->OtherBoatTextures[0] = register_texture4(graph_builder, boat_texture, "BoatRenderTarget2");
     }
 
-    PassParameters->WakeTextures[0] = register_texture4(graph_builder, wake_textures[0], "WakeRenderTarget");
-
 	// See comment in ElevationSampler.usf
-	if (wake_textures.Num() > 1) {
-		PassParameters->WakeTextures[1] = register_texture4(graph_builder, wake_textures[1], "WakeRenderTarget2");
+	if (other_wake_textures.Num() > 0) {
+		PassParameters->OtherWakeTextures[0] = register_texture4(graph_builder, other_wake_textures[0], "WakeRenderTarget2");
 	} else {
 		// Assign arbitrary valid texture to prevent crash. It will not be used anyway.
-		PassParameters->WakeTextures[1] = register_texture4(graph_builder, wake_textures[0], "WakeRenderTarget2");
+		PassParameters->OtherWakeTextures[0] = register_texture4(graph_builder, wake_texture, "WakeRenderTarget2");
 	}
 
     FStaticMeshLODResources& mesh_res = collision_mesh->GetStaticMeshComponent()->GetStaticMesh()->RenderData->LODResources[0];
@@ -94,6 +95,20 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
 
     PassParameters->OutputBuffer = uav_ref;
 
+    TArray<FVector4> initial_data2;
+    initial_data2.SetNum(3*N);
+
+    FRDGBufferRef rdg_buffer_ref2 = CreateVertexBuffer(
+        graph_builder,
+        TEXT("SubmergedPositionBuffer"),
+        FRDGBufferDesc::CreateBufferDesc(sizeof(FVector4), initial_data2.Num()),
+        initial_data2.GetData(),
+        sizeof(FVector4) * initial_data2.Num(),
+        ERDGInitialDataFlags::None
+    );
+    FRDGBufferUAVRef uav_ref2 = graph_builder.CreateUAV(rdg_buffer_ref2, PF_R32_UINT);
+    PassParameters->SubmergedPositionBuffer = uav_ref2;
+
     // Call compute shader
     TShaderMapRef<SubmergedTrianglesShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
     FComputeShaderUtils::AddPass(
@@ -103,10 +118,8 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
         PassParameters,
         FIntVector(N/2, 1, 1));
 
-    // TRefCountPtr<FRDGPooledBuffer> PooledComputeTarget;
     graph_builder.QueueBufferExtraction(rdg_buffer_ref, output_buffer);
+    graph_builder.QueueBufferExtraction(rdg_buffer_ref2, submerged_position_buffer);
 
     graph_builder.Execute();
-
-    // *output_buffer = PooledComputeTarget;
 }

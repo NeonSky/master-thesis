@@ -32,7 +32,7 @@ public:
 		UTextureRenderTarget2D* eWave_hv_copy
 	);
 
-	void Clear(UTextureRenderTarget2D* result);
+	void Clear(UTextureRenderTarget2D* result, FVector4 clear_value);
 
 	void ComputeScale(
 		UTextureRenderTarget2D* input_output_rtt, 
@@ -40,6 +40,8 @@ public:
 		float scale);
 
 	void ComputeSerialization(UTextureRenderTarget2D* input_rtt, UTextureRenderTarget2D* serialize_rtt, TArray<float>& out_param);
+
+	void ProjectObstruction(FRHIVertexBuffer* submerged_position_buffer, UTextureRenderTarget2D* obstruction_rtt);
 
 	void ComputeObstruction(
 		UTextureRenderTarget2D* boat_rtt,
@@ -63,7 +65,9 @@ public:
 		FVector2D velocity_input,
 		AStaticMeshActor* collision_mesh,
 		UTextureRenderTarget2D* elevation_texture,
-		TArray<UTextureRenderTarget2D*> wake_textures,
+		UTextureRenderTarget2D* wake_texture,
+		TArray<UTextureRenderTarget2D*> other_wake_textures,
+		UTextureRenderTarget2D* obstruction_texture,
 		UTextureRenderTarget2D* boat_texture,
 		TArray<UTextureRenderTarget2D*> other_boat_textures,
 		UTextureRenderTarget2D* readback_texture,

@@ -1,7 +1,6 @@
 #pragma once
 
 #define BOAT_COUNT 2
-#define BOAT_COUNT_ACTIVE 1
 
 static const float PI = 3.1415926535897933;
 static const float M_TO_CM = 100.0;
@@ -136,9 +135,9 @@ void update_rigidbody(inout Rigidbody rigidbody) {
 struct SubmergedTriangle {
 	float4 normal_and_height;
 	float4 center_and_area;
-	float4 v1; // w-comp unused
-	float4 v2; // w-comp unused
-	float4 v3; // w-comp unused
+	float4 v1;
+	float4 v2;
+	float4 v3;
 };
 
 float sample_ambient_elevation(Texture2D<float4> elevation_texture, float2 ws_coord) {
@@ -255,7 +254,12 @@ float sample_elevation(
 
     float elevation = sample_ambient_elevation(elevation_texture, ws_coord);
 
-    for (int i = 0; i < BOAT_COUNT_ACTIVE; i++) {
+    // Due to limitations of the eWave model, wakes inside obstructions (e.g. boats) are nullified.
+    // Thus, wakes will affect the boat that generated them significantly less.
+    // To compensate for this, we arbitrarily amplify them.
+    elevation += 2.0 * sample_wake_elevation(wake_textures[0], ws_coord, ws_boat_coords[0]);
+
+    for (int i = 1; i < BOAT_COUNT; i++) {
         elevation += sample_wake_elevation(wake_textures[i], ws_coord, ws_boat_coords[i]);
     }
 

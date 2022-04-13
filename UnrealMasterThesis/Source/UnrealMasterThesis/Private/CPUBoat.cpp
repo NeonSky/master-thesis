@@ -449,10 +449,39 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r, std::function<void(TRefCountPtr<
     fence.Wait();
   }
 
+  /* Update obstruction texture */
+  TArray<SubmergedTriangle> submerged_triangles = m_submerged_triangles;
+  {
+    ENQUEUE_RENDER_COMMAND(void)([this, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) {
+      TResourceArray<MyVertex, VERTEXBUFFER_ALIGNMENT> vertices;
+      vertices.SetNum(3*3*140); // 3 vertices per triangle (of which there are at most 140), however for some reason the buffer itself needs to be larger (times 3 works)
+
+      FVector4 boat_center = FVector4(m_rigidbody.position, 1.0);
+      for (int i = 0; i < vertices.Num(); i += 3) {
+
+        int j = i/3;
+        if (j < submerged_triangles.Num()) {
+          vertices[i+0].Position = FVector4(submerged_triangles[j].v_L - m_rigidbody.position, 1.0);
+          vertices[i+1].Position = FVector4(submerged_triangles[j].v_M - m_rigidbody.position, 1.0);
+          vertices[i+2].Position = FVector4(submerged_triangles[j].v_H - m_rigidbody.position, 1.0);
+        } else {
+          vertices[i+0].Position = FVector4(0.0, 0.0, 0.0, 1.0);
+          vertices[i+1].Position = FVector4(0.0, 0.0, 0.0, 1.0);
+          vertices[i+2].Position = FVector4(0.0, 0.0, 0.0, 1.0);
+        }
+
+      }
+
+      FRHIResourceCreateInfo CreateInfo(&vertices);
+      FRHIVertexBuffer* submerged_position_buffer = RHICreateVertexBuffer(vertices.GetResourceDataSize(), BUF_Static, CreateInfo);
+
+      m_shader_models_module.ProjectObstruction(submerged_position_buffer, ewave_rtts.obstruction);
+    });
+
+  }
+
   /* Update m_submerged_triangles_buffer */
   {
-    TArray<SubmergedTriangle> submerged_triangles = m_submerged_triangles;
-
     ENQUEUE_RENDER_COMMAND(void)([callback, submerged_triangles](FRHICommandListImmediate& RHI_cmd_list) {
 
       FRDGBuilder graph_builder(RHI_cmd_list);

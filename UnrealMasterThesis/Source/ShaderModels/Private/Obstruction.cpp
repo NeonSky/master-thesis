@@ -134,12 +134,14 @@ void ObstructionShader::BuildAndExecuteGraph(
 
     TShaderMapRef<ObstructionShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
+    int x_size = preFFT == 2 ? 1 : NN;
+
     FComputeShaderUtils::AddPass(
         graph_builder,
         RDG_EVENT_NAME("Obstruction Pass"),
         ComputeShader,
         PassParameters,
-        FIntVector(NN, NN, 1)
+        FIntVector(x_size, x_size, 1)
     );
 
     graph_builder.Execute();

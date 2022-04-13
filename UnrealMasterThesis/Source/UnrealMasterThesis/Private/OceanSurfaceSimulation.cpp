@@ -57,13 +57,13 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	for (auto boat : boats) {
 		if (boat) {
 			FeWaveRTTs ewave_rtts = boat->GeteWaveRTTs();
-			m_shader_models_module.Clear(ewave_rtts.eWaveHV);
-			m_shader_models_module.Clear(ewave_rtts.eWaveHV_prev);
+			m_shader_models_module.Clear(ewave_rtts.obstruction, FVector4(0.0, 0.0, 0.0, 1.0));
+			m_shader_models_module.Clear(ewave_rtts.eWaveHV, FVector4(0.0, 0.0, 0.0, 1.0));
+			m_shader_models_module.Clear(ewave_rtts.eWaveHV_prev, FVector4(0.0, 0.0, 0.0, 1.0));
 		}
 	}
-	m_shader_models_module.Clear(spectrum_xz_rtt);
-	m_shader_models_module.Clear(spectrum_y_rtt);
-	m_shader_models_module.Clear(eWave_addition_rtt);
+	m_shader_models_module.Clear(spectrum_xz_rtt, FVector4(0.0, 0.0, 0.0, 1.0));
+	m_shader_models_module.Clear(spectrum_y_rtt, FVector4(0.0, 0.0, 0.0, 1.0));
 
 	input_pawn->on_fixed_update.AddUObject<AOceanSurfaceSimulation>(this, &AOceanSurfaceSimulation::update);
 	input_pawn->playBackInputSequence = data_collection_settings.shouldPlayBackInputSequence;
@@ -274,7 +274,6 @@ void AOceanSurfaceSimulation::create_mesh() {
 	}
 }
 
-// void AOceanSurfaceSimulation::update_mesh(float dt) {
 void AOceanSurfaceSimulation::update_mesh(float dt) {
 
 	// Update non-interactive ocean.
@@ -295,26 +294,39 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 
 				FeWaveRTTs ewave_rtts = boat->GeteWaveRTTs();
 
-				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 2);
-				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 1);
-				m_shader_models_module.FFT_Forward(this->butterfly_rtt, ewave_rtts.eWaveHV); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
 				UTextureRenderTarget2D* src = ewave_rtts.eWaveHV;
 				UTextureRenderTarget2D* dst = ewave_rtts.eWaveHV_prev;
+
+				{ // TODO: Maybe no longer needed
+					ENQUEUE_RENDER_COMMAND(void)(
+						[src, dst](FRHICommandListImmediate& RHI_cmd_list) {
+							RHI_cmd_list.CopyToResolveTarget(
+								src->GetRenderTargetResource()->GetRenderTargetTexture(),
+								dst->GetRenderTargetResource()->GetRenderTargetTexture(),
+								FResolveParams()
+							);
+						});
+				}
+
+				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, ewave_rtts.obstruction, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 2);
+				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, ewave_rtts.obstruction, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 1);
+				m_shader_models_module.FFT_Forward(this->butterfly_rtt, ewave_rtts.eWaveHV); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
+
 				{ // Copy prevents race condition in eWave.usf
 					ENQUEUE_RENDER_COMMAND(void)(
 						[src, dst](FRHICommandListImmediate& RHI_cmd_list) {
-						RHI_cmd_list.CopyToResolveTarget(
-							src->GetRenderTargetResource()->GetRenderTargetTexture(),
-							dst->GetRenderTargetResource()->GetRenderTargetTexture(),
-							FResolveParams()
-						);
-					});
+							RHI_cmd_list.CopyToResolveTarget(
+								src->GetRenderTargetResource()->GetRenderTargetTexture(),
+								dst->GetRenderTargetResource()->GetRenderTargetTexture(),
+								FResolveParams()
+							);
+						});
 				}
-				
+
 				m_shader_models_module.ComputeeWave(dt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev);
 				m_shader_models_module.FFT(this->butterfly_rtt, ewave_rtts.eWaveHV, 0);
 				m_shader_models_module.ComputeScale(ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, ewave_scale);
-				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 0);
+				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, ewave_rtts.obstruction, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 0);
 			}
 		}
 	}

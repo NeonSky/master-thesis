@@ -8,13 +8,14 @@ Buffer<uint> IndexBuffer;
 Buffer<float> PositionBuffer;
 Texture2D<float4> ElevationTexture;
 Texture2D<float4> BoatTexture;
+Texture2D<float4> WakeTexture;
 
 // See ElevationSampler.usf
 Texture2D<float4> OtherBoatTextures_0;
-Texture2D<float4> WakeTextures_0;
-Texture2D<float4> WakeTextures_1;
+Texture2D<float4> OtherWakeTextures_0;
 
 RWStructuredBuffer<SubmergedTriangle> OutputBuffer;
+RWBuffer<float> SubmergedPositionBuffer;
 
 struct SortItem {
     float h;
@@ -40,21 +41,41 @@ float3 homogenize(float4 v) {
     return v.xyz / v.w;
 }
 
+void write_submerged_positions(int i, float4 v0, float4 v1, float4 v2) {
+
+    // Vertex 1
+    SubmergedPositionBuffer[i+0] = v0.x;
+    SubmergedPositionBuffer[i+1] = v0.y;
+    SubmergedPositionBuffer[i+2] = v0.z;
+    SubmergedPositionBuffer[i+3] = v0.w;
+
+    // Vertex 2
+    SubmergedPositionBuffer[i+4] = v1.x;
+    SubmergedPositionBuffer[i+5] = v1.y;
+    SubmergedPositionBuffer[i+6] = v1.z;
+    SubmergedPositionBuffer[i+7] = v1.w;
+
+    // Vertex 3
+    SubmergedPositionBuffer[i+8]  = v2.x;
+    SubmergedPositionBuffer[i+9]  = v2.y;
+    SubmergedPositionBuffer[i+10] = v2.z;
+    SubmergedPositionBuffer[i+11] = v2.w;
+}
+
 [numthreads(N_THREADS_X, 1, 1)]
 void MainCompute(uint3 id : SV_DispatchThreadID) {
 
     float3 position    = BoatTexture[uint2(0,0)].rgb; // RGB of (0,0) stores position
     float4 orientation = BoatTexture[uint2(1,0)]; // RGBA of (1,0) stores orientation
 
-    float4x4 transform_matrix = {
-        1.0, 0.0, 0.0, position.x,// * M_TO_CM,
-        0.0, 1.0, 0.0, position.y,// * M_TO_CM,
-        0.0, 0.0, 1.0, position.z,// * M_TO_CM,
+    float4x4 translation_matrix = {
+        1.0, 0.0, 0.0, position.x,
+        0.0, 1.0, 0.0, position.y,
+        0.0, 0.0, 1.0, position.z,
         0.0, 0.0, 0.0, 1.0,
     };
     float4x4 rotation_matrix = quat_to_mat(orientation);
-    float4x4 model_matrix = mul(transform_matrix, mul(rotation_matrix, transpose(ModelMatrix)));
-    float4x4 test = mul(transform_matrix, rotation_matrix);
+    float4x4 model_matrix = mul(translation_matrix, rotation_matrix);
 
     uint i0 = 3*IndexBuffer[3*id.x+0];
     uint i1 = 3*IndexBuffer[3*id.x+1];
@@ -70,20 +91,23 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     v1 = homogenize(mul(transpose(ModelMatrix), float4(v1, 1.0))) / M_TO_CM;
     v2 = homogenize(mul(transpose(ModelMatrix), float4(v2, 1.0))) / M_TO_CM;
 
-    v0 = homogenize(mul(test, float4(v0, 1.0)));
-    v1 = homogenize(mul(test, float4(v1, 1.0)));
-    v2 = homogenize(mul(test, float4(v2, 1.0)));
+    v0 = homogenize(mul(model_matrix, float4(v0, 1.0)));
+    v1 = homogenize(mul(model_matrix, float4(v1, 1.0)));
+    v2 = homogenize(mul(model_matrix, float4(v2, 1.0)));
 
     float3 normal = normalize(cross(v2 - v0, v1 - v0));
 
-    // TODO: change index 1
     Texture2D<float4> wake_textures[BOAT_COUNT];
-    wake_textures[0] = WakeTextures_0;
-    wake_textures[1] = WakeTextures_1;
+    wake_textures[0] = WakeTexture;
+    #if BOAT_COUNT > 1
+        wake_textures[1] = OtherWakeTextures_0;
+    #endif
 
     float2 ws_boat_coords[BOAT_COUNT];
     ws_boat_coords[0] = position.xy;
-    ws_boat_coords[1] = OtherBoatTextures_0[uint2(0,0)].rg;
+    #if BOAT_COUNT > 1
+        ws_boat_coords[1] = OtherBoatTextures_0[uint2(0,0)].rg;
+    #endif
 
     float e0 = sample_elevation(ElevationTexture, wake_textures, v0.xy, ws_boat_coords);
     float e1 = sample_elevation(ElevationTexture, wake_textures, v1.xy, ws_boat_coords);
@@ -204,6 +228,31 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     else {
         OutputBuffer[2*id.x]   = t;
         OutputBuffer[2*id.x+1] = t;
+    }
+
+    float3 velocity = BoatTexture[uint2(2,0)].rgb;
+    float3 p = position + velocity * DELTA_T;
+    float4 boat_center = float4(p.x, p.y, p.z, 0.0);
+
+    int i = 4*3*(2*id.x+1); // 4 floats per vertex and 3 vertices per triangle
+
+    // Currently, t is equal to second triangle we added.
+    if (t.center_and_area.w != 0.0) {
+        write_submerged_positions(i, t.v1 - boat_center, t.v2 - boat_center, t.v3 - boat_center);
+    } else {
+        float4 z = float4(0.0, 0.0, 0.0, 1.0);
+        write_submerged_positions(i, z, z, z);
+    }
+
+    i = 4*3*2*id.x;
+
+    // Recover the first triangle.
+    t = OutputBuffer[2*id.x];
+    if (t.center_and_area.w != 0.0) {
+        write_submerged_positions(i, t.v1 - boat_center, t.v2 - boat_center, t.v3 - boat_center);
+    } else {
+        float4 z = float4(0.0, 0.0, 0.0, 1.0);
+        write_submerged_positions(i, z, z, z);
     }
 
 }

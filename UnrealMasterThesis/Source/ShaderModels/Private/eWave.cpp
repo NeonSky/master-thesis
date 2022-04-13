@@ -47,19 +47,15 @@ void eWaveShader::BuildAndExecuteGraph(
 
     FRDGBuilder graph_builder(RHI_cmd_list);
 
-    FParameters* PassParameters;
-    PassParameters = graph_builder.AllocParameters<eWaveShader::FParameters>();
+    FParameters* PassParameters = graph_builder.AllocParameters<eWaveShader::FParameters>();
 
     PassParameters->dt = dt;
 
-    FRDGTextureRef io_tex_ref_hv = register_texture5(graph_builder, eWave_hv, "eWave height and velocity potential");
-    auto uav_hv = graph_builder.CreateUAV(io_tex_ref_hv);
+    FRDGTextureRef output_tex_ref_hv = register_texture5(graph_builder, eWave_hv, "eWave height and velocity potential");
+    PassParameters->eWave_hv = graph_builder.CreateUAV(output_tex_ref_hv);
 
-    FRDGTextureRef copy_tex_ref_hv = register_texture5(graph_builder, eWave_hv_copy, "eWave height and velocity potential COPY");
-    auto uav_hv_copy = graph_builder.CreateUAV(copy_tex_ref_hv);
-
-    PassParameters->eWave_hv = uav_hv;
-    PassParameters->eWave_hv_copy = uav_hv_copy;
+    FRDGTextureRef input_tex_ref_hv = register_texture5(graph_builder, eWave_hv_copy, "eWave height and velocity potential copy");
+    PassParameters->eWave_hv_copy = graph_builder.CreateUAV(input_tex_ref_hv);
 
     TShaderMapRef<eWaveShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 

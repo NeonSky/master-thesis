@@ -28,7 +28,7 @@ void AArtificialBoat::BeginPlay() {
     m_cur_frame = 0;
 
     for (auto b : readback_bank) {
-        m_shader_models_module.Clear(b); // Clearing readback bank RTTs, for consistent data collection
+        m_shader_models_module.Clear(b, FVector4(0.0, 0.0, 0.0, 1.0)); // Clearing readback bank RTTs, for consistent data collection
     }
     
 }
@@ -81,12 +81,21 @@ void AArtificialBoat::Update(UpdatePayload update_payload, std::function<void(TR
         }
     }
 
+    TArray<UTextureRenderTarget2D*> other_wake_textures;
+    for (auto& rtt : shared_state.ewave_rtts) {
+        if (rtt != ewave_rtts.eWaveHV) {
+            other_wake_textures.Push(rtt);
+        }
+    }
+
     m_shader_models_module.UpdateGPUBoat(
         update_payload.speed_input,
         velocity_input,
         collision_mesh,
         m_readback_queue.front(),
-        shared_state.ewave_rtts,
+        ewave_rtts.eWaveHV,
+        other_wake_textures,
+        ewave_rtts.obstruction,
         boat_rtt,
         other_boat_textures,
         readback_rtt,

@@ -6,6 +6,7 @@
 #include "OceanSurfaceSimulation.h"
 #include "ShaderModels.h"
 #include "Rigidbody.h"
+#include "HorizontalProjection.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -90,6 +91,8 @@ private:
 
 	FVector2D m_velocity_input;
 	float m_speed_input;
+
+	ShaderModelsModule m_shader_models_module; // Reference to the ShaderModels module
 
 	void FetchCollisionMeshData();
 
