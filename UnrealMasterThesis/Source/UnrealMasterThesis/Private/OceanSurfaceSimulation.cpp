@@ -143,8 +143,7 @@ TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D>
 		wake_rtts,
 		ws_boat_coords,
 		sample_points,
-		&elevation_output,
-		time
+		&elevation_output
 	);
 
 	return elevation_output;

@@ -39,33 +39,6 @@ FRDGTextureRef register_texture5(
     return RDG_tex_ref;
 }
 
-struct CustomUAV {
-    FRDGTextureRef ref;
-    FRDGTextureUAVRef uav_ref;
-};
-
-CustomUAV create_UAV2( // TODO: this and register texture defined in fourier components.
-    FRDGBuilder& graph_builder,
-    UTextureRenderTarget2D* rtt,
-    FString name) {
-
-    FRDGTextureDesc OutTextureDesc = FRDGTextureDesc::Create2D(
-        FIntPoint(rtt->SizeX, rtt->SizeY),
-        PF_FloatRGBA,
-        FClearValueBinding(),
-        TexCreate_UAV,
-        1,
-        1);
-    FRDGTextureRef OutTextureRef = graph_builder.CreateTexture(OutTextureDesc, *name);
-    FRDGTextureUAVDesc OutTextureUAVDesc(OutTextureRef);
-
-    CustomUAV uav;
-    uav.ref = OutTextureRef;
-    uav.uav_ref = graph_builder.CreateUAV(OutTextureUAVDesc);
-
-    return uav;
-}
-
 void eWaveShader::BuildAndExecuteGraph(
     FRHICommandListImmediate& RHI_cmd_list,
     float dt,
@@ -99,5 +72,4 @@ void eWaveShader::BuildAndExecuteGraph(
     );
 
     graph_builder.Execute();
-
 }
