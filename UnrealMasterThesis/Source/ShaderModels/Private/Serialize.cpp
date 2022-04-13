@@ -39,11 +39,6 @@ FRDGTextureRef register_texture_serialize(
 	return RDG_tex_ref;
 }
 
-struct CustomUAV {
-    FRDGTextureRef ref;
-    FRDGTextureUAVRef uav_ref;
-};
-
 TArray<FFloat16Color> readback_RTT_serialize(FRHICommandListImmediate& RHI_cmd_list, UTextureRenderTarget2D* rtt) {
 	FRHIResourceCreateInfo CreateInfo;
 	FTexture2DRHIRef readback_tex = RHICreateTexture2D(

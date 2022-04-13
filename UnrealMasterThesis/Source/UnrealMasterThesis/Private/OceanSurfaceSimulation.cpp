@@ -59,7 +59,6 @@ void AOceanSurfaceSimulation::BeginPlay() {
 			FeWaveRTTs ewave_rtts = boat->GeteWaveRTTs();
 			m_shader_models_module.Clear(ewave_rtts.eWaveHV);
 			m_shader_models_module.Clear(ewave_rtts.eWaveHV_prev);
-			m_shader_models_module.Clear(boat->GetBoatRTT());
 		}
 	}
 	m_shader_models_module.Clear(spectrum_xz_rtt);
@@ -79,7 +78,6 @@ void AOceanSurfaceSimulation::BeginPlay() {
 }
 
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
-	const float fixed_dt = 0.02f;
 	time += fixed_dt;
 	this->m_submerged_triangles_buffers.SetNum(boats.Num());
 
@@ -98,7 +96,7 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 		// Allow "None", i.e. nullptr, to be assigned for boats in the editor.
 		if (boat) {
 
-			auto callback = [n_valid_boats, i, this, fixed_dt](TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer) {
+			auto callback = [n_valid_boats, i, this](TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer) {
 
 				if (!submerged_triangles_buffer.IsValid()) {
 					UE_LOG(LogTemp, Warning, TEXT("This shouldn't be possible"));
@@ -132,9 +130,6 @@ TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D>
 			wake_rtts.Add(boat->GeteWaveRTTs().eWaveHV);
 			FVector boatPos = boat->WorldPosition3D();
 			ws_boat_coords.Add(FVector2D(boatPos.X, boatPos.Y));
-		}
-		else {
-			ws_boat_coords.Add(FVector2D(0.0, 0.0));
 		}
 	}
 

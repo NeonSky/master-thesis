@@ -64,7 +64,7 @@ void UDataCollector::update(UpdatePayload update_payload) {
 }
 
 void UDataCollector::saveeWaveDataToFile(TArray<float>& data) {
-	FString fname = *FString(TEXT("TempTestData/TestData") + FString::FromInt(frameNumber) + TEXT(".txt"));
+	FString fname = *FString(TEXT("SavedBoatData/eWaveTextures/") + FString::FromInt(frameNumber) + TEXT(".txt"));
 	FString AbsoluteFilePath = FPaths::ProjectDir() + fname;
 
 	FString textToSave = TEXT("Test\n");
