@@ -31,7 +31,6 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	if (oceanSeed == 0) {
 		oceanSeed = FMath::RandRange(1, 10000);
 	}
-	oceanTime = oceanSeed;
 
 	// Check that RTTs have correct dimensions.
 	// The alternative of resizing RTTs during runtime doesn't appear to be a great idea: https://answers.unrealengine.com/questions/177345/changing-rendertexture-size-at-runtime-dramaticall.html?sort=oldest
@@ -79,7 +78,6 @@ void AOceanSurfaceSimulation::BeginPlay() {
 
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 	const float fixed_dt = 0.02f;
-	oceanTime += fixed_dt;
 	time += fixed_dt;
 	this->m_submerged_triangles_buffers.SetNum(boats.Num());
 
@@ -283,7 +281,7 @@ void AOceanSurfaceSimulation::create_mesh() {
 void AOceanSurfaceSimulation::update_mesh(float dt) {
 
 	// Update non-interactive ocean.
-	m_shader_models_module.ComputeFourierComponents(oceanTime, this->spectrum_y_rtt, this->spectrum_xz_rtt);
+	m_shader_models_module.ComputeFourierComponents(time, this->spectrum_y_rtt, this->spectrum_xz_rtt);
 
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_y_rtt);
 	m_shader_models_module.FFT(this->butterfly_rtt, this->spectrum_xz_rtt);
@@ -303,10 +301,9 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 2);
 				m_shader_models_module.ComputeObstruction(boat_rtt, submerged_triangles, this->eWave_addition_rtt, ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev, 1);
 				m_shader_models_module.FFT_Forward(this->butterfly_rtt, ewave_rtts.eWaveHV); // https://www.dsprelated.com/showarticle/800.php, inverse fft article.
-				//m_shader_models_module.Copy(ewave_rtts.eWaveHV, ewave_rtts.eWaveHV_prev); // TODO: Don't use the copy shader to fix racecondition
 				UTextureRenderTarget2D* src = ewave_rtts.eWaveHV;
 				UTextureRenderTarget2D* dst = ewave_rtts.eWaveHV_prev;
-				{
+				{ // Copy prevents race condition in eWave.usf
 					ENQUEUE_RENDER_COMMAND(void)(
 						[src, dst](FRHICommandListImmediate& RHI_cmd_list) {
 						RHI_cmd_list.CopyToResolveTarget(

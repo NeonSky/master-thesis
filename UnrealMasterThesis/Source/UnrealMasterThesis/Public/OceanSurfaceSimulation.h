@@ -91,7 +91,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), meta = (UIMin = "0", UIMax = "10000"))
 	int oceanSeed = 42;
-	float oceanTime;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	FDataCollectionSettings data_collection_settings;

@@ -34,10 +34,6 @@ public:
 
 	void Clear(UTextureRenderTarget2D* result);
 
-	void SetConst(UTextureRenderTarget2D* result);
-
-	void Copy(UTextureRenderTarget2D* src, UTextureRenderTarget2D* dst);
-
 	void ComputeScale(
 		UTextureRenderTarget2D* input_output_rtt, 
 		UTextureRenderTarget2D* copy_rtt,
