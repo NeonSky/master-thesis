@@ -77,3 +77,7 @@ DerivedDataCache/*
 .vscode
 build
 Content/Custom/Models
+
+# Ignore saved simulation test data
+SavedBoatData/
+SavedInputData/
