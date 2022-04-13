@@ -52,11 +52,10 @@ void UDataCollector::update(UpdatePayload update_payload) {
 	}
 
 	if (data_collection_settings.shouldCollectBoatData) {
-		// Currently only supports ONE boat
-		for (auto boat : boats) {
+		for (int i = 0; i < boats.Num(); i++) {
+			auto boat = boats[i];
 			if (boat) {
-				FVector boatPos = boat->WorldPosition3D();
-				boatPositions.Add(boat->WorldPosition3D());
+				boatPositions[i].Add(boat->WorldPosition3D());
 			}
 		}
 	}
@@ -119,6 +118,7 @@ void UDataCollector::saveBoatDataToFile() {
 		JsonObject->SetNumberField("position_x", pos.X);
 		JsonObject->SetNumberField("position_y", pos.Y);
 		JsonObject->SetNumberField("position_z", pos.Z);
+
 
 		FString OutputString;
 		TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
