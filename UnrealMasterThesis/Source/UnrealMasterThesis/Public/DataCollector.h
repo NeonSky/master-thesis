@@ -45,7 +45,6 @@ public:
 	// Sets default values for this component's properties
 	UDataCollector();
 	UTextureRenderTarget2D* eWave_hv_rtt;
-	UTextureRenderTarget2D* eWave_v_rtt;
 	UTextureRenderTarget2D* serialization_rtt;
 	class ShaderModelsModule* shaderModule;
 	TArray<TScriptInterface<IBoatInterface>> boats;
