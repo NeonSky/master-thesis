@@ -22,6 +22,8 @@ void AInputPawn::Tick(float DeltaTime) {
         m_speed_input = state.speed_input;
         m_velocity_input.X = state.velocity_input.X;
         m_velocity_input.Y = state.velocity_input.Y;
+        m_velocity_input2.X = state.velocity_input2.X;
+        m_velocity_input2.Y = state.velocity_input2.Y;
     }
 
     UpdatePayload payload;
