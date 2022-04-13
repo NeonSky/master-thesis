@@ -16,9 +16,6 @@ void ACPUBoat::BeginPlay() {
 
   m_rigidbody = Rigidbody(mass); // kg (wet weight, i.e. including fuel). Our boat should be similar to a cabin cruiser: https://www.godownsize.com/how-much-do-boats-weigh/
 
-  m_requested_elevations_on_frame = 0;
-  m_cur_frame = 0;
-
   m_prev_r_s = 0.0f;
 
   // Sync the rigidbody transform with the UE transform
@@ -85,7 +82,7 @@ void ACPUBoat::Update(UpdatePayload update_payload, std::function<void(TRefCount
 
   FlushPersistentDebugLines(this->GetWorld());
 
-  UpdateReadbackQueue();
+  UpdateElevations();
   UpdateSubmergedTriangles();
 
   float submerged_area = 0.0f;
@@ -109,7 +106,6 @@ void ACPUBoat::Update(UpdatePayload update_payload, std::function<void(TRefCount
   UpdateGPUState(prev_rigidbody, callback);
 
   m_prev_r_s = r_s;
-  m_cur_frame++;
 }
 
 void ACPUBoat::DebugDrawTriangle(FVector v0, FVector v1, FVector v2, FColor color) {
@@ -174,29 +170,17 @@ void ACPUBoat::DebugDrawVelocities() {
   }
 }
 
-void ACPUBoat::UpdateReadbackQueue() {
+void ACPUBoat::UpdateElevations() {
 
-  // Request elevations
-  if (m_cur_frame - m_requested_elevations_on_frame >= artificial_frame_skip) {
-    m_requested_elevations_on_frame = m_cur_frame;
-
-    // Fetch ocean surface elevations for all vertices
-    FTransform transform = m_rigidbody.Transform();
-    TArray<FVector2D> sample_points;
-    for (auto &v : m_collision_mesh_vertices) {
-      FVector v_ws = transform.TransformPosition(v);
-      sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
-    }
-    TArray<float> elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
-
-    m_readback_queue.push(elevations);
+  // Fetch ocean surface elevations for all vertices
+  FTransform transform = m_rigidbody.Transform();
+  TArray<FVector2D> sample_points;
+  for (auto &v : m_collision_mesh_vertices) {
+    FVector v_ws = transform.TransformPosition(v);
+    sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
   }
 
-  // Update latest response
-  if (m_readback_queue.size() > artificial_frame_delay) {
-    m_latest_elevations = m_readback_queue.front();
-    m_readback_queue.pop();
-  }
+  m_latest_elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
 
 }
 

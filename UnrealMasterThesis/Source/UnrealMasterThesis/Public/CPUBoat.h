@@ -79,14 +79,10 @@ private:
 
 	Rigidbody m_rigidbody;
 
-	int m_requested_elevations_on_frame;
-	int m_cur_frame;
-
 	TArray<uint32> m_collision_mesh_indices;
 	TArray<FVector> m_collision_mesh_vertices;
 	float m_collision_mesh_surface_area;
 
-	std::queue<TArray<float>> m_readback_queue;
 	TArray<float> m_latest_elevations;
 
 	TArray<SubmergedTriangle> m_submerged_triangles;
@@ -100,7 +96,7 @@ private:
 	void DebugDrawTriangle(FVector v0, FVector v1, FVector v2, FColor color);
 	void DebugDrawForce(FVector c, FVector f, FColor color);
 	void DebugDrawVelocities();
-	void UpdateReadbackQueue();
+	void UpdateElevations();
 	void UpdateSubmergedTriangles();
 
 	void ApplyGravity();
