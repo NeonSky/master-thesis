@@ -1,0 +1,62 @@
+#pragma once
+
+bool capsule_intersection(
+    float3 p1,
+    float3 d1,
+    float3 p2,
+    float3 d2,
+    out float3 intersection_point) {
+
+    const float SPHERE_RADIUS         = 1.0;
+    const float HALF_CYLLINDER_LENGTH = 5.0 / 2.0;
+
+    // The two cyllinders span their own axis:
+    //   p1 + t * d1
+    //   p2 + t * d2
+    //
+    // Let:
+    //   A = (p1 + t1 * d1) denote the closest point on the first axis.
+    //   B = (p2 + t2 * d2) denote the closest point on the second axis.
+    //
+    // These are the two points we seek.
+    //
+    // The shortest line segment should then go between these points.
+    // That is: C = A + t3 * norm(B - A) = A + t3 * d3
+    //
+    // For this line segment to be the shortest, it needs to be perpendicular to the two axes.
+    // Thus: d3 = cross(d1, d2), where the sign does not matter for our purposes.
+    //
+    // By definition, the axis of C intersects A.
+    // To ensure it also intersects B, we have: C = B
+    // That is,
+    //   (p1 + t1 * d1) + t3 * d3 = p2 + t2 * d2
+    //   <=> p1 - p2 = t2 * d2 - t1 * d1 - t3 * d3
+    //
+    // Consequently,
+    //    dot(d1, p1 - p2) = dot(d1, t2 * d2 - t1 * d1 - t3 * d3)
+    //                     = dot(d1, - t1 * d1)
+    //                     = -t1
+    //
+    //    dot(d2, p1 - p2) = dot(d2, t2 * d2 - t1 * d1 - t3 * d3)
+    //                     = dot(d2, t2 * d2)
+    //                     = t2
+
+    float t1 = -dot(d1, p1 - p2);
+    float t2 = dot(d2, p1 - p2);
+
+    if (abs(t1) > HALF_CYLLINDER_LENGTH || abs(t2) > HALF_CYLLINDER_LENGTH) {
+        return false;
+    }
+
+    float3 A = p1 + t1 * d1;
+    float3 B = p2 + t2 * d2;
+
+    float len = length(A - B);
+
+    if (0.01 < len && len < 2.0 * SPHERE_RADIUS) {
+        intersection_point = A;
+        return true;
+    }
+
+    return false;
+}
