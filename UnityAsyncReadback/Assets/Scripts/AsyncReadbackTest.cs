@@ -8,6 +8,7 @@ using UnityEngine;
 public class AsyncReadbackTest : MonoBehaviour {
 
     public int N = 256;
+    public int n_frames_to_record = 2010;
 
     (RenderTexture grab, RenderTexture flip) _rt;
     NativeArray<byte> _buffer;
@@ -33,6 +34,10 @@ public class AsyncReadbackTest : MonoBehaviour {
             yield return new WaitForEndOfFrame();
 
             if (starts.Count == ends.Count) {
+
+                if (starts.Count == n_frames_to_record) {
+                    yield break;
+                }
 
                 ScreenCapture.CaptureScreenshotIntoRenderTexture(_rt.grab);
                 Graphics.Blit(_rt.grab, _rt.flip, scale, offs);
@@ -65,10 +70,22 @@ public class AsyncReadbackTest : MonoBehaviour {
     void OnDestroy() {
         AsyncGPUReadback.WaitAllRequests();
 
+        OutputData output = new OutputData();
+        output.starts = this.starts;
+        output.ends = this.ends;
+        string output_str = JsonUtility.ToJson(output);
+        System.IO.File.WriteAllText("output.json", output_str);
+
         Destroy(_rt.flip);
         Destroy(_rt.grab);
 
         _buffer.Dispose();
     }
 
+}
+
+[System.Serializable]
+struct OutputData {
+    public List<float> starts;
+    public List<float> ends;
 }

@@ -168,6 +168,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   N: 256
+  n_frames_to_record: 2010
 --- !u!1 &278944096
 GameObject:
   m_ObjectHideFlags: 0
