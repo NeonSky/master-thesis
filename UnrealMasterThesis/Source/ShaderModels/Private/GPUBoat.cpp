@@ -103,14 +103,15 @@ void GPUBoatShader::BuildAndExecuteGraph(
     FVector2D velocity_input,
     UTextureRenderTarget2D* elevation_texture,
 	TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer,
-    UTextureRenderTarget2D* input_output,
+	UTextureRenderTarget2D* boat_texture,
+	TArray<UTextureRenderTarget2D*> other_boat_textures,
     UTextureRenderTarget2D* readback_rt,
 	TArray<FFloat16Color>* readback_target) {
 
 	// We will use this to build a Rendering Dependency Graph (RDG).
 	FRDGBuilder graph_builder(RHI_cmd_list);
 
-	FRDGTextureRef io_tex_ref    = register_texture3(graph_builder, input_output, "InputOutputRenderTarget");
+	FRDGTextureRef io_tex_ref    = register_texture3(graph_builder, boat_texture, "InputOutputRenderTarget");
 	FRDGTextureUAVRef io_tex_UAV = graph_builder.CreateUAV(io_tex_ref);
 
 	FRDGTextureRef readback_tex_ref    = register_texture3(graph_builder, readback_rt, "ReadbackRenderTarget");
@@ -124,7 +125,16 @@ void GPUBoatShader::BuildAndExecuteGraph(
     PassParameters->ElevationTexture         = register_texture3(graph_builder, elevation_texture, "ElevationRenderTarget");
     PassParameters->SubmergedTrianglesBuffer = register_buffer(graph_builder, submerged_triangles_buffer, "SubmergedTrianglesBuffer");
 
-    PassParameters->InputOutputTexture = io_tex_UAV;
+    PassParameters->BoatTexture = io_tex_UAV;
+
+	// See comment in ElevationSampler.usf
+	if (other_boat_textures.Num() > 0) {
+        PassParameters->OtherBoatTextures[0] = register_texture3(graph_builder, other_boat_textures[0], "BoatRenderTarget2");
+    } else {
+		// Assign arbitrary valid texture to prevent crash. It will not be used anyway.
+        PassParameters->OtherBoatTextures[0] = register_texture3(graph_builder, boat_texture, "BoatRenderTarget2");
+    }
+
     PassParameters->ReadbackTexture    = readback_tex_UAV;
 
 	TShaderMapRef<GPUBoatShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
