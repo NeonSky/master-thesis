@@ -8,7 +8,7 @@ bool capsule_intersection(
     out float3 intersection_point) {
 
     const float SPHERE_RADIUS         = 1.0;
-    const float HALF_CYLLINDER_LENGTH = 5.0 / 2.0;
+    const float HALF_CYLLINDER_LENGTH = 3.0 / 2.0;
 
     // The two cyllinders span their own axis:
     //   p1 + t * d1
@@ -44,9 +44,17 @@ bool capsule_intersection(
     float t1 = -dot(d1, p1 - p2);
     float t2 = dot(d2, p1 - p2);
 
-    if (abs(t1) > HALF_CYLLINDER_LENGTH || abs(t2) > HALF_CYLLINDER_LENGTH) {
+    float abs_t1 = abs(t1);
+    float abs_t2 = abs(t2);
+
+    if (abs_t1 > HALF_CYLLINDER_LENGTH + SPHERE_RADIUS || abs_t2 > HALF_CYLLINDER_LENGTH + SPHERE_RADIUS) {
+        // The solution is outside one of the cyllinders.
         return false;
     }
+
+    // Form caps at the edges of each cyllinder.
+    t1 = sign(t1) * max(abs_t1, HALF_CYLLINDER_LENGTH);
+    t2 = sign(t2) * max(abs_t2, HALF_CYLLINDER_LENGTH);
 
     float3 A = p1 + t1 * d1;
     float3 B = p2 + t2 * d2;
