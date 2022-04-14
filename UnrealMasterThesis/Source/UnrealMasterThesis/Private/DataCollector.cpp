@@ -54,12 +54,13 @@ void UDataCollector::update(UpdatePayload update_payload) {
 	if (data_collection_settings.shouldCollectBoatData) {
 		for (int i = 0; i < boats.Num(); i++) {
 			auto boat = boats[i];
+			if (boatPositions.Num() == 0) { boatPositions.SetNum(3); }
 			if (boat) {
 				boatPositions[i].Add(boat->WorldPosition3D());
 			}
 		}
 	}
-
+	int i = 0;
 }
 
 void UDataCollector::saveeWaveDataToFile(TArray<float>& data) {
@@ -112,21 +113,25 @@ void UDataCollector::saveBoatDataToFile() {
 	FString fname = *FString(TEXT("SavedBoatData/") + data_collection_settings.folderName + TEXT("/") + data_collection_settings.fileName + FString::FromInt(ii++) + TEXT(".json"));
 	FString AbsoluteFilePath = FPaths::ProjectDir() + fname;
 	TSharedRef<FJsonObject> JsonRootObject = MakeShareable(new FJsonObject);
-	TArray<TSharedPtr<FJsonValue>> boatStates;
-	for (const auto& pos : boatPositions) {
-		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-		JsonObject->SetNumberField("position_x", pos.X);
-		JsonObject->SetNumberField("position_y", pos.Y);
-		JsonObject->SetNumberField("position_z", pos.Z);
+	for (int i = 0; i < boatPositions.Num(); i++) {
+		TArray<TSharedPtr<FJsonValue>> boatStates;
+		auto boat = boatPositions[i];
+		for (const auto& pos : boat) {
+			TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+			JsonObject->SetNumberField("position_x", pos.X);
+			JsonObject->SetNumberField("position_y", pos.Y);
+			JsonObject->SetNumberField("position_z", pos.Z);
 
+			FString OutputString;
+			TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
+			FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
 
-		FString OutputString;
-		TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
-		FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
-
-		boatStates.Add(MakeShareable(new FJsonValueString(OutputString)));
+			boatStates.Add(MakeShareable(new FJsonValueString(OutputString)));
+		}
+		FString arrayName = FString::Printf(TEXT("boat_%d"), i);
+		JsonRootObject->SetArrayField(arrayName, boatStates);
 	}
-	JsonRootObject->SetArrayField("boatPositions", boatStates);
+	
 
 	FString OutputString;
 	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);

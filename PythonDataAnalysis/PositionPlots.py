@@ -3,22 +3,22 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 
-dir = '../UnrealMasterThesis/SavedBoatData/Pre_PR_Test'
+dir = '../UnrealMasterThesis/SavedBoatData/TwoBoats'
 
 # Set 'dir' to a folder with recorded boat data
 # If more than one recording per boat type is present, only the first file for each type will be used
 # Assumes file names contains boat type CPU / GPU / ART0 / ART1 / ART2 / ART3
 
 
-def extractPositionData(in_json_dict):
-    boat_1_positions = []
-    for frameData_str in in_json_dict['boatPositions']:
+def extractPositionData(in_json_list):
+    boat_positions = []
+    for frameData_str in in_json_list:
         frameData = json.loads(frameData_str)
         pos = np.array([frameData['position_x'],
                          frameData['position_y'],
                          frameData['position_z']])
-        boat_1_positions.append(pos)
-    return boat_1_positions
+        boat_positions.append(pos)
+    return boat_positions
 
 
 def getErrorMagnitudes(referece_data, other_data):
@@ -85,14 +85,25 @@ def getJSONdataFromAllFilesInDir(directory):
 if __name__ == '__main__':
     json_data = getJSONdataFromAllFilesInDir(dir)
 
+    #print(json_data.items())
     # Extract Position data into arrays
     position_data = {}
-    for boat_type, data in json_data.items():
-        position_data[boat_type] = extractPositionData(data)
+    position_data_2 = {}
+    position_data_3 = {}
+    for boat_type, boats in json_data.items():
+        print(boats['boat_0'])
+        position_data[boat_type] = extractPositionData(boats['boat_0'])
+        position_data_2[boat_type] = extractPositionData(boats['boat_1'])
+        position_data_3[boat_type] = extractPositionData(boats['boat_2'])
 
     # Get magnitude or diff compared to GPU boat
     diff_magnitudes = {}
-    reference_positions = position_data['GPU']
+
+    # GPU boat is the reference boat we compare the difference with
+    reference_positions = list(position_data.values())[0]
+    if 'GPU' in position_data:
+        reference_positions = position_data['GPU']
+
     for boat_type, positions in position_data.items():
         if boat_type == 'GPU':
             continue
@@ -126,3 +137,29 @@ if __name__ == '__main__':
     plt.ylim(plotLimits[2], plotLimits[3])
     plt.legend(loc="upper left")
     plt.show()
+
+    if True:
+        # Plot boat travel paths for 2 boats
+        plt.title("Boat Paths - 2 boats")
+        plt.xlabel("x")
+        plt.ylabel("y")
+        position_data_2D = {}
+        position_data_2D_2 = {}
+        for boat_type, positions in position_data.items():
+            position_data_2D[boat_type] = np.array([[x, y] for (x, y, z) in positions])
+
+        for boat_type, positions_2D in position_data_2D.items():
+            plt.plot(positions_2D[:, 0], positions_2D[:, 1], label=boat_type)
+
+        for boat_type, positions in position_data_2.items():
+            position_data_2D_2[boat_type] = np.array([[x, y] for (x, y, z) in positions])
+
+        for boat_type, positions_2D in position_data_2D_2.items():
+            plt.plot(positions_2D[:, 0], positions_2D[:, 1], label=boat_type)
+
+        plt.grid(visible=True)
+        plotLimits = getPlotLimits(position_data)
+        plt.xlim(plotLimits[0], plotLimits[1])
+        plt.ylim(plotLimits[2], plotLimits[3])
+        plt.legend(loc="upper left")
+        plt.show()
