@@ -113,18 +113,88 @@ void apply_resistance_forces(inout Rigidbody rigidbody, float r_s, float prev_r_
 
 void apply_collisions(inout Rigidbody rigidbody) {
 
-    const float RADIUS = 1.0;
+    // Approximate each boat's collision box as a capsule (i.e. a cyllinder with a sphere at each end)
+    const float SPHERE_RADIUS    = 1.0;
+    const float HALF_CYLLINDER_LENGTH = 5.0 / 2.0;
+
+    float3 forward = rotate_vector_by_quat(float3(1.0, 0.0, 0.0), rigidbody.orientation);
+
+    // Sphere centers
+    float3 s1 = rigidbody.position + forward * HALF_CYLLINDER_LENGTH;
+    float3 s2 = rigidbody.position - forward * HALF_CYLLINDER_LENGTH;
 
     // See ElevationSampler.usf
     #if BOAT_COUNT > 1
         float3 pos = OtherBoatTextures_0[uint2(0,0)].rgb;
-        float3 rot = OtherBoatTextures_0[uint2(1,0)];
+        float4 rot = OtherBoatTextures_0[uint2(1,0)];
 
-        float len = length(rigidbody.position - pos);
+        float3 other_forward = rotate_vector_by_quat(float3(1.0, 0.0, 0.0), rot);
 
-        if (0.05 < len && len < 2.0 * RADIUS) {
-            float3 dir = normalize(rigidbody.position - pos);
-            add_force_at_position(rigidbody, 100.0 * rigidbody.mass * dir, rigidbody.position);
+        float3 other_s1 = pos + other_forward * HALF_CYLLINDER_LENGTH;
+        float3 other_s2 = pos - other_forward * HALF_CYLLINDER_LENGTH;
+
+        // float len = length(rigidbody.position - pos);
+
+        // if (0.05 < len && len < 2.0 * RADIUS) {
+        //     float3 dir = normalize(rigidbody.position - pos);
+        //     add_force_at_position(rigidbody, 100.0 * rigidbody.mass * dir, rigidbody.position);
+        // }
+
+        // TODO: cyllinder-cyllinder instersection (extract to function)
+        {
+            // The two cyllinders span their own axis:
+            //   p1 + t * d1
+            //   p2 + t * d2
+            //
+            // Let:
+            //   A = (p1 + t1 * d1) denote the closest point on the first axis.
+            //   B = (p2 + t2 * d2) denote the closest point on the second axis.
+            //
+            // These are the two points we seek.
+            //
+            // The shortest line segment should then go between these points.
+            // That is: C = A + t3 * norm(B - A) = A + t3 * d3
+            //
+            // For this line segment to be the shortest, it needs to be perpendicular to the two axes.
+            // Thus: d3 = cross(d1, d2), where the sign does not matter for our purposes.
+            //
+            // By definition, the axis of C intersects A.
+            // To ensure it also intersects B, we have: C = B
+            // That is,
+            //   (p1 + t1 * d1) + t3 * d3 = p2 + t2 * d2
+            //   <=> p1 - p2 = t2 * d2 - t1 * d1 - t3 * d3
+            //
+            // Consequently,
+            //    dot(d1, p1 - p2) = dot(d1, t2 * d2 - t1 * d1 - t3 * d3)
+            //                     = dot(d1, - t1 * d1)
+            //                     = -t1
+            //
+            //    dot(d2, p1 - p2) = dot(d2, t2 * d2 - t1 * d1 - t3 * d3)
+            //                     = dot(d2, t2 * d2)
+            //                     = t2
+
+            float3 p1 = rigidbody.position;
+            float3 d1 = forward;
+
+            float3 p2 = pos;
+            float3 d2 = other_forward;
+
+            float t1 = -dot(d1, p1 - p2);
+            float t2 = dot(d2, p1 - p2);
+
+            if (abs(t1) > HALF_CYLLINDER_LENGTH || abs(t2) > HALF_CYLLINDER_LENGTH) {
+                return;
+            }
+
+            float3 A = p1 + t1 * d1;
+            float3 B = p2 + t2 * d2;
+
+            float len = length(A - B);
+
+            if (0.05 < len && len < 2.0 * SPHERE_RADIUS) {
+                float3 dir = normalize(rigidbody.position - pos);
+                add_force_at_position(rigidbody, 100.0 * rigidbody.mass * dir, A);
+            }
         }
     #endif
 }
@@ -191,6 +261,6 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     store_f32(ReadbackTexture, uint2(5,0), rigidbody.orientation.z);
     store_f32(ReadbackTexture, uint2(6,0), rigidbody.orientation.w);
 
-    store_f32(ReadbackTexture, uint2(7,0), r_s - prev_r_s); // Debug
+    // store_f32(ReadbackTexture, uint2(7,0), r_s - prev_r_s); // Debug
 
 }
