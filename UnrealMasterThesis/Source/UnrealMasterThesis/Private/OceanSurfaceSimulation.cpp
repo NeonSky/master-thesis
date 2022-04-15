@@ -74,6 +74,8 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	for (auto boat : boats) { data_collector->boats.Add(boat); }
 	if (data_collection_settings.shouldPlayBackInputSequence) {
 		data_collector->readInputJSON(input_pawn->preRecordedInputSequence);
+		data_collector->boatPositions.Add(TArray<FVector>());
+		data_collector->boatPositions.Last().Reserve(data_collection_settings.framesToRecord);
 	}
 }
 

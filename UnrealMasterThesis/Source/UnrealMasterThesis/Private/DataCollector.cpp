@@ -23,6 +23,10 @@ UDataCollector::UDataCollector()
 void UDataCollector::BeginPlay()
 {
 	Super::BeginPlay();
+	boatPositions.SetNum(3);
+	boatPositions[0].Reserve(600);
+	boatPositions[1].Reserve(600);
+	boatPositions[2].Reserve(600);
 }
 
 
@@ -54,13 +58,19 @@ void UDataCollector::update(UpdatePayload update_payload) {
 	if (data_collection_settings.shouldCollectBoatData) {
 		for (int i = 0; i < boats.Num(); i++) {
 			auto boat = boats[i];
-			if (boatPositions.Num() == 0) { boatPositions.SetNum(3); }
 			if (boat) {
 				boatPositions[i].Add(boat->WorldPosition3D());
 			}
 		}
 	}
-	int i = 0;
+	
+	static int screenShotNr = 0;
+	// screenshotInterval <= 0 means no screenshots
+	if (data_collection_settings.screenshotInterval > 0 && frameNumber % data_collection_settings.screenshotInterval == 0) {
+		FString fname = *FString(TEXT("SavedBoatData/Screenshots/screenshot_") + FString::FromInt(screenShotNr++) + TEXT(".png"));
+		FString AbsoluteFilePath = FPaths::ProjectDir() + fname;
+		FScreenshotRequest::RequestScreenshot(AbsoluteFilePath, false, false);
+	}
 }
 
 void UDataCollector::saveeWaveDataToFile(TArray<float>& data) {
