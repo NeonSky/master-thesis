@@ -23,10 +23,6 @@ UDataCollector::UDataCollector()
 void UDataCollector::BeginPlay()
 {
 	Super::BeginPlay();
-	boatPositions.SetNum(3);
-	boatPositions[0].Reserve(600);
-	boatPositions[1].Reserve(600);
-	boatPositions[2].Reserve(600);
 }
 
 
