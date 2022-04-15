@@ -34,6 +34,9 @@ struct FDataCollectionSettings {
 
 	UPROPERTY(EditAnywhere)
 	FString inputFileName;
+
+	UPROPERTY(EditAnywhere)
+	int screenshotInterval;
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
