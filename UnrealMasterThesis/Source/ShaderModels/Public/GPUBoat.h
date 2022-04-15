@@ -21,7 +21,10 @@ public:
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<FVector4>, ElevationTexture)
 		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<GPUSumbergedTriangle>, SubmergedTrianglesBuffer)
 
-		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, InputOutputTexture)
+		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, BoatTexture)
+
+		SHADER_PARAMETER_RDG_TEXTURE_ARRAY(Texture2D<FVector4>, OtherBoatTextures, [1])
+
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, ReadbackTexture)
 
 	END_SHADER_PARAMETER_STRUCT()
@@ -44,7 +47,8 @@ public:
         FVector2D velocity_input,
         UTextureRenderTarget2D* elevation_texture,
 		TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer,
-        UTextureRenderTarget2D* input_output,
+        UTextureRenderTarget2D* boat_texture,
+        TArray<UTextureRenderTarget2D*> other_boat_textures,
         UTextureRenderTarget2D* readback_texture,
         TArray<FFloat16Color>* readback_target);
 

@@ -1,6 +1,9 @@
 #include "/Engine/Public/Platform.ush"
 
 #include "Common.ush"
+#include "Intersections.ush"
+
+#define ENABLE_COLLISIONS
 
 float SpeedInput;
 float2 VelocityInput;
@@ -8,7 +11,11 @@ float2 VelocityInput;
 Texture2D<float4> ElevationTexture;
 StructuredBuffer<SubmergedTriangle> SubmergedTrianglesBuffer;
 
-RWTexture2D<float4> InputOutputTexture;
+RWTexture2D<float4> BoatTexture;
+
+// See ElevationSampler.usf
+Texture2D<float4> OtherBoatTextures_0;
+
 RWTexture2D<float4> ReadbackTexture;
 
 
@@ -18,11 +25,11 @@ Rigidbody get_rigidbody() {
     rigidbody.force  = float3(0.0, 0.0, 0.0);
     rigidbody.torque = float3(0.0, 0.0, 0.0);
 
-    rigidbody.position    = InputOutputTexture[uint2(0,0)].rgb; // RGB of (0,0) stores position
-    rigidbody.orientation = InputOutputTexture[uint2(1,0)]; // RGBA of (1,0) stores orientation
+    rigidbody.position    = BoatTexture[uint2(0,0)].rgb; // RGB of (0,0) stores position
+    rigidbody.orientation = BoatTexture[uint2(1,0)]; // RGBA of (1,0) stores orientation
 
-    rigidbody.linear_velocity  = InputOutputTexture[uint2(2,0)].rgb; // RGB of (2,0) stores linear velocity
-    rigidbody.angular_velocity = InputOutputTexture[uint2(3,0)].rgb; // RGB of (3,0) stores angular velocity
+    rigidbody.linear_velocity  = BoatTexture[uint2(2,0)].rgb; // RGB of (2,0) stores linear velocity
+    rigidbody.angular_velocity = BoatTexture[uint2(3,0)].rgb; // RGB of (3,0) stores angular velocity
 
     rigidbody.mass              = 2000.0;
     rigidbody.moment_of_inertia = 100.0 * rigidbody.mass;
@@ -105,6 +112,25 @@ void apply_resistance_forces(inout Rigidbody rigidbody, float r_s, float prev_r_
     add_force_at_position(rigidbody, float3(0.0, 0.0, vdamp_force.z), rigidbody.position);
 }
 
+void apply_collisions(inout Rigidbody rigidbody) {
+
+    float3 p1 = rigidbody.position;
+    float3 d1 = rotate_vector_by_quat(float3(1.0, 0.0, 0.0), rigidbody.orientation);
+
+    float3 p2 = OtherBoatTextures_0[uint2(0,0)].rgb;
+    float3 d2 = rotate_vector_by_quat(float3(1.0, 0.0, 0.0), OtherBoatTextures_0[uint2(1,0)]);
+
+    // See ElevationSampler.usf
+    #if BOAT_COUNT > 1
+        // Approximate each boat's collision box as a capsule (i.e. a cyllinder with a sphere at each end)
+        float3 intersection_point;
+        if (capsule_intersection(p1, d1, p2, d2, intersection_point)) {
+            float3 dir = normalize(p1 - p2);
+            add_force_at_position(rigidbody, 100.0 * rigidbody.mass * dir, intersection_point);
+        }
+    #endif
+}
+
 float compute_ratio_of_submerge() {
     float tot_area = 27.045519; // manually copied from CPU
     float submerged_area = 0.0f;
@@ -130,29 +156,34 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     Rigidbody rigidbody = get_rigidbody();
 
     // Store prev results (used by eWave)
-    InputOutputTexture[uint2(0,1)].rgb = rigidbody.position;
-    InputOutputTexture[uint2(1,1)]     = rigidbody.orientation;
-    InputOutputTexture[uint2(2,1)].rgb = rigidbody.linear_velocity;
-    InputOutputTexture[uint2(3,1)].rgb = rigidbody.angular_velocity;
+    BoatTexture[uint2(0,1)].rgb = rigidbody.position;
+    BoatTexture[uint2(1,1)]     = rigidbody.orientation;
+    BoatTexture[uint2(2,1)].rgb = rigidbody.linear_velocity;
+    BoatTexture[uint2(3,1)].rgb = rigidbody.angular_velocity;
 
-    float prev_r_s = InputOutputTexture[uint2(3,0)].a;
-    InputOutputTexture[uint2(3,1)].a   = prev_r_s;
+    float prev_r_s = BoatTexture[uint2(3,0)].a;
+    BoatTexture[uint2(3,1)].a   = prev_r_s;
 
     float r_s = compute_ratio_of_submerge();
 
     apply_gravity(rigidbody);
     apply_buoyancy(rigidbody);
     apply_user_input(rigidbody, r_s);
+
+    #ifdef ENABLE_COLLISIONS
+        apply_collisions(rigidbody);
+    #endif
+
     apply_resistance_forces(rigidbody, r_s, prev_r_s);
 
     update_rigidbody(rigidbody);
 
     // Store new results
-    InputOutputTexture[uint2(0,0)].rgb = rigidbody.position;
-    InputOutputTexture[uint2(1,0)]     = rigidbody.orientation;
-    InputOutputTexture[uint2(2,0)].rgb = rigidbody.linear_velocity;
-    InputOutputTexture[uint2(3,0)].rgb = rigidbody.angular_velocity;
-    InputOutputTexture[uint2(3,0)].a   = r_s;
+    BoatTexture[uint2(0,0)].rgb = rigidbody.position;
+    BoatTexture[uint2(1,0)]     = rigidbody.orientation;
+    BoatTexture[uint2(2,0)].rgb = rigidbody.linear_velocity;
+    BoatTexture[uint2(3,0)].rgb = rigidbody.angular_velocity;
+    BoatTexture[uint2(3,0)].a   = r_s;
 
     store_f32(ReadbackTexture, uint2(0,0), rigidbody.position.x);
     store_f32(ReadbackTexture, uint2(1,0), rigidbody.position.y);
@@ -162,6 +193,6 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
     store_f32(ReadbackTexture, uint2(5,0), rigidbody.orientation.z);
     store_f32(ReadbackTexture, uint2(6,0), rigidbody.orientation.w);
 
-    store_f32(ReadbackTexture, uint2(7,0), r_s - prev_r_s); // Debug
+    // store_f32(ReadbackTexture, uint2(7,0), r_s - prev_r_s); // Debug
 
 }
