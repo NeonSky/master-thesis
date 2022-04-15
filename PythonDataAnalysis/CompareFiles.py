@@ -1,6 +1,6 @@
 import os
 
-directory = '../UnrealMasterThesis/SavedBoatData/TwoBoats_2'
+directory = '../UnrealMasterThesis/SavedBoatData/TwoBoats_2_x1'
 
 filePaths = []
 numFiles = 0
