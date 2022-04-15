@@ -3,7 +3,7 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 
-dir = '../UnrealMasterThesis/SavedBoatData/TwoBoats'
+dir = '../UnrealMasterThesis/SavedBoatData/TwoBoats_2'
 
 # Set 'dir' to a folder with recorded boat data
 # If more than one recording per boat type is present, only the first file for each type will be used
@@ -80,6 +80,32 @@ def getJSONdataFromAllFilesInDir(directory):
             print('File names should contain boat type. CPU, GPU, ART0 - ART3')
         file.close()
     return json_data
+
+def createPathsPlot(title):
+    # Plot boat travel paths for 2 boats
+    plt.title(title)
+    plt.xlabel("x")
+    plt.ylabel("y")
+    position_data_2D = {}
+    position_data_2D_2 = {}
+    for boat_type, positions in position_data.items():
+        position_data_2D[boat_type] = np.array([[x, y] for (x, y, z) in positions])
+
+    for boat_type, positions_2D in position_data_2D.items():
+        plt.plot(positions_2D[:, 0], positions_2D[:, 1], label=boat_type)
+
+    for boat_type, positions in position_data_2.items():
+        position_data_2D_2[boat_type] = np.array([[x, y] for (x, y, z) in positions])
+
+    for boat_type, positions_2D in position_data_2D_2.items():
+        plt.plot(positions_2D[:, 0], positions_2D[:, 1], label=boat_type)
+
+    plt.grid(visible=True)
+    plotLimits = getPlotLimits(position_data)
+    plt.xlim(plotLimits[0], plotLimits[1])
+    plt.ylim(plotLimits[2], plotLimits[3])
+    plt.legend(loc="upper left")
+    plt.show()
 
 
 if __name__ == '__main__':
