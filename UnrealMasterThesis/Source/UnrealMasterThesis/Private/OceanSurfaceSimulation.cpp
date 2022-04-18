@@ -232,7 +232,7 @@ void AOceanSurfaceSimulation::create_mesh() {
 		return pow(amplitude_scaler, 2.0f) * res; // We square the scalar since the spectrum represents amplitude squared
 	};
 
-	m_shader_models_module.Buildh0Textures(this->N, this->L, w, oceanSeed);
+	m_shader_models_module.Buildh0Textures(this->N, this->L, w, oceanSeed, tilde_h0_k_rtt, tilde_h0_neg_k_rtt);
 
 	// Triangles
 	// We use (N+1)^2 vertices instead of N^2 in order to produce seamless tiling (diplacement of vertex N+1 will equal that of vertex 0, in a given horizontal axis).

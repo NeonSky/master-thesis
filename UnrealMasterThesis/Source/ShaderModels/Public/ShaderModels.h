@@ -18,7 +18,7 @@ public:
 	void FFT(UTextureRenderTarget2D* butterfly, UTextureRenderTarget2D* output, float scale = 1.0f);
 	void FFT_Forward(UTextureRenderTarget2D* butterfly, UTextureRenderTarget2D* output);
 
-	void Buildh0Textures(int N, float L, std::function<float (FVector2D)> wave_spectrum, int seed);
+	void Buildh0Textures(int N, float L, std::function<float (FVector2D)> wave_spectrum, int seed, UTextureRenderTarget2D* tilde_h0_k_rtt, UTextureRenderTarget2D* tilde_h0_neg_k_rtt);
 
 	void ComputeFourierComponents(
 		float t,

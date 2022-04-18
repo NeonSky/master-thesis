@@ -10,10 +10,12 @@ float PhillipsWaveSpectrum(FVector2D k_vec, const FPhillipsSpectrumSettings& set
   float phillips_L = pow(settings.wind_speed, 2.0) / GRAVITY;
 
   float wave_number = k_vec.Size(); // vector magnitude
+  // float wave_number = 1.0f;
 
   FVector2D k_hat = k_vec.GetSafeNormal();
 
   float k_hat_dot_omega_hat = FVector2D::DotProduct(k_hat, settings.wind_direction);
+  // float k_hat_dot_omega_hat = 1.0f;
 
   float res = settings.amplitude;
   res *= exp(-1.0 / pow(wave_number * phillips_L, 2.0));

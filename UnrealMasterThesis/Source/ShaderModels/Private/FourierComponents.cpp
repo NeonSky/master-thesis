@@ -79,8 +79,8 @@ TArray<FFloat16Color> create_init_data(int N, float L, std::function<float (FVec
       );
 
       FVector2D neg_wave_vector = FVector2D(
-        2.0 * PI * ((-z) - floor(N / 2.0)) / L,
-        2.0 * PI * ((-x) - floor(N / 2.0)) / L
+        -2.0 * PI * (z - floor(N / 2.0)) / L,
+        -2.0 * PI * (x - floor(N / 2.0)) / L
       );
 
       float xi_r = dist(rng);
@@ -93,8 +93,8 @@ TArray<FFloat16Color> create_init_data(int N, float L, std::function<float (FVec
 
       float delta_k = 2.0f * PI / L;
 
-      std::complex<float> h0 = sqrt(1.0f / 2.0f) * complex_rv * sqrt(2.0f * wave_spectrum(wave_vector) * delta_k * delta_k);
-      std::complex<float> h0_conj = std::conj(sqrt(1.0f / 2.0f) * complex_rv2 * sqrt(2.0f * wave_spectrum(neg_wave_vector) * delta_k * delta_k));
+      std::complex<float> h0 = sqrt(1.0f / 2.0f) * complex_rv * sqrt(sqrt(wave_spectrum(wave_vector)));
+      std::complex<float> h0_conj = std::conj(sqrt(1.0f / 2.0f) * complex_rv2 * sqrt(sqrt(wave_spectrum(neg_wave_vector))));
 
       res.Add(FFloat16Color(FLinearColor(h0.real(), h0.imag(), h0_conj.real(), h0_conj.imag())));
     }
@@ -104,7 +104,7 @@ TArray<FFloat16Color> create_init_data(int N, float L, std::function<float (FVec
 
 }
 
-void FourierComponentsShader::Buildh0Textures(int N, float L, std::function<float (FVector2D)> wave_spectrum, int seed) {
+void FourierComponentsShader::Buildh0Textures(int N, float L, std::function<float (FVector2D)> wave_spectrum, int seed, UTextureRenderTarget2D* tilde_h0_k_rtt, UTextureRenderTarget2D* tilde_h0_neg_k_rtt) {
 
   this->m_N = N;
 
@@ -128,8 +128,7 @@ void FourierComponentsShader::Buildh0Textures(int N, float L, std::function<floa
     TArray<FFloat16Color> pixel_data;
     for (int i = 0; i < N; i++) {
       for (int j = 0; j < N; j++) {
-        // pixel_data.Add(FFloat16Color(FLinearColor(i, j, 0.0, 1.0))); // Dummy data for now
-        pixel_data.Add(FFloat16Color(FLinearColor(init_data[i*N+j].R, init_data[i*N+j].G, 0.0, 1.0)));
+        pixel_data.Add(FFloat16Color(FLinearColor(abs(init_data[i*N+j].R), abs(init_data[i*N+j].G), 0.0, 1.0)));
       }
     }
 
@@ -139,6 +138,15 @@ void FourierComponentsShader::Buildh0Textures(int N, float L, std::function<floa
     RHIUnlockTexture2D(Texture2DRHI, 0, false);
 
     this->tilde_h0_k = Texture2DRHI;
+
+    ENQUEUE_RENDER_COMMAND(void)(
+      [Texture2DRHI, tilde_h0_k_rtt](FRHICommandListImmediate& RHI_cmd_list) {
+        RHI_cmd_list.CopyToResolveTarget(
+          Texture2DRHI,
+          tilde_h0_k_rtt->GetRenderTargetResource()->GetRenderTargetTexture(),
+          FResolveParams()
+        );
+      });
   }
 
   //////////////////////////////
@@ -159,8 +167,9 @@ void FourierComponentsShader::Buildh0Textures(int N, float L, std::function<floa
     TArray<FFloat16Color> pixel_data;
     for (int i = 0; i < N; i++) {
       for (int j = 0; j < N; j++) {
-        // pixel_data.Add(FFloat16Color(FLinearColor(i, -j, 0.0, 1.0))); // Dummy data for now
-        pixel_data.Add(FFloat16Color(FLinearColor(init_data[i*N+j].B, init_data[i*N+j].A, 0.0, 1.0)));
+        // pixel_data.Add(FFloat16Color(FLinearColor(init_data[i*N+j].B, init_data[i*N+j].A, ((float)i) / (float)N, 1.0)));
+        pixel_data.Add(FFloat16Color(FLinearColor(abs(init_data[i*N+j].B), abs(init_data[i*N+j].A), 0.0, 1.0)));
+        // UE_LOG(LogTemp, Warning, TEXT("pixel: %f, %f"), init_data[i*N+j].B.GetFloat(), init_data[i*N+j].A.GetFloat());
       }
     }
 
@@ -170,6 +179,15 @@ void FourierComponentsShader::Buildh0Textures(int N, float L, std::function<floa
     RHIUnlockTexture2D(Texture2DRHI, 0, false);
 
     this->tilde_h0_neg_k = Texture2DRHI;
+
+    ENQUEUE_RENDER_COMMAND(void)(
+      [Texture2DRHI, tilde_h0_neg_k_rtt](FRHICommandListImmediate& RHI_cmd_list) {
+        RHI_cmd_list.CopyToResolveTarget(
+          Texture2DRHI,
+          tilde_h0_neg_k_rtt->GetRenderTargetResource()->GetRenderTargetTexture(),
+          FResolveParams()
+        );
+      });
   }
 }
 

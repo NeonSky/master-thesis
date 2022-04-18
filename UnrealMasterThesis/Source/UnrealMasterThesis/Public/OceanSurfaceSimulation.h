@@ -51,6 +51,12 @@ private:
 	UMaterial* material;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UTextureRenderTarget2D* tilde_h0_k_rtt;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UTextureRenderTarget2D* tilde_h0_neg_k_rtt;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UTextureRenderTarget2D* butterfly_rtt;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
