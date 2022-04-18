@@ -3,7 +3,7 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 
-dir = '../UnrealMasterThesis/SavedBoatData/TwoBoats_2_x1'
+dir = '../UnrealMasterThesis/SavedBoatData/TwoBoats_2'
 
 # Set 'dir' to a folder with recorded boat data
 # If more than one recording per boat type is present, only the first file for each type will be used
@@ -33,19 +33,24 @@ def getErrorMagnitudes(referece_data, other_data):
     return error_magnitudes
 
 
-def getPlotLimits(datasets):
+def getPlotLimits(pos_data_1, pos_data_2, pos_data_3):
     min_x = min_y = float('inf')
     max_x = max_y = float('-inf')
-    for key, dataset in datasets.items():
-        for pos in dataset:
-            if pos[0] < min_x:
-                min_x = pos[0]
-            if pos[1] < min_y:
-                min_y = pos[1]
-            if pos[0] > max_x:
-                max_x = pos[0]
-            if pos[1] > max_y:
-                max_y = pos[1]
+
+    all_positions = [pos for boat_type, positions in pos_data_1.items() for pos in positions]
+    all_positions.extend([pos for boat_type, positions in pos_data_2.items() for pos in positions])
+    all_positions.extend([pos for boat_type, positions in pos_data_3.items() for pos in positions])
+
+    for pos in all_positions:
+        print(pos)
+        if pos[0] < min_x:
+            min_x = pos[0]
+        if pos[1] < min_y:
+            min_y = pos[1]
+        if pos[0] > max_x:
+            max_x = pos[0]
+        if pos[1] > max_y:
+            max_y = pos[1]
 
     diff_x = abs(max_x - min_x)
     diff_y = abs(max_y - min_y)
@@ -88,7 +93,7 @@ def createPathsPlot(title, pos_data):
     plt.xlabel("x")
     plt.ylabel("y")
     plt.grid(visible=True)
-    plotLimits = getPlotLimits(position_data)  # TODO: it would be nice if the limits considered simultaneous boats.
+    plotLimits = getPlotLimits(position_data, position_data_2,position_data_3)
     plt.xlim(plotLimits[0], plotLimits[1])
     plt.ylim(plotLimits[2], plotLimits[3])
     for b in pos_data:
@@ -101,7 +106,7 @@ def createPathsPlot(title, pos_data):
     plt.legend(loc="upper left")
     plt.show()
 
-def createDifferenceMagnitudePlot(title, reference, difference_magnitudes, numFrames = 600): # TODO 600
+def createDifferenceMagnitudePlot(title, reference, difference_magnitudes, numFrames):
     x = np.arange(0, numFrames)
     plt.title(title)
     plt.xlabel("Frame")
