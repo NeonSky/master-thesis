@@ -96,7 +96,10 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
     PassParameters->OutputBuffer = uav_ref;
 
     TArray<FVector4> initial_data2;
-    initial_data2.SetNum(3*N);
+    initial_data2.SetNum(3*3*N);
+    for (int i = 0; i < initial_data2.Num(); i += 3) {
+        initial_data2[i] = FVector4(0.0f, 0.0f, 0.0f, 0.0f);
+    }
 
     FRDGBufferRef rdg_buffer_ref2 = CreateVertexBuffer(
         graph_builder,
