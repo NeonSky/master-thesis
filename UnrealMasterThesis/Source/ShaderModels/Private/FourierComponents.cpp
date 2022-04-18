@@ -79,8 +79,8 @@ TArray<FFloat16Color> create_init_data(int N, float L, std::function<float (FVec
       );
 
       FVector2D neg_wave_vector = FVector2D(
-        2.0 * PI * ((-z) - floor(N / 2.0)) / L,
-        2.0 * PI * ((-x) - floor(N / 2.0)) / L
+        -2.0 * PI * (z - floor(N / 2.0)) / L,
+        -2.0 * PI * (x - floor(N / 2.0)) / L
       );
 
       float xi_r = dist(rng);
