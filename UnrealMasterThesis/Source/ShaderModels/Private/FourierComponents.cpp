@@ -87,10 +87,14 @@ TArray<FFloat16Color> create_init_data(int N, float L, std::function<float (FVec
       float xi_i = dist(rng);
       std::complex<float> complex_rv(xi_r, xi_i);
 
+      xi_r = dist(rng);
+      xi_i = dist(rng);
+      std::complex<float> complex_rv2(xi_r, xi_i);
+
       float delta_k = 2.0f * PI / L;
 
       std::complex<float> h0 = sqrt(1.0f / 2.0f) * complex_rv * sqrt(2.0f * wave_spectrum(wave_vector) * delta_k * delta_k);
-      std::complex<float> h0_conj = std::conj(sqrt(1.0f / 2.0f) * complex_rv * sqrt(2.0f * wave_spectrum(neg_wave_vector) * delta_k * delta_k));
+      std::complex<float> h0_conj = std::conj(sqrt(1.0f / 2.0f) * complex_rv2 * sqrt(2.0f * wave_spectrum(neg_wave_vector) * delta_k * delta_k));
 
       res.Add(FFloat16Color(FLinearColor(h0.real(), h0.imag(), h0_conj.real(), h0_conj.imag())));
     }
