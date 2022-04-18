@@ -73,10 +73,11 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	data_collector->serialization_rtt = serialization_rtt;
 	for (auto boat : boats) {
 		data_collector->boats.Add(boat);
+		data_collector->boatPositions.Add(TArray<FVector>());
+		data_collector->boatPositions.Last().Reserve(data_collection_settings.framesToRecord);
 		if (data_collection_settings.shouldPlayBackInputSequence) {
 			data_collector->readInputJSON(input_pawn->preRecordedInputSequence);
-			data_collector->boatPositions.Add(TArray<FVector>());
-			data_collector->boatPositions.Last().Reserve(data_collection_settings.framesToRecord);
+			
 		}
 	}
 }
