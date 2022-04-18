@@ -172,7 +172,7 @@ void UDataCollector::readInputJSON(TArray<UpdatePayload>& inputSequence) {
 				state.speed_input = JsonObjParsed->GetNumberField("speed");
 				state.velocity_input.X = JsonObjParsed->GetNumberField("horizontal_1");
 				state.velocity_input.Y = JsonObjParsed->GetNumberField("vertical_1");
-				state.velocity_input2.X = JsonObjParsed->GetNumberField("horizontal_1");
+				state.velocity_input2.X = JsonObjParsed->GetNumberField("horizontal_2");
 				state.velocity_input2.Y = JsonObjParsed->GetNumberField("vertical_2");
 				inputSequence.Add(state);
 			}
