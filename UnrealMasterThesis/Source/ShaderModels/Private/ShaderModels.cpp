@@ -391,4 +391,124 @@ void ShaderModelsModule::UpdateGPUBoat(
 	}
 }
 
+void ShaderModelsModule::UpdateArtificialBoat1(
+	AStaticMeshActor* collision_mesh,
+	UTextureRenderTarget2D* elevation_texture,
+	UTextureRenderTarget2D* wake_texture,
+	TArray<UTextureRenderTarget2D*> other_wake_textures,
+	UTextureRenderTarget2D* obstruction_texture,
+	UTextureRenderTarget2D* boat_texture,
+	TArray<UTextureRenderTarget2D*> other_boat_textures,
+	TRefCountPtr<FRDGPooledBuffer>* latency_elevations) {
+
+	TShaderMapRef<SubmergedTrianglesShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+	ENQUEUE_RENDER_COMMAND(shader)(
+		[this, shader, collision_mesh, elevation_texture, wake_texture, other_wake_textures, obstruction_texture, boat_texture, other_boat_textures, latency_elevations](FRHICommandListImmediate& RHI_cmd_list) {
+
+			TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer;
+			TRefCountPtr<FRDGPooledBuffer> submerged_position_buffer;
+			shader->BuildAndExecuteGraph(
+				RHI_cmd_list,
+				collision_mesh,
+				elevation_texture,
+				boat_texture,
+				other_boat_textures,
+				wake_texture,
+				other_wake_textures,
+				&submerged_triangles_buffer,
+				&submerged_position_buffer,
+				1,
+				latency_elevations
+			);
+
+		}); 
+}
+
+void ShaderModelsModule::UpdateArtificialBoat2(
+    float speed_input,
+    FVector2D velocity_input,
+	AStaticMeshActor* collision_mesh,
+	UTextureRenderTarget2D* elevation_texture,
+	UTextureRenderTarget2D* wake_texture,
+	TArray<UTextureRenderTarget2D*> other_wake_textures,
+	UTextureRenderTarget2D* obstruction_texture,
+	UTextureRenderTarget2D* boat_texture,
+	TArray<UTextureRenderTarget2D*> other_boat_textures,
+	UTextureRenderTarget2D* readback_texture,
+	AActor* update_target,
+	std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback,
+	TRefCountPtr<FRDGPooledBuffer>* latency_elevations) {
+
+	TArray<FFloat16Color> data;
+	{
+		TShaderMapRef<SubmergedTrianglesShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+		ENQUEUE_RENDER_COMMAND(shader)(
+			[this, latency_elevations, callback, shader, speed_input, velocity_input, collision_mesh, elevation_texture, wake_texture, other_wake_textures, obstruction_texture, boat_texture, other_boat_textures, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
+
+				TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer;
+				TRefCountPtr<FRDGPooledBuffer> submerged_position_buffer;
+				shader->BuildAndExecuteGraph(
+					RHI_cmd_list,
+					collision_mesh,
+					elevation_texture,
+					boat_texture,
+					other_boat_textures,
+					wake_texture,
+					other_wake_textures,
+					&submerged_triangles_buffer,
+					&submerged_position_buffer,
+					2,
+					latency_elevations
+				);
+
+				if (!submerged_triangles_buffer.IsValid()) {
+					UE_LOG(LogTemp, Error, TEXT("Submerged triangles buffer is not valid. This should never happen."));
+					return;
+				}
+				if (!submerged_position_buffer.IsValid()) {
+					UE_LOG(LogTemp, Error, TEXT("Submerged position buffer is not valid. This should never happen."));
+					return;
+				}
+
+				TShaderMapRef<GPUBoatShader> shader2(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+				ENQUEUE_RENDER_COMMAND(shader2)(
+					[this, callback, shader2, speed_input, velocity_input, elevation_texture, submerged_triangles_buffer, submerged_position_buffer, obstruction_texture, boat_texture, other_boat_textures, readback_texture, update_target, &data](FRHICommandListImmediate& RHI_cmd_list) {
+
+					ProjectObstruction(submerged_position_buffer->GetVertexBufferRHI(), obstruction_texture);
+
+					shader2->BuildAndExecuteGraph(
+						RHI_cmd_list,
+						speed_input,
+						velocity_input,
+						elevation_texture,
+						submerged_triangles_buffer,
+						boat_texture,
+						other_boat_textures,
+						readback_texture,
+						update_target ? (&data) : nullptr
+					);
+
+					callback(submerged_triangles_buffer);
+
+				});
+
+			}); 
+	}
+
+	// Optional. Only used for the current camera workaround (see report).
+	if (update_target) {
+		FRenderCommandFence fence;
+		fence.BeginFence();
+		fence.Wait();
+
+		FVector pos = FVector(RECOVER_F32(data[0]), RECOVER_F32(data[1]), RECOVER_F32(data[2]));
+		FQuat rot   = FQuat(RECOVER_F32(data[3]), RECOVER_F32(data[4]), RECOVER_F32(data[5]), RECOVER_F32(data[6]));
+
+		// UE_LOG(LogTemp, Warning, TEXT("GPU boat debug: %.9f"), RECOVER_F32(data[7]));
+
+		update_target->SetActorLocation(METERS_TO_UNREAL_UNITS * pos);
+		update_target->SetActorRotation(rot, ETeleportType::None);
+	}
+}
+
 IMPLEMENT_MODULE(ShaderModelsModule, ShaderModels);

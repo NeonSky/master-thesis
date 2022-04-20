@@ -29,7 +29,7 @@ protected:
 
 private:
 
-	void UpdateReadbackQueue();
+	void UpdateReadbackQueue(TArray<UTextureRenderTarget2D*> other_boat_textures, TArray<UTextureRenderTarget2D*> other_wake_textures);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	AStaticMeshActor* collision_mesh;
@@ -55,10 +55,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int artificial_frame_skip; // The number of consecutive frames we don't perform a readback
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TArray<UTextureRenderTarget2D*> readback_bank;
-
-	std::queue<UTextureRenderTarget2D*> m_readback_queue;
+	std::queue<TRefCountPtr<FRDGPooledBuffer>> m_readback_queue;
 	int m_requested_elevations_on_frame;
 	int m_cur_frame;
 

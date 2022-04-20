@@ -117,7 +117,7 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
     PassParameters->latency_configuration = latency_configuration;
 
     FRDGBufferRef rdg_buffer_ref3;
-    if (latency_elevations) {
+    if (latency_elevations && latency_elevations->IsValid()) {
         rdg_buffer_ref3 = graph_builder.RegisterExternalBuffer(*latency_elevations, TEXT("LatencyElevations"), ERDGBufferFlags::MultiFrame);
     } else {
         TArray<FVector4> dummy_data;
@@ -144,7 +144,10 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
 
     graph_builder.QueueBufferExtraction(rdg_buffer_ref, output_buffer);
     graph_builder.QueueBufferExtraction(rdg_buffer_ref2, submerged_position_buffer);
-    graph_builder.QueueBufferExtraction(rdg_buffer_ref3, latency_elevations);
+
+    if (latency_elevations) {
+        graph_builder.QueueBufferExtraction(rdg_buffer_ref3, latency_elevations);
+    }
 
     graph_builder.Execute();
 }
