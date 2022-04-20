@@ -4,6 +4,8 @@
 
 #include "Engine/TextureRenderTarget2D.h"
 #include "Kismet/GameplayStatics.h"
+#include "RenderGraphBuilder.h"
+#include "RenderGraphUtils.h"
 
 // Aritifical boats will only affect other artificial boats, making it possible to compare GPU and Artificial boat without interactions between them.
 struct SharedState {
@@ -21,9 +23,44 @@ void AArtificialBoat::BeginPlay() {
     Super::BeginPlay();
 
     m_shader_models_module.ResetGPUBoat(boat_rtt);
-    for (int i = 0; i < artificial_frame_delay+1; i++) {
-        m_readback_queue.push(nullptr);
-    }
+
+    ENQUEUE_RENDER_COMMAND(void)(
+        [this](FRHICommandListImmediate& RHI_cmd_list) {
+
+            FRDGBuilder graph_builder(RHI_cmd_list);
+
+            TArray<TRefCountPtr<FRDGPooledBuffer>> buffers;
+            buffers.SetNum(artificial_frame_delay+1);
+
+            for (int i = 0; i < buffers.Num(); i++) {
+
+                TArray<FVector4> dummy_data;
+                int N = 70; // triangle count
+                dummy_data.SetNum(3*N);
+                FRDGBufferRef rdg_buffer_ref = CreateVertexBuffer(
+                    graph_builder,
+                    TEXT("LatencyElevationsBuffer"),
+                    FRDGBufferDesc::CreateBufferDesc(sizeof(float), dummy_data.Num()),
+                    dummy_data.GetData(),
+                    sizeof(float) * dummy_data.Num(),
+                    ERDGInitialDataFlags::None
+                );
+
+                graph_builder.QueueBufferExtraction(rdg_buffer_ref, &buffers[i]);
+            }
+
+            graph_builder.Execute();
+
+
+            for (int i = 0; i < buffers.Num(); i++) {
+                m_readback_queue.push(buffers[i]);
+            }
+        });
+
+    FRenderCommandFence fence;
+    fence.BeginFence();
+    fence.Wait();
+
     m_requested_elevations_on_frame = 0;
     m_cur_frame = 0;
     
@@ -50,8 +87,6 @@ void AArtificialBoat::UpdateReadbackQueue(TArray<UTextureRenderTarget2D*> other_
         FRenderCommandFence fence;
         fence.BeginFence();
         fence.Wait();
-
-		UE_LOG(LogTemp, Warning, TEXT("Is valid? %i"), latency_elevations.IsValid());
 
         // Requeue latest fetch
         m_readback_queue.push(latency_elevations);
@@ -85,11 +120,9 @@ void AArtificialBoat::Update(UpdatePayload update_payload, std::function<void(TR
     UpdateReadbackQueue(other_boat_textures, other_wake_textures);
 
     if (m_readback_queue.front() == nullptr) {
-        UE_LOG(LogTemp, Warning, TEXT("Should only happen at the start. Consider using zero elevations instead."));
+        UE_LOG(LogTemp, Error, TEXT("Shouldn't happen."));
         return;
     }
-
-    UE_LOG(LogTemp, Warning, TEXT("Update. Is valid? %i"), m_readback_queue.front().IsValid());
 
     FVector2D velocity_input = use_p2_inputs ? update_payload.velocity_input2 : update_payload.velocity_input;
 
