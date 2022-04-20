@@ -40,6 +40,9 @@ public:
 		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<GPUSumbergedTriangle>, OutputBuffer)
 		SHADER_PARAMETER_RDG_BUFFER_UAV(RWBuffer<FVector4>, SubmergedPositionBuffer)
 
+		SHADER_PARAMETER(int, latency_configuration)
+		SHADER_PARAMETER_RDG_BUFFER_UAV(RWBuffer<float>, latency_elevations)
+
 	END_SHADER_PARAMETER_STRUCT()
 
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters) {
@@ -61,6 +64,8 @@ public:
         UTextureRenderTarget2D* wake_texture,
         TArray<UTextureRenderTarget2D*> other_wake_textures,
         TRefCountPtr<FRDGPooledBuffer>* output_buffer,
-		TRefCountPtr<FRDGPooledBuffer>* submerged_position_buffer);
+		TRefCountPtr<FRDGPooledBuffer>* submerged_position_buffer,
+		int latency_configuration,
+        TRefCountPtr<FRDGPooledBuffer>* latency_elevations);
 
 };

@@ -336,7 +336,9 @@ void ShaderModelsModule::UpdateGPUBoat(
 					wake_texture,
 					other_wake_textures,
 					&submerged_triangles_buffer,
-					&submerged_position_buffer
+					&submerged_position_buffer,
+					0,
+					nullptr
 				);
 
 				if (!submerged_triangles_buffer.IsValid()) {
