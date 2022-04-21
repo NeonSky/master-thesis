@@ -37,6 +37,10 @@ void AArtificialBoat::BeginPlay() {
                 TArray<FVector4> dummy_data;
                 int N = 70; // triangle count
                 dummy_data.SetNum(3*N);
+                for (int j = 0; j < dummy_data.Num(); j++) {
+                    dummy_data[j] = FVector4(0.0f, 0.0f, 0.0f, 0.0f);
+                }
+
                 FRDGBufferRef rdg_buffer_ref = CreateVertexBuffer(
                     graph_builder,
                     TEXT("LatencyElevationsBuffer"),
