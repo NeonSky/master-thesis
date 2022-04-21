@@ -4,6 +4,8 @@
 
 #include "Engine/TextureRenderTarget2D.h"
 #include "Kismet/GameplayStatics.h"
+#include "RenderGraphBuilder.h"
+#include "RenderGraphUtils.h"
 
 // Aritifical boats will only affect other artificial boats, making it possible to compare GPU and Artificial boat without interactions between them.
 struct SharedState {
@@ -21,43 +23,77 @@ void AArtificialBoat::BeginPlay() {
     Super::BeginPlay();
 
     m_shader_models_module.ResetGPUBoat(boat_rtt);
-    for (int i = 0; i < artificial_frame_delay+1; i++) {
-        m_readback_queue.push(readback_bank[i]);
-    }
+
+    ENQUEUE_RENDER_COMMAND(void)(
+        [this](FRHICommandListImmediate& RHI_cmd_list) {
+
+            FRDGBuilder graph_builder(RHI_cmd_list);
+
+            TArray<TRefCountPtr<FRDGPooledBuffer>> buffers;
+            buffers.SetNum(artificial_frame_delay+1);
+
+            for (int i = 0; i < buffers.Num(); i++) {
+
+                TArray<FVector4> dummy_data;
+                int N = 70; // triangle count
+                dummy_data.SetNum(3*N);
+                for (int j = 0; j < dummy_data.Num(); j++) {
+                    dummy_data[j] = FVector4(0.0f, 0.0f, 0.0f, 0.0f);
+                }
+
+                FRDGBufferRef rdg_buffer_ref = CreateVertexBuffer(
+                    graph_builder,
+                    TEXT("LatencyElevationsBuffer"),
+                    FRDGBufferDesc::CreateBufferDesc(sizeof(float), dummy_data.Num()),
+                    dummy_data.GetData(),
+                    sizeof(float) * dummy_data.Num(),
+                    ERDGInitialDataFlags::None
+                );
+
+                graph_builder.QueueBufferExtraction(rdg_buffer_ref, &buffers[i]);
+            }
+
+            graph_builder.Execute();
+
+
+            for (int i = 0; i < buffers.Num(); i++) {
+                m_readback_queue.push(buffers[i]);
+            }
+        });
+
+    FRenderCommandFence fence;
+    fence.BeginFence();
+    fence.Wait();
+
     m_requested_elevations_on_frame = 0;
     m_cur_frame = 0;
-
-    for (auto b : readback_bank) {
-        m_shader_models_module.Clear(b, FVector4(0.0, 0.0, 0.0, 1.0)); // Clearing readback bank RTTs, for consistent data collection
-    }
     
 }
 
-void AArtificialBoat::UpdateReadbackQueue() {
+void AArtificialBoat::UpdateReadbackQueue(TArray<UTextureRenderTarget2D*> other_boat_textures, TArray<UTextureRenderTarget2D*> other_wake_textures) {
 
     if (m_cur_frame - m_requested_elevations_on_frame >= artificial_frame_skip) {
         m_requested_elevations_on_frame = m_cur_frame;
 
-        UTextureRenderTarget2D* src = elevation_rtt;
-        UTextureRenderTarget2D* rtt = m_readback_queue.front();
+        TRefCountPtr<FRDGPooledBuffer> latency_elevations = m_readback_queue.front();
         m_readback_queue.pop();
 
-        FRenderCommandFence fence;
-        ENQUEUE_RENDER_COMMAND(void)(
-            [src, rtt](FRHICommandListImmediate& RHI_cmd_list) {
-                RHI_cmd_list.CopyToResolveTarget(
-                    src->GetRenderTargetResource()->GetRenderTargetTexture(),
-                    rtt->GetRenderTargetResource()->GetRenderTargetTexture(),
-                    FResolveParams()
-                );
-            });
+        m_shader_models_module.UpdateArtificialBoat1(
+            collision_mesh,
+            elevation_rtt,
+            ewave_rtts.eWaveHV,
+            other_wake_textures,
+            ewave_rtts.obstruction,
+            boat_rtt,
+            other_boat_textures,
+            &latency_elevations);
 
-        // NOTE: safety measure
+        FRenderCommandFence fence;
         fence.BeginFence();
         fence.Wait();
 
         // Requeue latest fetch
-        m_readback_queue.push(rtt);
+        m_readback_queue.push(latency_elevations);
     }
 
 }
@@ -69,10 +105,6 @@ void AArtificialBoat::Update(UpdatePayload update_payload, std::function<void(TR
         shared_state.boat_rtts.Push(this->boat_rtt);
         shared_state.ewave_rtts.Push(this->ewave_rtts.eWaveHV);
     }
-
-    UpdateReadbackQueue();
-
-    FVector2D velocity_input = use_p2_inputs ? update_payload.velocity_input2 : update_payload.velocity_input;
 
     TArray<UTextureRenderTarget2D*> other_boat_textures;
     for (auto& rtt : shared_state.boat_rtts) {
@@ -88,11 +120,21 @@ void AArtificialBoat::Update(UpdatePayload update_payload, std::function<void(TR
         }
     }
 
-    m_shader_models_module.UpdateGPUBoat(
+
+    UpdateReadbackQueue(other_boat_textures, other_wake_textures);
+
+    if (m_readback_queue.front() == nullptr) {
+        UE_LOG(LogTemp, Error, TEXT("Shouldn't happen."));
+        return;
+    }
+
+    FVector2D velocity_input = use_p2_inputs ? update_payload.velocity_input2 : update_payload.velocity_input;
+
+    m_shader_models_module.UpdateArtificialBoat2(
         update_payload.speed_input,
         velocity_input,
         collision_mesh,
-        m_readback_queue.front(),
+        elevation_rtt,
         ewave_rtts.eWaveHV,
         other_wake_textures,
         ewave_rtts.obstruction,
@@ -100,7 +142,8 @@ void AArtificialBoat::Update(UpdatePayload update_payload, std::function<void(TR
         other_boat_textures,
         readback_rtt,
         this,
-        callback);
+        callback,
+        &m_readback_queue.front());
 
     m_cur_frame++;
 }

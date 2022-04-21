@@ -74,4 +74,29 @@ public:
 		AActor* update_target,
 		std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback);
 
+	void UpdateArtificialBoat1(
+		AStaticMeshActor* collision_mesh,
+		UTextureRenderTarget2D* elevation_texture,
+		UTextureRenderTarget2D* wake_texture,
+		TArray<UTextureRenderTarget2D*> other_wake_textures,
+		UTextureRenderTarget2D* obstruction_texture,
+		UTextureRenderTarget2D* boat_texture,
+		TArray<UTextureRenderTarget2D*> other_boat_textures,
+		TRefCountPtr<FRDGPooledBuffer>* latency_elevations);
+
+	void UpdateArtificialBoat2(
+		float speed_input,
+		FVector2D velocity_input,
+		AStaticMeshActor* collision_mesh,
+		UTextureRenderTarget2D* elevation_texture,
+		UTextureRenderTarget2D* wake_texture,
+		TArray<UTextureRenderTarget2D*> other_wake_textures,
+		UTextureRenderTarget2D* obstruction_texture,
+		UTextureRenderTarget2D* boat_texture,
+		TArray<UTextureRenderTarget2D*> other_boat_textures,
+		UTextureRenderTarget2D* readback_texture,
+		AActor* update_target,
+		std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback,
+		TRefCountPtr<FRDGPooledBuffer>* latency_elevations);
+
 };

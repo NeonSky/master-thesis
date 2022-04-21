@@ -43,7 +43,9 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
         UTextureRenderTarget2D* wake_texture,
         TArray<UTextureRenderTarget2D*> other_wake_textures,
         TRefCountPtr<FRDGPooledBuffer>* output_buffer,
-        TRefCountPtr<FRDGPooledBuffer>* submerged_position_buffer) {
+        TRefCountPtr<FRDGPooledBuffer>* submerged_position_buffer,
+        int latency_configuration,
+        TRefCountPtr<FRDGPooledBuffer>* latency_elevations) {
 
     FRDGBuilder graph_builder(RHI_cmd_list);
 
@@ -112,6 +114,25 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
     FRDGBufferUAVRef uav_ref2 = graph_builder.CreateUAV(rdg_buffer_ref2, PF_R32_UINT);
     PassParameters->SubmergedPositionBuffer = uav_ref2;
 
+    PassParameters->latency_configuration = latency_configuration;
+
+    FRDGBufferRef rdg_buffer_ref3;
+    if (latency_elevations && latency_elevations->IsValid()) {
+        rdg_buffer_ref3 = graph_builder.RegisterExternalBuffer(*latency_elevations, TEXT("LatencyElevations"), ERDGBufferFlags::MultiFrame);
+    } else {
+        TArray<FVector4> dummy_data;
+        dummy_data.SetNum(3*(N/2));
+        rdg_buffer_ref3 = CreateVertexBuffer(
+            graph_builder,
+            TEXT("LatencyElevationsBuffer"),
+            FRDGBufferDesc::CreateBufferDesc(sizeof(float), dummy_data.Num()),
+            dummy_data.GetData(),
+            sizeof(float) * dummy_data.Num(),
+            ERDGInitialDataFlags::None
+        );
+    }
+    PassParameters->latency_elevations = graph_builder.CreateUAV(rdg_buffer_ref3, PF_R32_UINT);
+
     // Call compute shader
     TShaderMapRef<SubmergedTrianglesShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
     FComputeShaderUtils::AddPass(
@@ -123,6 +144,10 @@ void SubmergedTrianglesShader::BuildAndExecuteGraph(
 
     graph_builder.QueueBufferExtraction(rdg_buffer_ref, output_buffer);
     graph_builder.QueueBufferExtraction(rdg_buffer_ref2, submerged_position_buffer);
+
+    if (latency_elevations) {
+        graph_builder.QueueBufferExtraction(rdg_buffer_ref3, latency_elevations);
+    }
 
     graph_builder.Execute();
 }

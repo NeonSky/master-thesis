@@ -94,6 +94,8 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 	}
 
 	static int counter = 0;
+	static bool counted[100] = { false }; // one for each boat
+
 	// Create one callback per loop that stores a different index.
 
 	for (int i = 0; i < boats.Num(); i++) {
@@ -105,13 +107,18 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 
 				if (!submerged_triangles_buffer.IsValid()) {
 					UE_LOG(LogTemp, Warning, TEXT("This shouldn't be possible"));
+					return;
 				}
 
-				counter++;
+				if (!counted[i]) {
+					counted[i] = true;
+					counter++;
+				}
 
 				this->m_submerged_triangles_buffers[i] = submerged_triangles_buffer;
 
 				if (counter == n_valid_boats) {
+					memset(counted, false, sizeof(counted));
 					counter = 0;
 					this->update_mesh(fixed_dt);
 				}

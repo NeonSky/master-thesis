@@ -17,6 +17,9 @@ Texture2D<float4> OtherWakeTextures_0;
 RWStructuredBuffer<SubmergedTriangle> OutputBuffer;
 RWBuffer<float> SubmergedPositionBuffer;
 
+int latency_configuration; // 0 = nothing, 1 = save, 2 = read
+RWBuffer<float> latency_elevations;
+
 struct SortItem {
     float h;
     float3 v;
@@ -109,9 +112,26 @@ void MainCompute(uint3 id : SV_DispatchThreadID) {
         ws_boat_coords[1] = OtherBoatTextures_0[uint2(0,0)].rg;
     #endif
 
-    float e0 = sample_elevation(ElevationTexture, wake_textures, v0.xy, ws_boat_coords);
-    float e1 = sample_elevation(ElevationTexture, wake_textures, v1.xy, ws_boat_coords);
-    float e2 = sample_elevation(ElevationTexture, wake_textures, v2.xy, ws_boat_coords);
+    float e0; 
+    float e1;
+    float e2;
+    
+    if (latency_configuration == 2) {
+        e0 = latency_elevations[3*id.x+0];
+        e1 = latency_elevations[3*id.x+1];
+        e2 = latency_elevations[3*id.x+2];
+    } else {
+        e0 = sample_elevation(ElevationTexture, wake_textures, v0.xy, ws_boat_coords);
+        e1 = sample_elevation(ElevationTexture, wake_textures, v1.xy, ws_boat_coords);
+        e2 = sample_elevation(ElevationTexture, wake_textures, v2.xy, ws_boat_coords);
+    }
+
+    if (latency_configuration == 1) {
+        latency_elevations[3*id.x+0] = e0;
+        latency_elevations[3*id.x+1] = e1;
+        latency_elevations[3*id.x+2] = e2;
+        return;
+    }
 
     float h0 = v0.z - e0;
     float h1 = v1.z - e1;
