@@ -1,0 +1,43 @@
+float L = 100.0 * 100.0;
+float L_half = L * 0.5;
+
+// The index of the ocean tile that we want to sample from.
+// We add (L_half, L_half) since we start in the center of tile (0, 0)
+int oceanTile_x = (int) ((x + L_half) / L);
+int oceanTile_y = (int) ((y + L_half) / L);
+
+// If we map the eWave texture to world space, then the boat should be in its center.
+// eWave_x and eWave_y are the world-space coordinates of the boat.
+// Thus, these are the borders of the texture (when mapped to world space).
+float eWave_left  = eWave_x - L_half;
+float eWave_right = eWave_x + L_half;
+float eWave_up    = eWave_y - L_half;
+float eWave_down  = eWave_y + L_half;
+
+// We are not interested in (x, y) coordinates that are outside of the eWave texture.
+if(x < eWave_left || x > eWave_right || y < eWave_up || y > eWave_down) {
+	return float2(0.0, 0.0);
+}
+
+// Indices of neighboring ocean tiles partially covered by the eWave texture.
+int eWave_tile_left  = (int) ((eWave_x - L + L_half) / L);
+int eWave_tile_right = (int) ((eWave_x + L + L_half) / L);
+int eWave_tile_up    = (int) ((eWave_y - L + L_half) / L);
+int eWave_tile_down  = (int) ((eWave_y + L + L_half) / L);
+
+// Worldcoordinate borders of the ocean tile for this (x, y) coordinate
+float oceanTile_left  = oceanTile_x * L - L_half;
+float oceanTile_right = oceanTile_x * L + L_half;
+float oceanTile_up    = oceanTile_y * L - L_half;
+float oceanTile_down  = oceanTile_y * L + L_half;
+
+float u_remapped = -1.0;
+float v_remapped = -1.0;
+
+float u_max = (oceanTile_right - eWave_left) / L;
+u_remapped = (x - eWave_left) * (u_max - 0.0) / (oceanTile_right - eWave_left) + 0.0;
+
+float v_max = (oceanTile_down - eWave_up) / L;
+v_remapped = (y - eWave_up) * (v_max - 0.0) / (oceanTile_down - eWave_up) + 0.0;
+
+return float2(u_remapped, v_remapped);

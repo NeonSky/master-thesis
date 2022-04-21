@@ -1,0 +1,7 @@
+float L = 100.0 * 100.0;
+float L_half = L * 0.5;
+
+float new_u = (L_half + x - eWave_x) / L;
+float new_v = (L_half + y - eWave_y) / L;
+
+return float2(new_u, new_v);

@@ -32,10 +32,13 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 		const float cm_per_pixel = L * M_TO_CM / N;
 
 		float2 pos = BoatTexture[uint2(0,0)].rg; // RG of (0,0) stores horizontal position (see gravity in GPUBoat.usf)
+		// hv_rtt[uint2(0,0)].ba = pos; // correct normals, flickering positions
+
 		int xp = (pos.x * M_TO_CM) / cm_per_pixel;
 		int yp = (pos.y * M_TO_CM) / cm_per_pixel;
 
 		float2 prev_pos = BoatTexture[uint2(0,1)].rg; // RG of (0,1) stores previous horizontal position
+
 		int prev_xp = (prev_pos.x * M_TO_CM) / cm_per_pixel;
 		int prev_yp = (prev_pos.y * M_TO_CM) / cm_per_pixel;
 
@@ -45,7 +48,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 		pos.x = xp * cm_per_pixel / M_TO_CM;
 		pos.y = yp * cm_per_pixel / M_TO_CM;
 
-		hv_rtt[uint2(0,0)].ba = pos;
+		hv_rtt[uint2(0,0)].ba = pos; // correct positions, flickering normals (now works!? At least with shader3.txt)
 		hv_prev_rtt[uint2(0,0)].ba = float2(boat_dx, boat_dy);
 
 		return;
