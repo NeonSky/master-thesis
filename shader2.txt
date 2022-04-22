@@ -8,10 +8,10 @@ float C = Texture2DSample(Heightfield, HeightfieldSampler, UV).r;
 float R = Texture2DSample(Heightfield, HeightfieldSampler, UV + float2(d, 0.0)).r;
 float U = Texture2DSample(Heightfield, HeightfieldSampler, UV + float2(0.0, d)).r;
 
-float C_wake = Texture2DSample(Heightfield_wake_1, Heightfield_wake_1Sampler, UV_wake).r;
+float C_wake = 1.0 * Texture2DSample(Heightfield_wake_1, Heightfield_wake_1Sampler, UV_wake_C).r;
 
-float R_wake = Texture2DSample(Heightfield_wake_1, Heightfield_wake_1Sampler, UV_wake + float2(d, 0.0)).r;
-float U_wake = Texture2DSample(Heightfield_wake_1, Heightfield_wake_1Sampler, UV_wake + float2(0.0, d)).r;
+float R_wake = 1.0 * Texture2DSample(Heightfield_wake_1, Heightfield_wake_1Sampler, UV_wake_R).r;
+float U_wake = 1.0 * Texture2DSample(Heightfield_wake_1, Heightfield_wake_1Sampler, UV_wake_U).r;
 
 C += C_wake;
 R += R_wake;

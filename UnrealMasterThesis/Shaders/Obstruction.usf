@@ -11,8 +11,9 @@ RWTexture2D<float4> hv_prev_rtt;
 int preFFT; 
 
 
+// Tapering function
 float T(float x_y){
-	float taper_size = 8.0;
+	float taper_size = 24.0;
 	if(x_y / taper_size < 1.0){
 		return x_y / taper_size;
 	}
@@ -32,7 +33,6 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 		const float cm_per_pixel = L * M_TO_CM / N;
 
 		float2 pos = BoatTexture[uint2(0,0)].rg; // RG of (0,0) stores horizontal position (see gravity in GPUBoat.usf)
-		// hv_rtt[uint2(0,0)].ba = pos; // correct normals, flickering positions
 
 		int xp = (pos.x * M_TO_CM) / cm_per_pixel;
 		int yp = (pos.y * M_TO_CM) / cm_per_pixel;
@@ -48,7 +48,7 @@ void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 		pos.x = xp * cm_per_pixel / M_TO_CM;
 		pos.y = yp * cm_per_pixel / M_TO_CM;
 
-		hv_rtt[uint2(0,0)].ba = pos; // correct positions, flickering normals (now works!? At least with shader3.txt)
+		hv_rtt[uint2(0,0)].ba = pos;
 		hv_prev_rtt[uint2(0,0)].ba = float2(boat_dx, boat_dy);
 
 		return;

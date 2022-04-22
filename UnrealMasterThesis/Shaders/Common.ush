@@ -1,6 +1,6 @@
 #pragma once
 
-#define BOAT_COUNT 2
+#define BOAT_COUNT 1
 
 static const float PI = 3.1415926535897933;
 static const float M_TO_CM = 100.0;
