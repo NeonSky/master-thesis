@@ -8,27 +8,21 @@ float C = Texture2DSample(Heightfield, HeightfieldSampler, UV).r;
 float R = Texture2DSample(Heightfield, HeightfieldSampler, UV + float2(d, 0.0)).r;
 float U = Texture2DSample(Heightfield, HeightfieldSampler, UV + float2(0.0, d)).r;
 
-//d *= 5.0;
+float C_wake = Texture2DSample(Heightfield_wake_1, Heightfield_wake_1Sampler, UV_wake).r;
 
-float C_wake = 5.0 * Texture2DSample(Heightfield_wake_1, Heightfield_wake_1Sampler, UV_wake).r;
+float R_wake = Texture2DSample(Heightfield_wake_1, Heightfield_wake_1Sampler, UV_wake + float2(d, 0.0)).r;
+float U_wake = Texture2DSample(Heightfield_wake_1, Heightfield_wake_1Sampler, UV_wake + float2(0.0, d)).r;
 
-float R_wake = 5.0 * Texture2DSample(Heightfield_wake_1, Heightfield_wake_1Sampler, UV_wake + float2(d, 0.0)).r;
-float U_wake = 5.0 * Texture2DSample(Heightfield_wake_1, Heightfield_wake_1Sampler, UV_wake + float2(0.0, d)).r;
-
-// C += C_wake;
-// R += R_wake;
-// U += U_wake;
-
-C = C_wake;
-R = R_wake;
-U = U_wake;
+C += C_wake;
+R += R_wake;
+U += U_wake;
 
 float C2 = C;
 
 float x_diff = (R - C);
 float y_diff = (U - C);
 
-float intensity = 16.0; // 1.0 or 16.0
+float intensity = 4.0; // 1.0 or 8.0
 
 float a = intensity * x_diff;
 float b = intensity * y_diff;
