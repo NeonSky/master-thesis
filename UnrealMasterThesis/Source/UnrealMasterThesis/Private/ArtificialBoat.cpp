@@ -78,13 +78,13 @@ void AArtificialBoat::UpdateReadbackQueue(TArray<UTextureRenderTarget2D*> other_
             static std::uniform_int_distribution<> uniform_int_dist(0, delay_distribution.Num() - 1);
             float sample = delay_distribution[uniform_int_dist(rng)];
             int next_artificial_frame_skip = 0;
-            if (sample > 20 && sample <= 40) {
+            if (sample > 16.7 && sample <= 33.4) {
                 next_artificial_frame_skip = 1;
             }
-            else if (sample > 40 && sample <= 60) {
+            else if (sample > 33.4 && sample <= 50.1) {
                 next_artificial_frame_skip = 2;
             }
-            else if (sample > 60) {
+            else if (sample > 50.1) {
                 next_artificial_frame_skip = 3;
             }
             // UE_LOG(LogTemp, Error, TEXT("Next artificial frame skip and delay (skip, delay): (%d, %f)"), next_artificial_frame_skip, sample);
