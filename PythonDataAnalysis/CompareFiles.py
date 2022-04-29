@@ -1,6 +1,6 @@
 import os
 
-directory = '../UnrealMasterThesis/SavedBoatData/TwoBoats_2_x1'
+directory = '../UnrealMasterThesis/SavedBoatData\MAIN_post_normals/24d9ecfbd10473a8fddcfd5789d2c348af83ba53/ScreenShot/Seed_11'
 
 filePaths = []
 numFiles = 0
@@ -42,9 +42,9 @@ for file in inconsistentFiles:
     for line in files[file]:
         refLine = consistentReferenceFile[lineNr]
         if line != refLine:
-            print('------------------------------------------\n' + file + ' has its first inconsistency at line ' + str(lineNr))
-            print('inconsistent line: ' + line)
-            print('reference line: ' + refLine)
+            #print('------------------------------------------\n' + file + ' has its first inconsistency at line ' + str(lineNr))
+            #print('inconsistent line: ' + line)
+            #print('reference line: ' + refLine)
             break
         lineNr += 1
 

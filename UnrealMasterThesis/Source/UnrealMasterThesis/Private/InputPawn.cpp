@@ -33,7 +33,7 @@ void AInputPawn::Tick(float DeltaTime) {
     on_fixed_update.Broadcast(payload);
 
     APlayerController* controller = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-    controller->SetViewTarget(camera_target, FViewTargetTransitionParams());
+    //controller->SetViewTarget(camera_target, FViewTargetTransitionParams());
 }
 
 void AInputPawn::SetupPlayerInputComponent(class UInputComponent* inputComponent) {
