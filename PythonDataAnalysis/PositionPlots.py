@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 
 
 #dir = '../UnrealMasterThesis/SavedBoatData/MAIN_LatencyFix/OneBoat'
-dir = '../UnrealMasterThesis/SavedBoatData/MAIN_post_normals/24d9ecfbd10473a8fddcfd5789d2c348af83ba53/One_boat'
+dir = '../UnrealMasterThesis/SavedBoatData/Report data boat accuracy/PlusOrganic24d9ecfbd10473a8fddcfd5789d2c348af83ba53 - Copy/One_boat'
 
 avg_over_multiple_seeds = True
 
@@ -15,6 +15,7 @@ avg_over_multiple_seeds = True
 
 black = (0.0, 0.0, 0.0)
 red = (204/255, 0, 0)
+blue = (0, 0, 204/255)
 orange = (1.0, 102/255, 0)
 yellow = (204/255, 204/255, 0)
 
@@ -28,6 +29,8 @@ def getColor(boat_type):
         return orange
     if boat_type == 'ART3':
         return red
+    if boat_type == 'Organic':
+        return blue
 
 def extractPositionData(in_json_list):
     result = []
@@ -98,6 +101,9 @@ def getJSONdataFromAllFilesInDir(directory):
         elif 'ART3' in file_path:
             if 'ART3' not in json_data:
                 json_data['ART3'] = json.load(file)
+        elif 'Organic' in file_path:
+            if 'Organic' not in json_data:
+                json_data['Organic'] = json.load(file)
         else:
             print('File names should contain boat type. CPU, GPU, ART0 - ART3')
         file.close()
@@ -122,7 +128,7 @@ def createPathsPlot(title, pos_data, seed_dir, show = False):
             positions = np.array(p)
             plt.plot(positions[:, 0], positions[:, 1], label=boat_type.replace("ART", "Delay "), color=getColor(boat_type))
     plt.legend(loc="upper left")
-    if seed_dir == "3" or seed_dir == "5" or seed_dir == "32" or seed_dir == "53":
+    if False:
         #plt.axis('scaled')
         plt.show()
     else:
@@ -212,6 +218,7 @@ if __name__ == '__main__':
             frame_of_1m_deviaion_per_seed[seed_dir] = {}
             frame_of_deviation_per_seed[seed_dir] = {}
             print("Seed: " + seed_dir)
+            print("Path: " + dir + '/' + seed_dir)
             json_data = getJSONdataFromAllFilesInDir(dir + '/' + seed_dir)
             # Extract Position data into arrays
             boat_1 = boat_2 = boat_3 = False
@@ -282,6 +289,10 @@ if __name__ == '__main__':
             if not 'ART3' in all_diffs_per_type:
                 all_diffs_per_type['ART3'] = []
             all_diffs_per_type['ART3'].append(diff_dict['ART3'])
+
+            if not 'Organic' in all_diffs_per_type:
+                all_diffs_per_type['Organic'] = []
+            all_diffs_per_type['Organic'].append(diff_dict['Organic'])
 
         for boat_type, diff_lists in all_diffs_per_type.items():
             diff_sum = np.array(diff_lists).sum(axis=0)
