@@ -69,7 +69,7 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	input_pawn->playBackInputSequence = data_collection_settings.shouldPlayBackInputSequence;
 	data_collector->shaderModule = &m_shader_models_module;
 	data_collector->data_collection_settings = data_collection_settings;
-	data_collector->eWave_hv_rtt = boats[0]->GeteWaveRTTs().eWaveHV; // TODO, currently only supports one boat, on index 0
+	// data_collector->eWave_hv_rtt = boats[0]->GeteWaveRTTs().eWaveHV; // TODO, currently only supports one boat, on index 0
 	data_collector->serialization_rtt = serialization_rtt;
 	for (auto boat : boats) {
 		data_collector->boats.Add(boat);
@@ -83,6 +83,10 @@ void AOceanSurfaceSimulation::BeginPlay() {
 }
 
 void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
+	if (!should_simulate) {
+		return;
+	}
+
 	time += fixed_dt;
 	this->m_submerged_triangles_buffers.SetNum(boats.Num());
 
@@ -96,35 +100,39 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 	static int counter = 0;
 	static bool counted[100] = { false }; // one for each boat
 
-	// Create one callback per loop that stores a different index.
+	if (n_valid_boats == 0) {
+		this->update_mesh(fixed_dt);
+	}
+	else {
+		// Create one callback per loop that stores a different index.
+		for (int i = 0; i < boats.Num(); i++) {
+			auto boat = boats[i];
+			// Allow "None", i.e. nullptr, to be assigned for boats in the editor.
+			if (boat) {
 
-	for (int i = 0; i < boats.Num(); i++) {
-		auto boat = boats[i];
-		// Allow "None", i.e. nullptr, to be assigned for boats in the editor.
-		if (boat) {
+				auto callback = [n_valid_boats, i, this](TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer) {
 
-			auto callback = [n_valid_boats, i, this](TRefCountPtr<FRDGPooledBuffer> submerged_triangles_buffer) {
+					if (!submerged_triangles_buffer.IsValid()) {
+						UE_LOG(LogTemp, Warning, TEXT("This shouldn't be possible"));
+						return;
+					}
 
-				if (!submerged_triangles_buffer.IsValid()) {
-					UE_LOG(LogTemp, Warning, TEXT("This shouldn't be possible"));
-					return;
-				}
+					if (!counted[i]) {
+						counted[i] = true;
+						counter++;
+					}
 
-				if (!counted[i]) {
-					counted[i] = true;
-					counter++;
-				}
+					this->m_submerged_triangles_buffers[i] = submerged_triangles_buffer;
 
-				this->m_submerged_triangles_buffers[i] = submerged_triangles_buffer;
+					if (counter == n_valid_boats) {
+						memset(counted, false, sizeof(counted));
+						counter = 0;
+						this->update_mesh(fixed_dt);
+					}
+				};
 
-				if (counter == n_valid_boats) {
-					memset(counted, false, sizeof(counted));
-					counter = 0;
-					this->update_mesh(fixed_dt);
-				}
-			};
-
-			boat->Update(update_payload, callback);
+				boat->Update(update_payload, callback);
+			}
 		}
 	}
 	data_collector->update(update_payload);

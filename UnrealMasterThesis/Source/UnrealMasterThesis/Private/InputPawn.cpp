@@ -18,7 +18,7 @@ void AInputPawn::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
     if (playBackInputSequence && frame < preRecordedInputSequence.Num()) {
-        auto& state = preRecordedInputSequence[frame++];
+        auto& state = preRecordedInputSequence[frame];
         m_speed_input = state.speed_input;
         m_velocity_input.X = state.velocity_input.X;
         m_velocity_input.Y = state.velocity_input.Y;
@@ -34,6 +34,11 @@ void AInputPawn::Tick(float DeltaTime) {
 
     APlayerController* controller = UGameplayStatics::GetPlayerController(GetWorld(), 0);
     controller->SetViewTarget(camera_target, FViewTargetTransitionParams());
+
+    frame++;
+    if (take_screenshot_of_frame == frame) {
+      Record();
+    }
 }
 
 void AInputPawn::SetupPlayerInputComponent(class UInputComponent* inputComponent) {
@@ -48,6 +53,9 @@ void AInputPawn::SetupPlayerInputComponent(class UInputComponent* inputComponent
 
   inputComponent->BindAxis("HorizontalAxis2", this, &AInputPawn::HorizontalAxis2);
   inputComponent->BindAxis("VerticalAxis2", this, &AInputPawn::VerticalAxis2);
+
+  inputComponent->BindKey(FKey("P"), IE_Pressed, this, &AInputPawn::Record);
+  inputComponent->BindKey(FKey("V"), IE_Pressed, this, &AInputPawn::Viewport);
 }
 
 void AInputPawn::UseSlowSpeed()   { m_speed_input = slow_speed; }
@@ -68,4 +76,16 @@ void AInputPawn::HorizontalAxis2(float input) {
 
 void AInputPawn::VerticalAxis2(float input) {
   m_velocity_input2.Y = input;
+}
+
+void AInputPawn::Record() {
+		FString fname = *FString(TEXT("scr.png"));
+		FString AbsoluteFilePath = FPaths::ProjectDir() + fname;
+		FScreenshotRequest::RequestScreenshot(AbsoluteFilePath, true, false);
+}
+
+void AInputPawn::Viewport() {
+    FVector2D resolution;
+    GEngine->GameViewport->GetViewportSize(resolution);
+    GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, FString::Printf(TEXT("The viewport resolution is (%f, %f)"), resolution.X, resolution.Y));
 }

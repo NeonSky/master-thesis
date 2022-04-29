@@ -38,6 +38,9 @@ protected:
 private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int take_screenshot_of_frame;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	AActor* camera_target;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -52,7 +55,7 @@ private:
 	FVector2D m_velocity_input;
 	FVector2D m_velocity_input2;
 	float m_speed_input;
-	int frame = 0;
+	int frame;
 
 	void UseSlowSpeed();
 	void UseNormalSpeed();
@@ -62,4 +65,7 @@ private:
 	void VerticalAxis(float input);
 	void HorizontalAxis2(float input);
 	void VerticalAxis2(float input);
+
+	void Record();
+	void Viewport();
 };
