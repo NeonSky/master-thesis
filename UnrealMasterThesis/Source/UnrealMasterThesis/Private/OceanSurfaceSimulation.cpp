@@ -2,7 +2,6 @@
 
 #include "OceanSurfaceSimulation.h"
 #include "Globals/StatelessHelpers.h"
-
 #include "ImageUtils.h"
 #include "KismetProceduralMeshLibrary.h"
 #include "Engine/TextureRenderTarget2D.h"
@@ -71,13 +70,15 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	data_collector->data_collection_settings = data_collection_settings;
 	data_collector->eWave_hv_rtt = boats[0]->GeteWaveRTTs().eWaveHV; // TODO, currently only supports one boat, on index 0
 	data_collector->serialization_rtt = serialization_rtt;
+	TArray<float> delay_dist = data_collector->readOrganicDistributionJSON();
+	boats[0]->setDist(delay_dist, oceanSeed, data_collection_settings.organicDelay);
+	
 	for (auto boat : boats) {
 		data_collector->boats.Add(boat);
 		data_collector->boatPositions.Add(TArray<FVector>());
 		data_collector->boatPositions.Last().Reserve(data_collection_settings.framesToRecord);
 		if (data_collection_settings.shouldPlayBackInputSequence) {
 			data_collector->readInputJSON(input_pawn->preRecordedInputSequence);
-			
 		}
 	}
 }

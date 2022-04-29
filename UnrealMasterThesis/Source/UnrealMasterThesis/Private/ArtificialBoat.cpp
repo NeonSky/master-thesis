@@ -73,6 +73,25 @@ void AArtificialBoat::BeginPlay() {
 void AArtificialBoat::UpdateReadbackQueue(TArray<UTextureRenderTarget2D*> other_boat_textures, TArray<UTextureRenderTarget2D*> other_wake_textures) {
 
     if (m_cur_frame - m_requested_elevations_on_frame >= artificial_frame_skip) {
+
+        if (true) { // TODO: make boolean flag
+            static std::uniform_int_distribution<> uniform_int_dist(0, delay_distribution.Num() - 1);
+            float sample = delay_distribution[uniform_int_dist(rng)];
+            int next_artificial_frame_skip = 0;
+            if (sample > 20 && sample <= 40) {
+                next_artificial_frame_skip = 1;
+            }
+            else if (sample > 40 && sample <= 60) {
+                next_artificial_frame_skip = 2;
+            }
+            else if (sample > 60) {
+                next_artificial_frame_skip = 3;
+            }
+            // UE_LOG(LogTemp, Error, TEXT("Next artificial frame skip and delay (skip, delay): (%d, %f)"), next_artificial_frame_skip, sample);
+            artificial_frame_skip = next_artificial_frame_skip;
+        }
+
+
         m_requested_elevations_on_frame = m_cur_frame;
 
         TRefCountPtr<FRDGPooledBuffer> latency_elevations = m_readback_queue.front();
@@ -158,4 +177,11 @@ FeWaveRTTs AArtificialBoat::GeteWaveRTTs() {
 
 FVector AArtificialBoat::WorldPosition3D() {
     return this->GetActorLocation() / METERS_TO_UNREAL_UNITS;
+}
+
+void AArtificialBoat::setDist(TArray<float> dist, int seed, bool organic)
+{
+    delay_distribution = dist;
+    rng.seed(seed);
+    organicDelay = organic;
 }
