@@ -11,6 +11,10 @@
 USTRUCT(BlueprintType)
 struct FDataCollectionSettings {
 	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	bool organicDelay;
+
 	UPROPERTY(EditAnywhere)
 	bool shouldCollectBoatData;
 
@@ -64,6 +68,7 @@ public:
 	void saveBoatDataToFile();
 	void readInputJSON(TArray<struct UpdatePayload>& inputSequence);
 
+	TArray<float> readOrganicDistributionJSON();
 private:
 	TArray<UpdatePayload> inputStates;
 	int frameNumber = 0;

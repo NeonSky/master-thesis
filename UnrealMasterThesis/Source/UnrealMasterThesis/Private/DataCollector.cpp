@@ -182,3 +182,36 @@ void UDataCollector::readInputJSON(TArray<UpdatePayload>& inputSequence) {
 		UE_LOG(LogTemp, Error, TEXT("Failed to deserialize JSON input array object"));
 	}
 }
+
+TArray<float> UDataCollector::readOrganicDistributionJSON()
+{
+	FString fname = *FString(TEXT("SavedInputData/Distributions/15000_emission.json"));
+	FString AbsoluteFilePath = FPaths::ProjectDir() + fname;
+	TArray<float> latencies;
+
+	FString inputData;
+	bool success = FFileHelper::LoadFileToString(inputData, *AbsoluteFilePath);
+	if (success) {
+		TSharedPtr<FJsonObject> JsonParsed;
+		TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(inputData);
+		success = FJsonSerializer::Deserialize(JsonReader, JsonParsed);
+		if (success) {
+			auto JsonArray_starts = JsonParsed->GetArrayField("starts");
+			auto JsonArray_ends = JsonParsed->GetArrayField("ends");
+			
+			for (int i = 5; i < JsonArray_starts.Num() - 5; i++) {
+				auto JsonStringValue_start = JsonArray_starts[i].Get()->AsString();
+				auto JsonStringValue_end = JsonArray_ends[i].Get()->AsString();
+				float start = FCString::Atof(*JsonStringValue_start);
+				float end = FCString::Atof(*JsonStringValue_end);
+				
+				latencies.Add((end - start) * 1000.0f);
+			}
+		}
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Failed to deserialize JSON input array object"));
+	}
+
+	return latencies;
+}
