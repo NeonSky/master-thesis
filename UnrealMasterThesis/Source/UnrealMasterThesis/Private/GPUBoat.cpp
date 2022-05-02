@@ -3,7 +3,6 @@
 #include "Globals/StatelessHelpers.h"
 
 #include "Kismet/GameplayStatics.h"
-#include "..\Public\GPUBoat.h"
 
 // GPU boats will only affect other GPU boats, making it possible to compare GPU and Artificial boat without interactions between them.
 struct SharedState {

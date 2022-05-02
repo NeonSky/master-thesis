@@ -24,6 +24,14 @@ void AArtificialBoat::BeginPlay() {
 
     m_shader_models_module.ResetGPUBoat(boat_rtt);
 
+    m_organic_delay = false;
+    m_cur_organic_delay = 0; // assume we best-case scenario where we wait for the first readback to finish before starting the simulation (e.g. during loading screen).
+
+    if (artificial_frame_delay < 0) {
+        m_organic_delay = true;
+        artificial_frame_delay = -artificial_frame_delay;
+    }
+
     ENQUEUE_RENDER_COMMAND(void)(
         [this](FRHICommandListImmediate& RHI_cmd_list) {
 
@@ -74,28 +82,30 @@ void AArtificialBoat::UpdateReadbackQueue(TArray<UTextureRenderTarget2D*> other_
 
     if (m_cur_frame - m_requested_elevations_on_frame >= artificial_frame_skip) {
 
-        if (true) { // TODO: make boolean flag
+        if (m_organic_delay) {
             static std::uniform_int_distribution<> uniform_int_dist(0, delay_distribution.Num() - 1);
             float sample = delay_distribution[uniform_int_dist(rng)];
-            int next_artificial_frame_skip = 0;
-            if (sample > 16.7 && sample <= 33.4) {
-                next_artificial_frame_skip = 1;
+
+            const float FRAME_BUDGET = 16.7f;
+            if (sample >= FRAME_BUDGET && sample < 2.0f * FRAME_BUDGET) {
+                m_cur_organic_delay = 1;
             }
-            else if (sample > 33.4 && sample <= 50.1) {
-                next_artificial_frame_skip = 2;
+            else if (sample >= 2.0f * FRAME_BUDGET && sample < 3.0f * FRAME_BUDGET) {
+                m_cur_organic_delay = 2;
             }
-            else if (sample > 50.1) {
-                next_artificial_frame_skip = 3;
+            else if (sample >= 3.0f * FRAME_BUDGET) {
+                m_cur_organic_delay = 3;
             }
-            // UE_LOG(LogTemp, Error, TEXT("Next artificial frame skip and delay (skip, delay): (%d, %f)"), next_artificial_frame_skip, sample);
-            artificial_frame_skip = next_artificial_frame_skip;
         }
 
 
         m_requested_elevations_on_frame = m_cur_frame;
 
         TRefCountPtr<FRDGPooledBuffer> latency_elevations = m_readback_queue.front();
-        m_readback_queue.pop();
+        int buffer_skips = artificial_frame_delay - m_cur_organic_delay;
+        for (int i = 0; i < 1+buffer_skips; i++) {
+            m_readback_queue.pop();
+        }
 
         m_shader_models_module.UpdateArtificialBoat1(
             collision_mesh,
@@ -112,7 +122,9 @@ void AArtificialBoat::UpdateReadbackQueue(TArray<UTextureRenderTarget2D*> other_
         fence.Wait();
 
         // Requeue latest fetch
-        m_readback_queue.push(latency_elevations);
+        for (int i = 0; i < 1+buffer_skips; i++) {
+            m_readback_queue.push(latency_elevations);
+        }
     }
 
 }
