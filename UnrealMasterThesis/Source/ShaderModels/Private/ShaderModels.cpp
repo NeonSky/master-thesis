@@ -16,6 +16,7 @@
 #include "FourierComponents.h"
 #include "GPUBoat.h"
 #include "SubmergedTriangles.h"
+#include "CopyBuffer.h"
 
 #include "GlobalShader.h"
 #include "ShaderCore.h" 
@@ -509,6 +510,18 @@ void ShaderModelsModule::UpdateArtificialBoat2(
 		update_target->SetActorLocation(METERS_TO_UNREAL_UNITS * pos);
 		update_target->SetActorRotation(rot, ETeleportType::None);
 	}
+}
+
+void ShaderModelsModule::CopyBuffer(TRefCountPtr<FRDGPooledBuffer>* src_buffer, TRefCountPtr<FRDGPooledBuffer>* dst_buffer) {
+
+	TShaderMapRef<CopyBufferShader> shader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+	ENQUEUE_RENDER_COMMAND(shader)([shader, src_buffer, dst_buffer](FRHICommandListImmediate& RHI_cmd_list) {
+		shader->BuildAndExecuteGraph(RHI_cmd_list, src_buffer, dst_buffer);
+		});
+
+	//FRenderCommandFence fence;
+	//fence.BeginFence();
+	//fence.Wait();
 }
 
 IMPLEMENT_MODULE(ShaderModelsModule, ShaderModels);

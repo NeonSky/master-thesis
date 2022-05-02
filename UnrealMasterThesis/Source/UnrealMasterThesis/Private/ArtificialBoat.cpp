@@ -96,6 +96,8 @@ void AArtificialBoat::UpdateReadbackQueue(TArray<UTextureRenderTarget2D*> other_
             else if (sample >= 3.0f * FRAME_BUDGET) {
                 m_cur_organic_delay = 3;
             }
+
+            m_cur_organic_delay = (rand() % 2) + 1;
         }
 
 
@@ -103,9 +105,6 @@ void AArtificialBoat::UpdateReadbackQueue(TArray<UTextureRenderTarget2D*> other_
 
         TRefCountPtr<FRDGPooledBuffer> latency_elevations = m_readback_queue.front();
         int buffer_skips = artificial_frame_delay - m_cur_organic_delay;
-        for (int i = 0; i < 1+buffer_skips; i++) {
-            m_readback_queue.pop();
-        }
 
         m_shader_models_module.UpdateArtificialBoat1(
             collision_mesh,
@@ -122,11 +121,17 @@ void AArtificialBoat::UpdateReadbackQueue(TArray<UTextureRenderTarget2D*> other_
         fence.Wait();
 
         // Requeue latest fetch
-        for (int i = 0; i < 1+buffer_skips; i++) {
-            m_readback_queue.push(latency_elevations);
+        for (int i = 0; i < 1 + buffer_skips; i++) {
+            TRefCountPtr<FRDGPooledBuffer> front = m_readback_queue.front();
+            m_shader_models_module.CopyBuffer(&latency_elevations, &front);
+            FRenderCommandFence fence2;
+            fence2.BeginFence();
+            fence2.Wait();
+            m_readback_queue.push(front);
+            m_readback_queue.pop();
         }
     }
-
+    int test = 0;
 }
 
 void AArtificialBoat::Update(UpdatePayload update_payload, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) {

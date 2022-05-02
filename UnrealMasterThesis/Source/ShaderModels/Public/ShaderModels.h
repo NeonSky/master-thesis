@@ -99,4 +99,8 @@ public:
 		std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback,
 		TRefCountPtr<FRDGPooledBuffer>* latency_elevations);
 
+	void CopyBuffer(
+		TRefCountPtr<FRDGPooledBuffer>* src_buffer,
+		TRefCountPtr<FRDGPooledBuffer>* dst_buffer);
+
 };
