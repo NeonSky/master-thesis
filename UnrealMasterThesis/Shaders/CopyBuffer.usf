@@ -1,0 +1,9 @@
+#include "/Engine/Public/Platform.ush"
+
+Buffer<float> src;
+RWBuffer<float> dst;
+
+[numthreads(N_THREADS_X, 1, 1)]
+void MainCompute(uint3 id : SV_DispatchThreadID) {
+    dst[id.x] = src[id.x];
+}
