@@ -64,7 +64,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int artificial_frame_skip; // The number of consecutive frames we don't perform a readback
 
-	std::queue<TRefCountPtr<FRDGPooledBuffer>> m_readback_queue;
+	std::deque<TRefCountPtr<FRDGPooledBuffer>> m_readback_queue;
 	int m_requested_elevations_on_frame;
 	int m_cur_frame;
 

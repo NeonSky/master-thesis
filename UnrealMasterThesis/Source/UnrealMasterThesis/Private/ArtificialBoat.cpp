@@ -25,7 +25,7 @@ void AArtificialBoat::BeginPlay() {
     m_shader_models_module.ResetGPUBoat(boat_rtt);
 
     m_organic_delay = false;
-    m_cur_organic_delay = 0; // assume we best-case scenario where we wait for the first readback to finish before starting the simulation (e.g. during loading screen).
+    m_cur_organic_delay = 0; // assume the best-case scenario where we wait for the first readback to finish before starting the simulation (e.g. during loading screen).
 
     if (artificial_frame_delay < 0) {
         m_organic_delay = true;
@@ -65,7 +65,7 @@ void AArtificialBoat::BeginPlay() {
 
 
             for (int i = 0; i < buffers.Num(); i++) {
-                m_readback_queue.push(buffers[i]);
+                m_readback_queue.push_back(buffers[i]);
             }
         });
 
@@ -83,28 +83,31 @@ void AArtificialBoat::UpdateReadbackQueue(TArray<UTextureRenderTarget2D*> other_
     if (m_cur_frame - m_requested_elevations_on_frame >= artificial_frame_skip) {
 
         if (m_organic_delay) {
-            static std::uniform_int_distribution<> uniform_int_dist(0, delay_distribution.Num() - 1);
-            float sample = delay_distribution[uniform_int_dist(rng)];
+            // static std::uniform_int_distribution<> uniform_int_dist(0, delay_distribution.Num() - 1);
+            // float sample = delay_distribution[uniform_int_dist(rng)];
 
-            const float FRAME_BUDGET = 16.7f;
-            if (sample >= FRAME_BUDGET && sample < 2.0f * FRAME_BUDGET) {
-                m_cur_organic_delay = 1;
-            }
-            else if (sample >= 2.0f * FRAME_BUDGET && sample < 3.0f * FRAME_BUDGET) {
-                m_cur_organic_delay = 2;
-            }
-            else if (sample >= 3.0f * FRAME_BUDGET) {
-                m_cur_organic_delay = 3;
-            }
+            // const float FRAME_BUDGET = 16.7f;
+            // if (sample >= FRAME_BUDGET && sample < 2.0f * FRAME_BUDGET) {
+            //     m_cur_organic_delay = 1;
+            // }
+            // else if (sample >= 2.0f * FRAME_BUDGET && sample < 3.0f * FRAME_BUDGET) {
+            //     m_cur_organic_delay = 2;
+            // }
+            // else if (sample >= 3.0f * FRAME_BUDGET) {
+            //     m_cur_organic_delay = 3;
+            // }
 
+            // if ((rand() % 10) < 0) {
+            //     m_cur_organic_delay = 1;
+            // } else {
+            //     m_cur_organic_delay = 0;
+            // }
             m_cur_organic_delay = (rand() % 2) + 1;
         }
-
 
         m_requested_elevations_on_frame = m_cur_frame;
 
         TRefCountPtr<FRDGPooledBuffer> latency_elevations = m_readback_queue.front();
-        int buffer_skips = artificial_frame_delay - m_cur_organic_delay;
 
         m_shader_models_module.UpdateArtificialBoat1(
             collision_mesh,
@@ -120,16 +123,35 @@ void AArtificialBoat::UpdateReadbackQueue(TArray<UTextureRenderTarget2D*> other_
         fence.BeginFence();
         fence.Wait();
 
+        m_readback_queue.pop_front();
+
         // Requeue latest fetch
-        for (int i = 0; i < 1 + buffer_skips; i++) {
-            TRefCountPtr<FRDGPooledBuffer> front = m_readback_queue.front();
-            m_shader_models_module.CopyBuffer(&latency_elevations, &front);
-            FRenderCommandFence fence2;
-            fence2.BeginFence();
-            fence2.Wait();
-            m_readback_queue.push(front);
-            m_readback_queue.pop();
+        if (m_organic_delay) {
+            std::queue<TRefCountPtr<FRDGPooledBuffer>> tail;
+
+            int buffer_skips = artificial_frame_delay - m_cur_organic_delay;
+            for (int i = 0; i < buffer_skips; i++) {
+
+                TRefCountPtr<FRDGPooledBuffer> buffer = m_readback_queue.back();
+                m_readback_queue.pop_back();
+
+                m_shader_models_module.CopyBuffer(&latency_elevations, &buffer);
+
+                FRenderCommandFence fence2;
+                fence2.BeginFence();
+                fence2.Wait();
+
+                tail.push(buffer);
+            }
+
+            while (!tail.empty()) {
+                m_readback_queue.push_back(tail.front());
+                tail.pop();
+            }
         }
+
+        m_readback_queue.push_back(latency_elevations);
+
     }
     int test = 0;
 }
