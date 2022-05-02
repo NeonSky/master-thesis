@@ -59,7 +59,7 @@ private:
 	bool use_p2_inputs;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	int artificial_frame_delay; // The GPU readback latency in frames
+	int artificial_frame_delay; // The GPU readback latency in frames (0 = no latency, >0 fixed latency, <0 organic latency)
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int artificial_frame_skip; // The number of consecutive frames we don't perform a readback
@@ -67,6 +67,9 @@ private:
 	std::queue<TRefCountPtr<FRDGPooledBuffer>> m_readback_queue;
 	int m_requested_elevations_on_frame;
 	int m_cur_frame;
+
+	bool m_organic_delay;
+	int m_cur_organic_delay;
 
 	ShaderModelsModule m_shader_models_module; // Reference to the ShaderModels module
 };
