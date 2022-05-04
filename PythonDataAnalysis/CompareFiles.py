@@ -42,9 +42,6 @@ for file in inconsistentFiles:
     for line in files[file]:
         refLine = consistentReferenceFile[lineNr]
         if line != refLine:
-            #print('------------------------------------------\n' + file + ' has its first inconsistency at line ' + str(lineNr))
-            #print('inconsistent line: ' + line)
-            #print('reference line: ' + refLine)
             break
         lineNr += 1
 

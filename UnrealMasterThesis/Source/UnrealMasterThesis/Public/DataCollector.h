@@ -11,7 +11,6 @@
 USTRUCT(BlueprintType)
 struct FDataCollectionSettings {
 	GENERATED_BODY()
-
 	UPROPERTY(EditAnywhere)
 	bool shouldCollectBoatData;
 

@@ -24,12 +24,7 @@ public:
 	virtual FVector WorldPosition3D() override;
 
 	virtual void setDist(TArray<float> dist, int seed) override;
-	TArray<float> delay_distribution;
-
-	std::random_device rd{};
-	std::mt19937 rng{ rd() };
 	
-
 protected:
 
 	// Called once on "Play"
@@ -69,6 +64,10 @@ private:
 
 	bool m_organic_delay;
 	int m_cur_organic_delay;
+	TArray<float> delay_distribution;
+
+	std::random_device rd{};
+	std::mt19937 rng{ rd() };
 
 	ShaderModelsModule m_shader_models_module; // Reference to the ShaderModels module
 };

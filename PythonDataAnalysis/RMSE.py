@@ -5,8 +5,8 @@ from math import sqrt, sin
 from matplotlib import pyplot
 from PIL import Image
 
-dir = "C:/Users/joaki/OneDrive/Skrivbord/Organic eWaveTexture"
-# jag vill ha dom i seed / boat type / frame.txt
+# Dir folder should contain subfolders for each seed with an ewave texture data file per frame.
+dir = ""
 
 black = (0.0, 0.0, 0.0)
 red = (204/255, 0, 0)
@@ -35,9 +35,6 @@ if __name__ == '__main__':
                     currentline_strings_only_values = [h_str for h_str in currentline_strings if "r:" in h_str]
                     currentline = [float(h_str[3:]) for h_str in currentline_strings_only_values]
                     file.append(np.array(currentline))
-                #boat_type = h_file[:4]
-                #frameNr = int(h_file[5:-4])
-                #print("Boat type: " + boat_type + "   frame nr: " + str(frameNr))
                 seed_files[h_file] = file
             h_filestream.close()
         all_files_by_seed[seed_dir] = seed_files
@@ -49,11 +46,6 @@ if __name__ == '__main__':
 
     for seed, files in all_files_by_seed.items():
         for filename, file in files.items():
-
-            #mat = np.reshape(file, (256, 256))
-            #img = Image.fromarray(np.uint8(mat * 255), 'L')
-            #img.show()
-
             type = filename[:4]
             frame = filename[5:-4]
             if type == "ART0":
@@ -76,7 +68,6 @@ if __name__ == '__main__':
 
     for rmse in rmse_by_frame_art1:
         print("Total RMSE for frame " + ": " + str(rmse))
-            #print("Type: " + filename[:4] + "   frameNr: " + filename[5:-4] + "   Ref file: " + reference_file + "   RMSE: " + str(rmse))
 
     rmse_by_frame_art1 = np.array(rmse_by_frame_art1) / numSeeds
     rmse_by_frame_art2 = np.array(rmse_by_frame_art2) / numSeeds
