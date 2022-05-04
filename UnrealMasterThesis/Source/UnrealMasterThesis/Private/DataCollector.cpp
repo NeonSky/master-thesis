@@ -45,7 +45,7 @@ void UDataCollector::update(UpdatePayload update_payload) {
 		inputStates.Add(update_payload);
 	}
 	
-	if (data_collection_settings.shouldCollecteWaveTextures) {
+	if (data_collection_settings.shouldCollecteWaveTextures && frameNumber % data_collection_settings.screenshotInterval == 0) {
 		TArray<float> hv_rtt_r_channel_data;
 		shaderModule->ComputeSerialization(eWave_hv_rtt, serialization_rtt, hv_rtt_r_channel_data);
 		saveeWaveDataToFile(hv_rtt_r_channel_data); // TODO save v texture
@@ -70,23 +70,28 @@ void UDataCollector::update(UpdatePayload update_payload) {
 }
 
 void UDataCollector::saveeWaveDataToFile(TArray<float>& data) {
-	FString fname = *FString(TEXT("SavedBoatData/eWaveTextures/") + FString::FromInt(frameNumber) + TEXT(".txt"));
-	FString AbsoluteFilePath = FPaths::ProjectDir() + fname;
+	FString frameNrString = FString::FromInt(frameNumber);
+	if (frameNumber < 100) {
+		frameNrString = TEXT("00") + frameNrString;
+	}
+	else if (frameNumber < 1000) {
+		frameNrString = TEXT("0") + frameNrString;
+	}
 
+	FString fname = *FString(TEXT("SavedBoatData/eWaveTextures/Seed") + data_collection_settings.folderName + TEXT("/") + data_collection_settings.fileName + frameNrString + TEXT(".txt"));
+	FString AbsoluteFilePath = FPaths::ProjectDir() + fname;
 	FString textToSave = TEXT("Test\n");
-	int i = 0;
-	for (float f : data) {
-		FString floatString = FString::SanitizeFloat(f);
-		textToSave.Append(TEXT("r: ") + floatString + TEXT(", "));
-		if (i >= 255) { 
-			textToSave.Append(TEXT(" \n"));
-			i = 0; 
+	for (int i = 0; i < 256; i++) {
+		for (int j = 0; j < 256; j++) {
+			int index = (i * 256) + j;
+			FString floatString = FString::SanitizeFloat(data[index]);
+			textToSave.Append(TEXT("r: ") + floatString + TEXT(", "));
+
 		}
-		i++;
+		textToSave.Append(TEXT(" \n"));
 	}
 	FFileHelper::SaveStringToFile(textToSave, *AbsoluteFilePath);
 }
-
 void UDataCollector::saveInputToFile() {
 	FString fname = *FString(TEXT("SavedInputData/") + data_collection_settings.inputFileName + TEXT(".json"));
 	FString AbsoluteFilePath = FPaths::ProjectDir() + fname;

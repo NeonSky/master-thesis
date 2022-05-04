@@ -1,6 +1,6 @@
 import os
 
-directory = '../UnrealMasterThesis/SavedBoatData\MAIN_post_normals/24d9ecfbd10473a8fddcfd5789d2c348af83ba53/ScreenShot/Seed_11'
+directory = '../UnrealMasterThesis/SavedBoatData/temp'
 
 filePaths = []
 numFiles = 0

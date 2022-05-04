@@ -5,17 +5,21 @@ from math import sqrt, sin
 from matplotlib import pyplot
 from PIL import Image
 
-dir = '../UnrealMasterThesis/SavedBoatData/eWaveTextures/'
+dir = "C:/Users/joaki/OneDrive/Skrivbord/Organic eWaveTexture"
 # jag vill ha dom i seed / boat type / frame.txt
 
 black = (0.0, 0.0, 0.0)
 red = (204/255, 0, 0)
 orange = (1.0, 102/255, 0)
 yellow = (204/255, 204/255, 0)
+blue = (0, 0, 204/255)
 
+numSeeds = 0
 if __name__ == '__main__':
     files = []
     all_files_by_seed = {}
+    numSeeds = len(os.listdir(dir))
+    print("There are " + str(numSeeds) + " seeds.")
     for seed_dir in os.listdir(dir):
         print("Seed: " + seed_dir)
         seed_files = {}
@@ -41,6 +45,7 @@ if __name__ == '__main__':
     rmse_by_frame_art1 = [0] * 20
     rmse_by_frame_art2 = [0] * 20
     rmse_by_frame_art3 = [0] * 20
+    rmse_by_frame_org  = [0] * 20
 
     for seed, files in all_files_by_seed.items():
         for filename, file in files.items():
@@ -54,6 +59,9 @@ if __name__ == '__main__':
             if type == "ART0":
                 continue
             reference_file = "ART0_" + filename[5:]
+            if "Organic" in filename:
+                reference_file = "ART0_" + filename[7:]
+                frame = filename[7:-4]
             rmse = sqrt(mean_squared_error(files[reference_file], file))
             if type == "ART1":
                 rmse_by_frame_art1[int((int(frame) / 50) - 1)] += rmse
@@ -61,15 +69,19 @@ if __name__ == '__main__':
                 rmse_by_frame_art2[int((int(frame) / 50) - 1)] += rmse
             if type == "ART3":
                 rmse_by_frame_art3[int((int(frame) / 50) - 1)] += rmse
+            if "Organic" in filename:
+                rmse_by_frame_org[int((int(frame) / 50) - 1)] += rmse
+        breakpoint = 2
 
 
     for rmse in rmse_by_frame_art1:
         print("Total RMSE for frame " + ": " + str(rmse))
             #print("Type: " + filename[:4] + "   frameNr: " + filename[5:-4] + "   Ref file: " + reference_file + "   RMSE: " + str(rmse))
 
-    rmse_by_frame_art1 = np.array(rmse_by_frame_art1) / 20.0 # TODO replace 20 with a num seeds variable
-    rmse_by_frame_art2 = np.array(rmse_by_frame_art2) / 20.0
-    rmse_by_frame_art3 = np.array(rmse_by_frame_art3) / 20.0
+    rmse_by_frame_art1 = np.array(rmse_by_frame_art1) / numSeeds
+    rmse_by_frame_art2 = np.array(rmse_by_frame_art2) / numSeeds
+    rmse_by_frame_art3 = np.array(rmse_by_frame_art3) / numSeeds
+    rmse_by_frame_org = np.array(rmse_by_frame_org) / numSeeds
 
     xPoints = [x * 50 for x in range(1, 21)]
     pyplot.title("eWave simulation texture RMSE")
@@ -78,5 +90,6 @@ if __name__ == '__main__':
     pyplot.plot(xPoints, rmse_by_frame_art1, "-o", color=yellow, label="Delay 1")
     pyplot.plot(xPoints, rmse_by_frame_art2, "-o", color=orange, label="Delay 2")
     pyplot.plot(xPoints, rmse_by_frame_art3, "-o", color=red, label="Delay 3")
+    pyplot.plot(xPoints, rmse_by_frame_org, "-o", color=blue, label="Organic")
     pyplot.legend(loc="upper left")
     pyplot.show()

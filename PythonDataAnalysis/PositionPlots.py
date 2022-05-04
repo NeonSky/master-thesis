@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 
 
 #dir = '../UnrealMasterThesis/SavedBoatData/MAIN_LatencyFix/OneBoat'
-dir = '../UnrealMasterThesis/SavedBoatData/Report data boat accuracy/PlusOrganic24d9ecfbd10473a8fddcfd5789d2c348af83ba53 - Copy/One_boat'
+dir = '../UnrealMasterThesis/SavedBoatData/Report data boat accuracy/OrganicFix2_dist + PreOrganic24d9ecfbd10473a8fddcfd5789d2c348af83ba53/One_boat'
 
 avg_over_multiple_seeds = True
 
@@ -127,9 +127,11 @@ def createPathsPlot(title, pos_data, seed_dir, show = False):
                 continue
             positions = np.array(p)
             plt.plot(positions[:, 0], positions[:, 1], label=boat_type.replace("ART", "Delay "), color=getColor(boat_type))
+
     plt.legend(loc="upper left")
-    if False:
-        #plt.axis('scaled')
+    if "9" in seed_dir:
+        if "9":
+            plt.legend(loc="lower left")
         plt.show()
     else:
         plt.axis('scaled')
