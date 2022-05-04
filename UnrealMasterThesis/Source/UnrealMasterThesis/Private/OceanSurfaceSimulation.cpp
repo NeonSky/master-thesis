@@ -69,10 +69,13 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	input_pawn->playBackInputSequence = data_collection_settings.shouldPlayBackInputSequence;
 	data_collector->shaderModule = &m_shader_models_module;
 	data_collector->data_collection_settings = data_collection_settings;
-	data_collector->eWave_hv_rtt = boats[0]->GeteWaveRTTs().eWaveHV; // TODO, currently only supports one boat, on index 0
+
 	data_collector->serialization_rtt = serialization_rtt;
 	TArray<float> delay_dist = data_collector->readOrganicDistributionJSON();
-	if(boats[0]){ boats[0]->setDist(delay_dist, oceanSeed); }
+	if(boats[0]){
+		boats[0]->setDist(delay_dist, oceanSeed); 
+		data_collector->eWave_hv_rtt = boats[0]->GeteWaveRTTs().eWaveHV; // eWave measurements assume the boat is on index 0. TODO: possibly allow for 2 boats.
+	}
 	
 	for (auto boat : boats) {
 		data_collector->boats.Add(boat);
