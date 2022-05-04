@@ -44,7 +44,8 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
 	TArray<UTextureRenderTarget2D*> wake_rtts,
 	TArray<FVector2D> ws_boat_coords,
 	TArray<FVector2D> input_sample_coordinates,
-    TArray<float>* output) {
+    TArray<float>* output,
+	bool mock_async_readback) {
 
 	int N = input_sample_coordinates.Num();
 
@@ -130,32 +131,36 @@ void ElevationSamplerShader::BuildAndExecuteGraph(
       FResolveParams()
     );
 
-    FReadSurfaceDataFlags read_flags(RCM_MinMax);
-    read_flags.SetLinearToGamma(false);
 
-    TArray<FFloat16Color> rdata;
-    RHI_cmd_list.ReadSurfaceFloatData(
-      readback_tex->GetTexture2D(),
-      FIntRect(0, 0, N, 1),
-      rdata,
-      read_flags
-    );
+	if (!mock_async_readback) { // approximate this as free for the CPU boat
 
-	output->SetNum(rdata.Num());
-	for (int i = 0; i < rdata.Num(); i++) {
+		FReadSurfaceDataFlags read_flags(RCM_MinMax);
+		read_flags.SetLinearToGamma(false);
 
-		uint32_t p1  = uint32_t(rdata[i].R.GetFloat());
-		uint32_t p2  = uint32_t(rdata[i].G.GetFloat());
-		uint32_t p3  = uint32_t(rdata[i].B.GetFloat());
-		uint32_t p4  = uint32_t(rdata[i].A.GetFloat());
-		uint32_t v = (p4 << 24 | p3 << 16 | p2 << 8 | p1);
+		TArray<FFloat16Color> rdata;
+		RHI_cmd_list.ReadSurfaceFloatData(
+		readback_tex->GetTexture2D(),
+		FIntRect(0, 0, N, 1),
+		rdata,
+		read_flags
+		);
 
-		float res;
-		memcpy(&res, &v, sizeof(float));
-		
-		(*output)[i] = res;
+		output->SetNum(rdata.Num());
+		for (int i = 0; i < rdata.Num(); i++) {
 
-    }
+			uint32_t p1  = uint32_t(rdata[i].R.GetFloat());
+			uint32_t p2  = uint32_t(rdata[i].G.GetFloat());
+			uint32_t p3  = uint32_t(rdata[i].B.GetFloat());
+			uint32_t p4  = uint32_t(rdata[i].A.GetFloat());
+			uint32_t v = (p4 << 24 | p3 << 16 | p2 << 8 | p1);
+
+			float res;
+			memcpy(&res, &v, sizeof(float));
+			
+			(*output)[i] = res;
+
+		}
+	}
 
   }
 }

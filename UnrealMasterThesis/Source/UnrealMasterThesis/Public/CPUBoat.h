@@ -73,6 +73,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	FeWaveRTTs ewave_rtts;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool mock_async_readback;
+
 	Rigidbody m_rigidbody;
 
 	TArray<uint32> m_collision_mesh_indices;

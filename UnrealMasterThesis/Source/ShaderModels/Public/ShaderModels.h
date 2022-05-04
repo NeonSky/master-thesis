@@ -56,7 +56,8 @@ public:
 		TArray<UTextureRenderTarget2D*> wake_rtts,
 		TArray<FVector2D> ws_boat_coords,
 		TArray<FVector2D> input_sample_coordinates,
-		TArray<float>* output);
+		TArray<float>* output,
+		bool mock_async_readback);
 
 	void ResetGPUBoat(UTextureRenderTarget2D* input_output);
 

@@ -38,6 +38,12 @@ protected:
 private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int take_screenshot_of_frame;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool measure_cpu_cost;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	AActor* camera_target;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -62,4 +68,7 @@ private:
 	void VerticalAxis(float input);
 	void HorizontalAxis2(float input);
 	void VerticalAxis2(float input);
+
+	void Record();
+	void Viewport();
 };

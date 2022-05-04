@@ -80,7 +80,7 @@ void ACPUBoat::Update(UpdatePayload update_payload, std::function<void(TRefCount
   m_speed_input = update_payload.speed_input;
   m_velocity_input = use_p2_inputs ? update_payload.velocity_input2 : update_payload.velocity_input;
 
-  FlushPersistentDebugLines(this->GetWorld());
+  // FlushPersistentDebugLines(this->GetWorld());
 
   UpdateElevations();
   UpdateSubmergedTriangles();
@@ -180,7 +180,7 @@ void ACPUBoat::UpdateElevations() {
     sample_points.Push(FVector2D(v_ws.X, v_ws.Y));
   }
 
-  m_latest_elevations = ocean_surface_simulation->sample_elevation_points(sample_points);
+  m_latest_elevations = ocean_surface_simulation->sample_elevation_points(sample_points, mock_async_readback);
 
 }
 
@@ -220,7 +220,7 @@ void ACPUBoat::UpdateSubmergedTriangles() {
     t.normal = FVector::CrossProduct(v2 - v0, v1 - v0).GetSafeNormal();
 
     // Debug draw the entire collision mesh
-    DebugDrawTriangle(v0, v1, v2, FColor::Red);
+    // DebugDrawTriangle(v0, v1, v2, FColor::Red);
 
     // The relevant ocean elevation samples
     float e0 = m_latest_elevations[i0];
@@ -268,7 +268,7 @@ void ACPUBoat::UpdateSubmergedTriangles() {
       t.v_H = v_H;
 
       // Debug draw fully submerged triangles
-      DebugDrawTriangle(v_L, v_M, v_H, FColor::Green);
+      // DebugDrawTriangle(v_L, v_M, v_H, FColor::Green);
 
       t.centroid = (v_L + v_M + v_H) / 3.0;
       t.height   = abs(h_L + h_M + h_H) / 3.0f; // TODO: compute properly. We should sample the elevation at the centroid
@@ -323,7 +323,7 @@ void ACPUBoat::UpdateSubmergedTriangles() {
       FVector J_H = v_L + t_H * (v_H - v_L);
 
       // Debug draw partially submerged triangles
-      DebugDrawTriangle(v_L, J_M, J_H, FColor::Yellow);
+      // DebugDrawTriangle(v_L, J_M, J_H, FColor::Yellow);
 
       t.v_L = v_L;
       t.v_M = J_M;
@@ -444,9 +444,11 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r, std::function<void(TRefCountPtr<
       RHIUnlockTexture2D(tex_ref, 0, false);
     });
 
-    FRenderCommandFence fence;
-    fence.BeginFence();
-    fence.Wait();
+    if (!mock_async_readback) {
+      FRenderCommandFence fence;
+      fence.BeginFence();
+      fence.Wait();
+    }
   }
 
   /* Update obstruction texture */
@@ -520,9 +522,11 @@ void ACPUBoat::UpdateGPUState(Rigidbody prev_r, std::function<void(TRefCountPtr<
 
     });
 
-    FRenderCommandFence fence;
-    fence.BeginFence();
-    fence.Wait();
+    if (!mock_async_readback) {
+      FRenderCommandFence fence;
+      fence.BeginFence();
+      fence.Wait();
+    }
   }
 }
 
