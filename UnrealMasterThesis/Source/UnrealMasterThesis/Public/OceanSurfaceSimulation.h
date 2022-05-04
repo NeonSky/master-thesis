@@ -32,7 +32,7 @@ class UNREALMASTERTHESIS_API AOceanSurfaceSimulation : public AActor {
 public:	
 	AOceanSurfaceSimulation();
 
-	TArray<float> sample_elevation_points(TArray<FVector2D> sample_points);
+	TArray<float> sample_elevation_points(TArray<FVector2D> sample_points, bool mock_async_readback);
 
 protected:
 
@@ -40,6 +40,9 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool should_simulate;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	AInputPawn* input_pawn;
