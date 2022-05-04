@@ -37,5 +37,5 @@ public:
     virtual UTextureRenderTarget2D* GetBoatRTT() = 0;
     virtual FeWaveRTTs GeteWaveRTTs() = 0;
     virtual FVector WorldPosition3D() = 0;
-    virtual void setDist(TArray<float> dist, int seed, bool organic) = 0;
+    virtual void setDist(TArray<float> dist, int seed) = 0;
 };

@@ -40,7 +40,7 @@ public:
     virtual UTextureRenderTarget2D* GetBoatRTT() override;
     virtual FeWaveRTTs GeteWaveRTTs() override;
 	virtual FVector WorldPosition3D() override;
-	virtual void setDist(TArray<float> dist, int seed, bool organic) override;
+	virtual void setDist(TArray<float> dist, int seed) override;
 
 protected:
 

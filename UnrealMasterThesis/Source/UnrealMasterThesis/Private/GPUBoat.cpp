@@ -74,6 +74,6 @@ FVector AGPUBoat::WorldPosition3D() {
     return camera_target->GetActorLocation() / METERS_TO_UNREAL_UNITS;
 }
 
-void AGPUBoat::setDist(TArray<float> dist, int seed, bool organic)
+void AGPUBoat::setDist(TArray<float> dist, int seed)
 {
 }

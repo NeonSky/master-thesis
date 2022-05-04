@@ -71,7 +71,7 @@ void AOceanSurfaceSimulation::BeginPlay() {
 	data_collector->eWave_hv_rtt = boats[0]->GeteWaveRTTs().eWaveHV; // TODO, currently only supports one boat, on index 0
 	data_collector->serialization_rtt = serialization_rtt;
 	TArray<float> delay_dist = data_collector->readOrganicDistributionJSON();
-	boats[0]->setDist(delay_dist, oceanSeed, data_collection_settings.organicDelay);
+	boats[0]->setDist(delay_dist, oceanSeed);
 	
 	for (auto boat : boats) {
 		data_collector->boats.Add(boat);

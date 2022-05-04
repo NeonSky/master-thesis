@@ -13,9 +13,6 @@ struct FDataCollectionSettings {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
-	bool organicDelay;
-
-	UPROPERTY(EditAnywhere)
 	bool shouldCollectBoatData;
 
 	UPROPERTY(EditAnywhere)

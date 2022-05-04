@@ -222,9 +222,8 @@ FVector AArtificialBoat::WorldPosition3D() {
     return this->GetActorLocation() / METERS_TO_UNREAL_UNITS;
 }
 
-void AArtificialBoat::setDist(TArray<float> dist, int seed, bool organic)
+void AArtificialBoat::setDist(TArray<float> dist, int seed)
 {
     delay_distribution = dist;
     rng.seed(seed);
-    organicDelay = organic;
 }
