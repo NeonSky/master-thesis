@@ -37,5 +37,7 @@ public:
     virtual UTextureRenderTarget2D* GetBoatRTT() = 0;
     virtual FeWaveRTTs GeteWaveRTTs() = 0;
     virtual FVector WorldPosition3D() = 0;
+
+    // This is an ugly way of doing it as only the artificial boat has a need of these values.
     virtual void setDist(TArray<float> dist, int seed) = 0;
 };

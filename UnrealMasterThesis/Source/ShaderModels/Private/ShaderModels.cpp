@@ -518,10 +518,6 @@ void ShaderModelsModule::CopyBuffer(TRefCountPtr<FRDGPooledBuffer>* src_buffer, 
 	ENQUEUE_RENDER_COMMAND(shader)([shader, src_buffer, dst_buffer](FRHICommandListImmediate& RHI_cmd_list) {
 		shader->BuildAndExecuteGraph(RHI_cmd_list, src_buffer, dst_buffer);
 		});
-
-	//FRenderCommandFence fence;
-	//fence.BeginFence();
-	//fence.Wait();
 }
 
 IMPLEMENT_MODULE(ShaderModelsModule, ShaderModels);

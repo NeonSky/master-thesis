@@ -83,31 +83,26 @@ void AArtificialBoat::UpdateReadbackQueue(TArray<UTextureRenderTarget2D*> other_
     if (m_cur_frame - m_requested_elevations_on_frame >= artificial_frame_skip) {
 
         if (m_organic_delay) {
-             static std::uniform_int_distribution<> uniform_int_dist(0, delay_distribution.Num() - 1);
-             float sample = delay_distribution[uniform_int_dist(rng)];
+            if (delay_distribution.Num() == 0) {
+                UE_LOG(LogTemp, Error, TEXT("The organic distribution was not properly loaded."));
+            }
+            static std::uniform_int_distribution<> uniform_int_dist(0, delay_distribution.Num() - 1);
+            float sample = delay_distribution[uniform_int_dist(rng)];
 
-             const float FRAME_BUDGET = 16.7f;
-             if (sample >= FRAME_BUDGET && sample < 2.0f * FRAME_BUDGET) {
-                 m_cur_organic_delay = 1;
-             }
-             else if (sample >= 2.0f * FRAME_BUDGET && sample < 3.0f * FRAME_BUDGET) {
-                 m_cur_organic_delay = 2;
-             }
-             else if (sample >= 3.0f * FRAME_BUDGET) {
-                 m_cur_organic_delay = 3;
-             }
-
-             /*if ((rand() % 10) < 0) {
-                 m_cur_organic_delay = 1;
-             } else {
-                 m_cur_organic_delay = 0;
-             }*/
-            
-            
-            // m_cur_organic_delay = (rand() % 2) + 1;
-
-            //m_cur_organic_delay = 3;
-        }
+            const float FRAME_BUDGET = 16.7f;
+            if (sample >= FRAME_BUDGET && sample < 2.0f * FRAME_BUDGET) {
+                m_cur_organic_delay = 1;
+            }
+            else if (sample >= 2.0f * FRAME_BUDGET && sample < 3.0f * FRAME_BUDGET) {
+                m_cur_organic_delay = 2;
+            }
+            else if (sample >= 3.0f * FRAME_BUDGET) {
+                m_cur_organic_delay = 3;
+            }
+            else {
+                UE_LOG(LogTemp, Error, TEXT("Organic delay error. This should never happen."));
+            }
+    }
 
         m_requested_elevations_on_frame = m_cur_frame;
 
@@ -157,7 +152,6 @@ void AArtificialBoat::UpdateReadbackQueue(TArray<UTextureRenderTarget2D*> other_
         m_readback_queue.push_back(latency_elevations);
 
     }
-    int test = 0;
 }
 
 void AArtificialBoat::Update(UpdatePayload update_payload, std::function<void(TRefCountPtr<FRDGPooledBuffer>)> callback) {
