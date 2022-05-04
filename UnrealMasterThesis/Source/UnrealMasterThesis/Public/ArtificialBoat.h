@@ -23,9 +23,8 @@ public:
     virtual FeWaveRTTs GeteWaveRTTs() override;
 	virtual FVector WorldPosition3D() override;
 
-	virtual void setDist(TArray<float> dist, int seed, bool organic) override;
+	virtual void setDist(TArray<float> dist, int seed) override;
 	TArray<float> delay_distribution;
-	bool organicDelay = false;
 
 	std::random_device rd{};
 	std::mt19937 rng{ rd() };

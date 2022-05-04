@@ -530,6 +530,6 @@ FVector ACPUBoat::WorldPosition3D() {
     return m_rigidbody.position;
 }
 
-void ACPUBoat::setDist(TArray<float> dist, int seed, bool organic)
+void ACPUBoat::setDist(TArray<float> dist, int seed)
 {
 }
