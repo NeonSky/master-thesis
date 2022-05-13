@@ -16,6 +16,8 @@ public class UnrealMasterThesis : ModuleRules {
 			"RHI",
 			"RenderCore",
 			"Json",
+			"SlateCore",
+			"Slate",
 			"ShaderModels"
 		});
 
