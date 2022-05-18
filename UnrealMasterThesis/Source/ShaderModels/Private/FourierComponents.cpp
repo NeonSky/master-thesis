@@ -202,7 +202,7 @@ void FourierComponentsShader::BuildAndExecuteGraph(
     RDG_EVENT_NAME("FourierComponents Pass"),
     ComputeShader,
     PassParameters,
-    FIntVector(m_N, m_N, 1)
+    FIntVector(m_N / 8, m_N / 8, 1)
   );
 
 	TRefCountPtr<IPooledRenderTarget> PooledComputeTarget1;

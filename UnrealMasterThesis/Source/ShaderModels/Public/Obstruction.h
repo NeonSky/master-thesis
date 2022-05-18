@@ -30,8 +30,6 @@ public:
 	static inline void ModifyCompilationEnvironment(const FGlobalShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment) {
 		FGlobalShader::ModifyCompilationEnvironment(Parameters, OutEnvironment);
 
-		OutEnvironment.SetDefine(TEXT("N_THREADS_X"), 1);
-		OutEnvironment.SetDefine(TEXT("N_THREADS_Y"), 1);
 		OutEnvironment.SetDefine(TEXT("N_TRIANGLES"), 140);
 	}
 

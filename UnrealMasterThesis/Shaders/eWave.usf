@@ -6,7 +6,7 @@ float dt; // Delta time (in seconds)
 RWTexture2D<float4> eWave_hv;
 RWTexture2D<float4> eWave_hv_copy;
 
-[numthreads(N_THREADS_X, N_THREADS_Y, 1)]
+[numthreads(8, 8, 1)]
 void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 
 	// Based on chapter 2.4 of "handbook of real-time Fast Fourier Transforms" (1995) by the Smiths

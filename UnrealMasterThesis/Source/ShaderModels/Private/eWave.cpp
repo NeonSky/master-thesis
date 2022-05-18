@@ -64,7 +64,7 @@ void eWaveShader::BuildAndExecuteGraph(
         RDG_EVENT_NAME("eWave Pass"),
         ComputeShader,
         PassParameters,
-        FIntVector(NN, NN, 1)
+        FIntVector(NN / 8, NN / 8, 1)
     );
 
     graph_builder.Execute();
