@@ -25,7 +25,7 @@ float T(float x_y){
 }
 
 // TODO: make more entry points instead of using the preFFT variable
-[numthreads(N_THREADS_X, N_THREADS_Y, 1)]
+[numthreads(8, 8, 1)]
 void eWaveCompute(uint3 id : SV_DispatchThreadID) {
 
 	if (preFFT == 2) {

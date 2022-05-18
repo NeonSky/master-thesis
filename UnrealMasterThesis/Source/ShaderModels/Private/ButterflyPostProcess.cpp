@@ -92,7 +92,7 @@ void ButterflyPostProcessShader::BuildAndExecuteGraph(
     RDG_EVENT_NAME("Buttterfly Post-process Pass"),
     ComputeShader,
     PassParameters,
-    FIntVector(N, N, 1)
+    FIntVector(N / 8, N / 8, 1)
   );
 
 	TRefCountPtr<IPooledRenderTarget> PooledComputeTarget;

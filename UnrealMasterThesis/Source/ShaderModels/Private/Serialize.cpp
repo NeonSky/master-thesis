@@ -97,7 +97,7 @@ void SerializeShader::BuildAndExecuteGraph(
         RDG_EVENT_NAME("Serialize Pass"),
         ComputeShader,
         PassParameters,
-        FIntVector(NN, NN, 1)
+        FIntVector(NN / 8, NN / 8, 1)
     );
 
     TRefCountPtr<IPooledRenderTarget> PooledComputeTarget;

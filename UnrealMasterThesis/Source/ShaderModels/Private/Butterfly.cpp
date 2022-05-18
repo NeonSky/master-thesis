@@ -142,7 +142,7 @@ void ButterflyShader::BuildAndExecuteGraph(
 				RDG_EVENT_NAME("Buttterfly FFT Pass"),
 				ComputeShader,
 				PassParameters,
-				FIntVector(size, size, 1)
+				FIntVector(size / 8, size / 8, 1)
 			);
 
 			pingpong = (pingpong + 1) % 2;

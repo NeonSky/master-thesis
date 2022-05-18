@@ -81,7 +81,7 @@ void ButterflyTextureShader::BuildAndExecuteGraph(
 		RDG_EVENT_NAME("Butterfly Texture Pass"),
 		ComputeShader,
 		PassParameters,
-		FIntVector(output->SizeX, output->SizeY, 1) // This gets multiplied by `numthreads` in the .usf shader, kinda.
+		FIntVector(output->SizeX, output->SizeY, 1)
 	);
 
 	graph_builder.Execute();

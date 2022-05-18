@@ -5,7 +5,7 @@
 RWTexture2D<float4> input_rtt;
 RWTexture2D<float4> serialize_rtt;
 
-[numthreads(N_THREADS_X, N_THREADS_Y, 1)]
+[numthreads(8, 8, 1)]
 void mainCompute(uint3 id : SV_DispatchThreadID) {
     float value = input_rtt[id.xy].r;
 	

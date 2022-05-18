@@ -134,7 +134,7 @@ void ObstructionShader::BuildAndExecuteGraph(
 
     TShaderMapRef<ObstructionShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
-    int x_size = preFFT == 2 ? 1 : NN;
+    int x_size = preFFT == 2 ? 1 : NN / 8;
 
     FComputeShaderUtils::AddPass(
         graph_builder,
