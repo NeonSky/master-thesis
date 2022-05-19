@@ -125,7 +125,7 @@ Same as rows 3-5, but
 ## Measuring Table 3
 
 For these, run the Unreal Engine project through RenderDoc.
-Then, use the `Ocean + 1 CPU-based boat (async)` (from either table 1 or table 2).
+Then, use the `Ocean + 1 GPU-based boat` (from either table 1 or table 2).
 Then, capture a frame of that scene by pressing F12.
 Open the captured frame in RenderDoc and click on the clock icon to get timings.
 
