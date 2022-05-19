@@ -75,6 +75,8 @@ Only start using this after you have have first measured the average CPU cost.
 
 For all settings, the GPU cost will overwhelmingly dominate the CPU cost (even for an empty scene). Thus, based on the approximation that: `frame cost = max(CPU cost, GPU cost)`, we approximate frame cost as GPU cost. In reality, the true GPU costs may be smaller, but they can at least not be larger than what we estimate using this strategy.
 
+As of writing there seems to be a bug (at least on Linux) where the frame cost slowly accumulates when using RDG. If you simply resize the viewport, this accumulation resets. Thus, if you are experiencing issue, then resize once briefly before pressing `P`.
+
 ## Measuring Table 1 and 2
 
 For table 1,
