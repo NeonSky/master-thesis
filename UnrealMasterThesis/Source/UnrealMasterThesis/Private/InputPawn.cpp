@@ -2,8 +2,6 @@
 #include "Globals/StatelessHelpers.h"
 #include "Kismet/GameplayStatics.h"
 
-#include <chrono>
-
 static float average_cpu_cost;
 
 AInputPawn::AInputPawn() {
@@ -16,8 +14,6 @@ void AInputPawn::BeginPlay() {
 
   m_velocity_input = FVector2D(0.0f);
   m_speed_input = slow_speed;
-
-  average_cpu_cost = 0.0f;
 }
 
 void AInputPawn::Tick(float DeltaTime) {
@@ -37,29 +33,7 @@ void AInputPawn::Tick(float DeltaTime) {
     payload.velocity_input = m_velocity_input;
     payload.velocity_input2 = m_velocity_input2;
 
-
-    if (measure_cpu_cost) {
-      auto timer_start = std::chrono::high_resolution_clock::now();
-      on_fixed_update.Broadcast(payload);
-      auto timer_end = std::chrono::high_resolution_clock::now();
-
-      auto timer_duration = std::chrono::duration_cast<std::chrono::microseconds>(timer_end - timer_start);
-      float ms_timer_duration = ((float) timer_duration.count()) / 1000.0f;
-
-      if (frame == 0) {
-        average_cpu_cost = ms_timer_duration;
-      } else {
-        average_cpu_cost = (ms_timer_duration + frame * average_cpu_cost) / (frame+1);
-
-        if (frame % 60 == 0) {
-          UE_LOG(LogTemp, Warning, TEXT("CPU cost: %f ms"), average_cpu_cost);
-          GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, FString::Printf(TEXT("CPU cost: %f ms"), average_cpu_cost));
-        }
-      }
-    }
-    else {
-      on_fixed_update.Broadcast(payload);
-    }
+    on_fixed_update.Broadcast(payload);
 
     APlayerController* controller = UGameplayStatics::GetPlayerController(GetWorld(), 0);
     controller->SetViewTarget(camera_target, FViewTargetTransitionParams());

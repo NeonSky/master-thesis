@@ -14,7 +14,7 @@ Then,
 Verify by checking the FPS (using `stat fps`) in the editor. It should be significantly above `60` FPS.
 
 Moreover,
-- Enable `Measure CPU Cost` on InputPawn.
+- Enable `Measure CPU Cost` on OceanSurfaceSimulation.
 - Enable `stat fps`.
 - Select the fixed ocean seed `7`.
 - Ensure the GPU boats have `Camera Follow` disabled.

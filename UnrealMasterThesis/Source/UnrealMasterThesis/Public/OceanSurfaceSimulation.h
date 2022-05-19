@@ -11,6 +11,8 @@
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
 
+#include <chrono>
+
 #include "OceanSurfaceSimulation.generated.h"
 
 UENUM()
@@ -43,6 +45,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	bool should_simulate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool measure_cpu_cost;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	AInputPawn* input_pawn;
@@ -110,6 +115,9 @@ private:
 	void create_mesh();
 	void update_mesh(float dt);
 
-	float time = 0;
+	float time;
+	int frame;
+	float average_cpu_cost;
+	float cur_cpu_cost;
 
 };
