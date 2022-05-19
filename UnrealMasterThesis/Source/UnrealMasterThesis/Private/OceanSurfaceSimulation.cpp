@@ -27,7 +27,11 @@ AOceanSurfaceSimulation::AOceanSurfaceSimulation() {
 
 void AOceanSurfaceSimulation::BeginPlay() {
 	Super::BeginPlay();
-	time = 0;
+
+	this->time = 0.0f;
+	this->frame = 0;
+	this->average_cpu_cost = 0.0f;
+
 	if (oceanSeed == 0) {
 		oceanSeed = FMath::RandRange(1, 10000);
 	}
@@ -94,6 +98,24 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 		return;
 	}
 
+	auto timer_start = std::chrono::high_resolution_clock::now();
+
+	if (this->cur_cpu_cost != 0.0f) {
+		int prev_frame = frame-1;
+		if (prev_frame == 0) {
+			average_cpu_cost = this->cur_cpu_cost;
+		} else {
+			average_cpu_cost = (this->cur_cpu_cost + prev_frame * average_cpu_cost) / (prev_frame+1);
+
+			if (prev_frame % 60 == 0) {
+				// UE_LOG(LogTemp, Warning, TEXT("CPU cost: %f ms"), average_cpu_cost);
+				GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, FString::Printf(TEXT("CPU cost: %f ms"), average_cpu_cost));
+			}
+		}
+	}
+
+	this->cur_cpu_cost = 0.0f;
+
 	time += fixed_dt;
 	this->m_submerged_triangles_buffers.SetNum(boats.Num());
 
@@ -143,6 +165,13 @@ void AOceanSurfaceSimulation::update(UpdatePayload update_payload) {
 		}
 	}
 	data_collector->update(update_payload);
+
+	if (measure_cpu_cost) {
+		auto timer_end = std::chrono::high_resolution_clock::now();
+		auto timer_duration = std::chrono::duration_cast<std::chrono::microseconds>(timer_end - timer_start);
+		float ms_timer_duration = ((float) timer_duration.count()) / 1000.0f;
+		this->cur_cpu_cost += ms_timer_duration;
+	}
 }
 
 TArray<float> AOceanSurfaceSimulation::sample_elevation_points(TArray<FVector2D> sample_points, bool mock_async_readback) {
@@ -313,6 +342,8 @@ void AOceanSurfaceSimulation::create_mesh() {
 
 void AOceanSurfaceSimulation::update_mesh(float dt) {
 
+	auto timer_start = std::chrono::high_resolution_clock::now();
+
 	// Update non-interactive ocean.
 	m_shader_models_module.ComputeFourierComponents(time, this->spectrum_y_rtt, this->spectrum_xz_rtt);
 
@@ -367,4 +398,13 @@ void AOceanSurfaceSimulation::update_mesh(float dt) {
 			}
 		}
 	}
+
+	if (measure_cpu_cost) {
+		auto timer_end = std::chrono::high_resolution_clock::now();
+		auto timer_duration = std::chrono::duration_cast<std::chrono::microseconds>(timer_end - timer_start);
+		float ms_timer_duration = ((float) timer_duration.count()) / 1000.0f;
+		this->cur_cpu_cost += ms_timer_duration;
+	}
+
+	this->frame++;
 }
