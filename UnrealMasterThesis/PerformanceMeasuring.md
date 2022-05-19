@@ -15,6 +15,7 @@ Verify by checking the FPS (using `stat fps`) in the editor. It should be signif
 
 Moreover,
 - Enable `Measure CPU Cost` on InputPawn.
+- Enable `stat fps`.
 - Select the fixed ocean seed `7`.
 - Ensure the GPU boats have `Camera Follow` disabled.
 - Ensure the OceanSurfaceSimulation has `Should Update Wakes` enabled.
@@ -23,7 +24,7 @@ Moreover,
 
 ## Overview of Measurements
 
-The following tables present the measurements we will take.
+The following tables presents the measurements we will take.
 
 Full simulation, but not rendered:
 |Setting|GPU (ms)| CPU (ms)|
@@ -59,19 +60,20 @@ GPU costs of individual features:
 
 ## Taking A Measurment
 
-First, launch the Unreal Project with RenderDoc.
-
-Then, for each measurement:
+For each measurement,
 1. resize the viewport to `1920x1080`.
 2. enter `Play` mode with `Alt+P`.
 3. enter `Posses` mode with `F8`.
 4. run `viewmode unlit` (alt. press `F2`)
 5. wait until the on-screen debugged CPU cost has stabilized, then write it down.
-6. press `F12`, then write down the `Frame X` GPU cost it captured.
+6. press `P`, then write down the frame cost it captured (stored as `scr.png`).
 
 If your monitor's display is `1920x1080`, then simply hitting `F11` should be enough. The resolution can be verified by hitting the `V` key in `Play` mode.
 
-If the RenderDoc overlay says "Inactive window", then open RenderDoc and go to the `UE4Editor [PID X]` tab. From there, hit `Cycle Active Window` until the correct window is active.
+`P` gives an immediate frame cost. Take the average of 10 such values.
+Only start using this after you have have first measured the average CPU cost.
+
+For all settings, the GPU cost will overwhelmingly dominate the CPU cost (even for an empty scene). Thus, based on the approximation that: `frame cost = max(CPU cost, GPU cost)`, we approximate frame cost as GPU cost. In reality, the true GPU costs may be smaller, but they can at least not be larger than what we estimate using this strategy.
 
 ## Measuring Table 1 and 2
 
@@ -126,6 +128,8 @@ Then, capture a frame of that scene by pressing F12.
 Open the captured frame in RenderDoc and click on the clock icon to get timings.
 
 For this table, it is enough to measure each value once, as opposed to taking an average.
+
+If the RenderDoc overlay says "Inactive window", then open RenderDoc and go to the `UE4Editor [PID X]` tab. From there, hit `Cycle Active Window` until the correct window is active.
 
 ### Row 1
 
